@@ -1,0 +1,149 @@
+The following ABNF grammar defines the Package Graph Potocol:
+
+    pkggraph_msg    = *( HELLO | ROGER | INVALID | PING | STOP | PKGDEL | NEEDPKG | ICANHELP | WORKERCANHELP | FORGET-ABOUT-ME | RESETLOG | LOGHERE | UPDATE-BOOTSTRAP | PKGDONE | JOB-ENDED | IMTHEGRAPHER | IAMSTORAGE | IMAWORKER | GRAPHREADY | GRAPHNOTREADY )
+
+    ;  No description                                                        
+
+    HELLO           = signature %d1 proto_version
+    signature       = %xAA %xA1             ; two octets
+    proto_version   = string                ; Package Graph Protocol Version 00
+
+    ;  No description                                                        
+
+    ROGER           = signature %d2 proto_version
+    proto_version   = string                ; Package Graph Protocol Version 00
+
+    ;  No description                                                        
+
+    INVALID         = signature %d3 proto_version
+    proto_version   = string                ; Package Graph Protocol Version 00
+
+    ;  No description                                                        
+
+    PING            = signature %d4 proto_version
+    proto_version   = string                ; Package Graph Protocol Version 00
+
+    ;  No description                                                        
+
+    STOP            = signature %d5 proto_version
+    proto_version   = string                ; Package Graph Protocol Version 00
+
+    ;  No description                                                        
+
+    PKGDEL          = signature %d6 proto_version pkgname
+    proto_version   = string                ; Package Graph Protocol Version 00
+    pkgname         = string                ; 
+
+    ;  No description                                                        
+
+    NEEDPKG         = signature %d7 proto_version pkgname version arch
+    proto_version   = string                ; Package Graph Protocol Version 00
+    pkgname         = string                ; 
+    version         = string                ; 
+    arch            = string                ; 
+
+    ;  No description                                                        
+
+    ICANHELP        = signature %d8 proto_version hostarch targetarch iscross cost addr check
+    proto_version   = string                ; Package Graph Protocol Version 00
+    hostarch        = string                ; 
+    targetarch      = string                ; 
+    iscross         = number-1              ; Strict servers might double check this.
+    cost            = number-2              ; This should be 0 unless the builder is expensive or slow enough to warrant a lower priority when handing out work. If it's just really fast, then more builders are the answer, not a negative cost.
+    addr            = number-2              ; 
+    check           = number-4              ; 
+
+    ;  No description                                                        
+
+    WORKERCANHELP   = signature %d9 proto_version addr check pkgname version arch
+    proto_version   = string                ; Package Graph Protocol Version 00
+    addr            = number-2              ; 
+    check           = number-4              ; 
+    pkgname         = string                ; 
+    version         = string                ; 
+    arch            = string                ; 
+
+    ;  No description                                                        
+
+    FORGET-ABOUT-ME = signature %d10 proto_version addr check
+    proto_version   = string                ; Package Graph Protocol Version 00
+    addr            = number-2              ; 
+    check           = number-4              ; 
+
+    ;  No description                                                        
+
+    RESETLOG        = signature %d11 proto_version pkgname version arch
+    proto_version   = string                ; Package Graph Protocol Version 00
+    pkgname         = string                ; 
+    version         = string                ; 
+    arch            = string                ; 
+
+    ;  No description                                                        
+
+    LOGHERE         = signature %d12 proto_version pkgname version arch logs
+    proto_version   = string                ; Package Graph Protocol Version 00
+    pkgname         = string                ; 
+    version         = string                ; 
+    arch            = string                ; 
+    logs            = chunk                 ; Arbitrary text field to append to appropiate log file.
+
+    ;  Useful for when a bootstrap package has been upgraded.                
+
+    UPDATE-BOOTSTRAP = signature %d13 proto_version
+    proto_version   = string                ; Package Graph Protocol Version 00
+
+    ;  No description                                                        
+
+    PKGDONE         = signature %d14 proto_version pkgname version arch
+    proto_version   = string                ; Package Graph Protocol Version 00
+    pkgname         = string                ; 
+    version         = string                ; 
+    arch            = string                ; 
+
+    ;  For any reason. It is an error to do this with success without also   
+    ;  marking a package as done using a PKGDONE.                            
+
+    JOB-ENDED       = signature %d15 proto_version addr check cause pkgname version arch
+    proto_version   = string                ; Package Graph Protocol Version 00
+    addr            = number-2              ; 
+    check           = number-4              ; 
+    cause           = number-1              ; These are enumerated in bworker_exit_status.h
+    pkgname         = string                ; 
+    version         = string                ; 
+    arch            = string                ; 
+
+    ;  No description                                                        
+
+    IMTHEGRAPHER    = signature %d16 proto_version
+    proto_version   = string                ; Package Graph Protocol Version 00
+
+    ;  No description                                                        
+
+    IAMSTORAGE      = signature %d17 proto_version
+    proto_version   = string                ; Package Graph Protocol Version 00
+
+    ;  No description                                                        
+
+    IMAWORKER       = signature %d18 proto_version
+    proto_version   = string                ; Package Graph Protocol Version 00
+
+    ;  No description                                                        
+
+    GRAPHREADY      = signature %d19 proto_version
+    proto_version   = string                ; Package Graph Protocol Version 00
+
+    ;  No description                                                        
+
+    GRAPHNOTREADY   = signature %d20 proto_version
+    proto_version   = string                ; Package Graph Protocol Version 00
+
+    ; A chunk has 4-octet length + binary contents
+    chunk           = number-4 *OCTET
+
+    ; Strings are always length + text contents
+    string          = number-1 *VCHAR
+
+    ; Numbers are unsigned integers in network byte order
+    number-1        = 1OCTET
+    number-2        = 2OCTET
+    number-4        = 4OCTET

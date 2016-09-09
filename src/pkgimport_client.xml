@@ -1,0 +1,90 @@
+<class
+	name = "pkgimport_client"
+	title = "Package Importer"
+	script = "../exec/zproto_client_c"
+	protocol_class = "pkgimport_msg"
+	project_header = "pkgimport_client.h"
+	package_dir = "."
+	>
+
+	<state name = "start">
+		<event name = "set xbps_src path">
+			<action name = "set xbps_src path" />
+		</event>
+		<event name = "construct">
+			<action name = "connect to server" />
+			<action name = "send" message = "HELLO" />
+		</event>
+		<event name = "ROGER" next = "pleasantries" />
+		<event name = "connect error" next = "die">
+			<action name = "complain about connection error" />
+		</event>
+	</state>
+	<state name = "pleasantries" inherit = "defaults">
+		<before>
+			<action name = "send" message = "RDY2WRK" />
+		</before>
+		<event name = "ROGER" next = "ready" />
+	</state>
+	<state name = "ready" inherit = "defaults">
+		<event name = "PLZREAD">
+			<action name = "prepare pkg reading" />
+			<action name = "send" message = "RUREADY" />
+		</event>
+		<event name = "READY">
+			<action name = "prepare next pkg" />
+			<action name = "send" message = "PKGINFO" />
+		</event>
+		<event name = "no pkg found" next = "finished reading now what">
+			<action name = "send" message = "PKGDEL" />
+		</event>
+		<event name = "move on" next = "finished reading now what" />
+		<after>
+			<action name = "send" message = "DIDREAD" />
+		</after>
+	</state>
+	<state name = "finished reading now what" inherit = "defaults">
+		<event name = "ROGER" next = "pleasantries" />
+	</state>
+	<state name = "die">
+		<before>
+			<action name = "cease all operations" />
+			<action name = "terminate" />
+		</before>
+		<event name = "*">
+			We shouldn't ever get here... but the code generation
+			doesn't like empty states.
+			<action name = "send" message = "INVALID" />
+		</event>
+	</state>
+	<state name = "defaults">
+		<event name = "INVALID" next = "die" />
+		<event name = "IFORGOTU" next = "start">
+			<action name = "send" message = "HELLO" />
+		</event>
+		<event name = "ROGER" />
+		<event name = "RESET" next = "start">
+			<action name = "send" message = "HELLO" />
+		</event>
+		<event name = "STOP">
+			<action name = "send" message = "ROGER" />
+		</event>
+		<event name = "*" next = "die">
+			<action name = "send" message = "INVALID" />
+		</event>
+		<event name = "KTHNKSBYE" next = "die" />
+		<event name = "expired">
+			<action name = "send" message = "PING" />
+		</event>
+	</state>
+
+	<method name = "construct">
+		Used to connect to the server.
+		<field name = "endpoint" type = "string" />
+	</method>
+
+	<method name = "set xbps_src path">
+		Used to connect to the server.
+		<field name = "xbps_src_path" type = "string" />
+	</method>
+</class>

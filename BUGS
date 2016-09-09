@@ -1,0 +1,1 @@
+For some reason, inside a container started with contain, the import master is unable to bind to an endpoint. tcp:// and ipc:// both tested. This is not the same as inside a chroot nor the same as on a plain Void system.

@@ -1,0 +1,57 @@
+Vaelatern's short list (v0.1.0):
+	- Replace bworker with a more flexible alternative which involves
+	  registering indexes to subgroups permanently, for better flexibility.
+	- Fix all warnings (write missing functionality)
+	- Write graph component of filer
+	- Fix memory leaks in the graph. Run all tests with valgrind.
+	- Ensure that all pipes are always read to the end before closing.
+	- Remove dead code once it can be saved by version control.
+	- Run tests (https://toyamcox.net/repo in the future)
+
+Todo (v0.1.1):
+	- Shim to unmark package as bad (similar to dxpb-poke)
+	- Add h2o-based web servers to every long-running daemon (not dxpb-poke)
+	  that listens on port 13249 (base64 valud of "DPB" since DXPB was too
+	  big to be a port) and respondes like node_exporter from Prometheus.
+	- Build basic IRC bot functionality
+	- Fix -dbg packages being fetched over the wire. Special handling in
+	  filer? Maybe magic new pkgs under pkgimport? Probably cleanest via
+	  pkgimport, generating a "shimmy" pkg that only depends on the main
+	  pkg if the -dbg pkg will be built.
+
+Longer term:
+	- Replace most usage of zhash and zlist with libbsd alternatives with
+	  the goal of #including czmq in fewer parts of the codebase to reduce
+	  number of include files to parse on compilation. These would need to
+	  be measured as possible (hopeful) runtime speed gains.
+	- Improve warnings, maybe attempt to clone a void-packages repo if none
+	  is found (pkgimport-master)
+	- bfs.c: depends on errno where it is only optional. This should be
+	  changed as soon as practical. See NOT_POSIX.
+	- Would be nice if the pkgimport master can request more agents. This
+	  would need to be managed by a broker who just checks if the request
+	  is okay and spawns them (using a fork. Must use a fork to avoid bad
+	  intercations with fds). This broker could even have multiple
+	  instances running, and use PUSH/PULL sockets to allow free load
+	  balancing, allowing xbps-src threads to keep running under the other
+	  daemon in event of crash.
+	- The bdb and bgit code have no mechanism for recovery if not
+	  everything is perfect. It would be good to have a better mechanism
+	  for dealing with problems.  Right now, everything is an assert() but
+	  some of those asserts should be replaced with actual error handling.
+	- bdb with a different backend. I like postgresql, and the tooling for
+	  it is pretty good, maybe it will be good to have this database
+	  readable by others.
+	- Build a proxy so local builders can use just one connection to the
+	  master.
+
+Idle Thoughts:
+	- It would be cool to develop a better/smarter client based on this
+	  protocol. Clients don't have to be in any one language. With zeromq
+	  linking everything, basically any language people actually use can
+	  be used for any component with no change in any other.
+	- It would be nice to have "nice" shutdowns. That or be certain there
+	  are no states where a SIGTERM would be bad.
+	- Be great if whomever decided to use "package" to refer to software
+	  packaging decided to be all mundane and use the word "box". Much
+	  faster to type and as long as the word "pkg".

@@ -1,0 +1,116 @@
+<class
+	name = "pkggraph_worker"
+	title = "Package Builder - Where Work Gets Done"
+	script = "../exec/zproto_client_c"
+	protocol_class = "pkggraph_msg"
+	project_header = "pkggraph_worker.h"
+	package_dir = "."
+	>
+
+	<provided_pipe />
+
+	<state name = "start" inherit = "defaults">
+		<event name = "construct" next = "negotiate">
+			<action name = "connect to server" />
+			<action name = "send" message = "HELLO" />
+		</event>
+		<event name = "connect error" next = "die">
+			<action name = "complain about connection error" />
+		</event>
+	</state>
+	<state name = "negotiate" inherit = "defaults">
+		<event name = "ROGER" next = "hesitate">
+			<action name = "send" message = "IMAWORKER" />
+		</event>
+	</state>
+	<state name = "hesitate" inherit = "defaults">
+		<event name = "ROGER" next = "preparing" />
+	</state>
+
+	<state name = "preparing" inherit = "defaults">
+		<before>
+			<action name = "set timeout high" />
+			<action name = "act if bootstrap is wanted">
+				Call bootstrap_done when that's complete.
+			</action>
+		</before>
+		<event name = "bootstrap done" next = "ready">
+			<action name = "send" message = "ICANHELP">
+				ICANHELP if coming from a different state
+			</action>
+		</event>
+	</state>
+
+	<state name = "ready" inherit = "defaults">
+		<event name = "UPDATE BOOTSTRAP" next = "bootstrap regular">
+			<action name = "do bootstrap update" />
+		</event>
+		<event name = "NEEDPKG" next = "working">
+			no-op
+		</event>
+	</state>
+
+	<state name = "bootstrap regular" inherit = "defaults">
+		<event name = "NEEDPKG" next = "bootstrap build wanted" />
+		<event name = "bootstrap done" next = "ready" />
+	</state>
+
+	<state name = "bootstrap build wanted" inherit = "defaults">
+		<event name = "bootstrap done" next = "working">
+			<action name = "begin building pkg" />
+		</event>
+	</state>
+
+	<state name = "working" inherit = "defaults">
+		<before>
+			<action name = "set timeout low" />
+			<action name = "do git ff" />
+			<action name = "begin building pkg" />
+		</before>
+		<event name = "UPDATE BOOTSTRAP">
+			<action name = "flag bootstrap wanted" />
+		</event>
+		<event name = "expired">
+			<action name = "get log data" />
+			<action name = "send" message = "LOGHERE" />
+		</event>
+		<event name = "job ended">
+			<action name = "send" message = "JOB ENDED" />
+		</event>
+	</state>
+
+	<state name = "die">
+		<before>
+			<action name = "cease all operations" />
+			<action name = "terminate" />
+		</before>
+		<event name = "*">
+			We shouldn't ever get here... but the code generation
+			doesn't like empty states.
+			<action name = "send" message = "INVALID" />
+		</event>
+	</state>
+
+	<state name = "defaults">
+		<event name = "INVALID" next = "die" />
+		<event name = "*" next = "die">
+			<action name = "send" message = "INVALID" />
+		</event>
+		<event name = "KTHNKSBYE" next = "die" />
+		<event name = "expired">
+			<action name = "send" message = "PING" />
+		</event>
+		<event name = "set repopath">
+			<action name = "set repopath to provided" />
+		</event>
+	</state>
+
+	<method name = "construct">
+		Used to connect to the server.
+		<field name = "endpoint" type = "string" />
+	</method>
+
+	<method name = "set repopath">
+		<field name = "repopath" type = "string" />
+	</method>
+</class>

@@ -1,0 +1,105 @@
+## Automatically generated from pkggraph_server.xml by gsl
+digraph "pkggraph_server" {
+
+ "start" [shape = "doublecircle"];
+ "start hello" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">hello</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "start" -> "start hello";
+ "start hello" -> "determine role";
+
+ "determine role" [shape = "doublecircle"];
+ "determine role imthegrapher" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">imthegrapher</font></td></tr><tr><td align="left" port="r3">confirm no grapher</td></tr><tr><td align="left" port="r3">register grapher</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "determine role" -> "determine role imthegrapher";
+ "determine role imthegrapher" -> "i am the grapher";
+ "determine role imaworker" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">imaworker</font></td></tr><tr><td align="left" port="r3">register worker</td></tr><tr><td align="left" port="r3">establish subgroup</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "determine role" -> "determine role imaworker";
+ "determine role imaworker" -> "i am a worker";
+ "determine role iamstorage" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iamstorage</font></td></tr><tr><td align="left" port="r3">confirm no storage</td></tr><tr><td align="left" port="r3">register storage</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "determine role" -> "determine role iamstorage";
+ "determine role iamstorage" -> "i am storage";
+
+ "i am the grapher" [shape = "doublecircle"];
+ "i am the grapher tell of worker" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">tell of worker</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "i am the grapher" -> "i am the grapher tell of worker";
+ "i am the grapher tell of worker" -> "i am the grapher";
+ "i am the grapher update bootstrap" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">update bootstrap</font></td></tr><tr><td align="left" port="r3">all workers should bootstrap-update</td></tr></table>>];
+ "i am the grapher" -> "i am the grapher update bootstrap";
+ "i am the grapher update bootstrap" -> "i am the grapher";
+ "i am the grapher workercanhelp" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">workercanhelp</font></td></tr><tr><td align="left" port="r3">confirm worker still valid</td></tr><tr><td align="left" port="r3">tell logger to reset log</td></tr><tr><td align="left" port="r3">tell the worker to start work</td></tr></table>>];
+ "i am the grapher" -> "i am the grapher workercanhelp";
+ "i am the grapher workercanhelp" -> "i am the grapher";
+ "i am the grapher you've got a memo" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">you've got a memo</font></td></tr><tr><td align="left" port="r3">parse memo</td></tr></table>>];
+ "i am the grapher" -> "i am the grapher you've got a memo";
+ "i am the grapher you've got a memo" -> "i am the grapher";
+ "i am the grapher tell grapher job ended" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">tell grapher job ended</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">set event if more memos</td></tr></table>>];
+ "i am the grapher" -> "i am the grapher tell grapher job ended";
+ "i am the grapher tell grapher job ended" -> "i am the grapher";
+ "i am the grapher tell grapher worker gone" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">tell grapher worker gone</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">set event if more memos</td></tr></table>>];
+ "i am the grapher" -> "i am the grapher tell grapher worker gone";
+ "i am the grapher tell grapher worker gone" -> "i am the grapher";
+ "i am the grapher tell grapher worker can help" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">tell grapher worker can help</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">set event if more memos</td></tr></table>>];
+ "i am the grapher" -> "i am the grapher tell grapher worker can help";
+ "i am the grapher tell grapher worker can help" -> "i am the grapher";
+ "i am the grapher expired" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">remove self as grapher</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "i am the grapher" -> "i am the grapher expired";
+ "i am the grapher expired" -> "i am the grapher";
+
+ "i am a worker" [shape = "doublecircle"];
+ "i am a worker hello" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">hello</font></td></tr><tr><td align="left" port="r3">remove all workers</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "i am a worker" -> "i am a worker hello";
+ "i am a worker hello" -> "determine role";
+ "i am a worker invalid" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr><tr><td align="left" port="r3">remove all workers</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "i am a worker" -> "i am a worker invalid";
+ "i am a worker invalid" -> "i am a worker";
+ "i am a worker been ordered to update bootstrap" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">been ordered to update bootstrap</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "i am a worker" -> "i am a worker been ordered to update bootstrap";
+ "i am a worker been ordered to update bootstrap" -> "i am a worker";
+ "i am a worker icanhelp" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">icanhelp</font></td></tr><tr><td align="left" port="r3">register worker as ready to help</td></tr><tr><td align="left" port="r3">notify grapher if he's around</td></tr></table>>];
+ "i am a worker" -> "i am a worker icanhelp";
+ "i am a worker icanhelp" -> "i am a worker";
+ "i am a worker forget about me" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">forget about me</font></td></tr><tr><td align="left" port="r3">remove worker</td></tr><tr><td align="left" port="r3">notify grapher if he's around</td></tr></table>>];
+ "i am a worker" -> "i am a worker forget about me";
+ "i am a worker forget about me" -> "i am a worker";
+ "i am a worker you can help with this" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">you can help with this</font></td></tr><tr><td align="left" port="r3">transform worker job for assignment</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "i am a worker" -> "i am a worker you can help with this";
+ "i am a worker you can help with this" -> "i am a worker";
+ "i am a worker job ended" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">job ended</font></td></tr><tr><td align="left" port="r3">act on job return</td></tr><tr><td align="left" port="r3">notify grapher if he's around</td></tr><tr><td align="left" port="r3">remove worker</td></tr></table>>];
+ "i am a worker" -> "i am a worker job ended";
+ "i am a worker job ended" -> "i am a worker";
+ "i am a worker loghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">loghere</font></td></tr><tr><td align="left" port="r3">route log</td></tr></table>>];
+ "i am a worker" -> "i am a worker loghere";
+ "i am a worker loghere" -> "i am a worker";
+ "i am a worker *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">remove all workers</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "i am a worker" -> "i am a worker *";
+ "i am a worker *" -> "i am a worker";
+
+ "i am storage" [shape = "doublecircle"];
+ "i am storage *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "i am storage" -> "i am storage *";
+ "i am storage *" -> "i am storage";
+ "i am storage ping" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ping</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "i am storage" -> "i am storage ping";
+ "i am storage ping" -> "i am storage";
+ "i am storage update bootstrap" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">update bootstrap</font></td></tr></table>>];
+ "i am storage" -> "i am storage update bootstrap";
+ "i am storage update bootstrap" -> "i am storage";
+ "i am storage roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "i am storage" -> "i am storage roger";
+ "i am storage roger" -> "i am storage";
+ "i am storage send the log" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">send the log</font></td></tr><tr><td align="left" port="r3">grab a log chunk</td></tr></table>>];
+ "i am storage" -> "i am storage send the log";
+ "i am storage send the log" -> "i am storage";
+ "i am storage send resetlog" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">send resetlog</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">post process sending log chunk</td></tr></table>>];
+ "i am storage" -> "i am storage send resetlog";
+ "i am storage send resetlog" -> "i am storage";
+ "i am storage send loghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">send loghere</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">post process sending log chunk</td></tr></table>>];
+ "i am storage" -> "i am storage send loghere";
+ "i am storage send loghere" -> "i am storage";
+ "i am storage invalid" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr><tr><td align="left" port="r3">remove self as grapher</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "i am storage" -> "i am storage invalid";
+ "i am storage invalid" -> "i am storage";
+
+ "unreachable" [shape = "doublecircle"];
+ "unreachable killmenow" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">killmenow</font></td></tr></table>>];
+ "unreachable" -> "unreachable killmenow";
+ "unreachable killmenow" -> "unreachable";
+}

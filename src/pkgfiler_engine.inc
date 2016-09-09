@@ -1,117 +1,5 @@
-.template 0
-#
-#   Generates a server class for a protocol specification
-#   This manages ROUTER server talking to DEALER clients
-#
-#   This is a code generator built using the iMatix GSL code generation
-#   language. See https://github.com/imatix/gsl for details.
-#
-#   Copyright (c) the Contributors as noted in the AUTHORS file.
-#
-#   This Source Code Form is subject to the terms of the Mozilla Public
-#   License, v. 2.0. If a copy of the MPL was not distributed with this
-#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
-#
-#   If proto_class has the 'virtual' flag set, the server will use the
-#   appropriate zmsg_t calls transparently
-
-include "zproto_lib.gsl"
-include "zproto_dot.gsl"
-resolve_includes ()
-generate_dot ()
-set_defaults ()
-
-#   Load message structures for this engine
-global.proto = xml.load_file (class.protocol_class + ".xml")
-class.proto = class.protocol_class
-
-#   Lowercase state/event/action names
-for class.state
-    state.name = "$(name)"
-    for event
-        event.name = "$(name)"
-        if defined (event.next)
-            event.next = "$(next)"
-        endif
-        for action
-            action.name = "$(name)"
-        endfor
-    endfor
-endfor
-
-#   Lowercase protocol message names and normalize spaces/hyphens
-for proto.message
-    message.name = "$(name:c)"
-endfor
-
-#  Collect all events and actions at class level
-for class.state
-    state.comma = last()?? ""? ","
-    for event where name <> "*"
-        event.name = "$(name:c)"
-        #   Mark event as external if it a protocol message
-        if count (proto.message, message.name = event.name)
-            event.external = 1
-        endif
-        #   Copy event to class if not yet defined there
-        if count (class.event, name = -1.name) = 0
-            copy event to class
-        endif
-    endfor
-    for event
-        for action where count (class.action, name = -1.name) = 0
-            copy action to class
-        endfor
-    endfor
-    for [before]
-        for action where count (class.action, name = -1.name) = 0
-            copy action to class
-        endfor
-    endfor
-    for [after]
-        for action where count (class.action, name = -1.name) = 0
-            copy action to class
-        endfor
-    endfor
-endfor
-
-#   Process super states recursively
-function resolve_inheritance (state)
-    if my.state.inherit?"" <> ""
-        for class.state as superstate where name = my.state.inherit
-            resolve_inheritance (superstate)
-            for event where count (my.state.event, name = -1.name) = 0
-                copy event to my.state
-            endfor
-        else
-            echo "E: superstate $(inherit) isn't defined"
-        endfor
-        my.state.inherit = ""
-    endif
-endfunction
-
-for class.state
-    resolve_inheritance (state)
-endfor
-
-#   Collect prototypes that we need
-for class.action
-    if name <> "send" \
-    &  name <> "terminate"
-        new class.prototype
-            prototype.name = "$(action.name:c)"
-            prototype.ctype = "void"
-            prototype.exists = 0
-            prototype.args = "client_t *self"
-        endnew
-    endif
-endfor
-
-.endtemplate
-.#  This is the API for the server
-.output "$(class.package_dir)/$(class.name).h"
 /*  =========================================================================
-    $(class.name) - $(class.title:)
+    pkgfiler_engine - pkgfiler engine
 
     ** WARNING *************************************************************
     THIS SOURCE FILE IS 100% GENERATED. If you edit this file, you will lose
@@ -119,108 +7,9 @@ endfor
     statements. DO NOT MAKE ANY CHANGES YOU WISH TO KEEP. The correct places
     for commits are:
 
-     * The XML model used for this code generation: $(filename), or
-     * The code generation script that built this file: $(script)
+     * The XML model used for this code generation: pkgfiler.xml, or
+     * The code generation script that built this file: ../exec/zproto_server_c
     ************************************************************************
-.   for class.license
-    $(string.trim (license.):block                                         )
-.   endfor
-    =========================================================================
-*/
-
-#ifndef $(CLASS.NAME)_H_INCLUDED
-#define $(CLASS.NAME)_H_INCLUDED
-
-.if file.exists ("../include/czmq.h")
-#include "czmq.h"
-.else
-#include <czmq.h>
-.endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-//  @interface
-//  To work with $(class.name), use the CZMQ zactor API:
-//
-//  Create new $(class.name) instance, passing logging prefix:
-//
-//      zactor_t *$(class.name:c) = zactor_new ($(class.name), "myname");
-//
-//  Destroy $(class.name) instance
-//
-//      zactor_destroy (&$(class.name:c));
-//
-//  Enable verbose logging of commands and activity:
-//
-//      zstr_send ($(class.name:c), "VERBOSE");
-//
-//  Bind $(class.name) to specified endpoint. TCP endpoints may specify
-//  the port number as "*" to aquire an ephemeral port:
-//
-//      zstr_sendx ($(class.name:c), "BIND", endpoint, NULL);
-//
-//  Return assigned port number, specifically when BIND was done using an
-//  an ephemeral port:
-//
-//      zstr_sendx ($(class.name:c), "PORT", NULL);
-//      char *command, *port_str;
-//      zstr_recvx ($(class.name:c), &command, &port_str, NULL);
-//      assert (streq (command, "PORT"));
-//
-//  Specify configuration file to load, overwriting any previous loaded
-//  configuration file or options:
-//
-//      zstr_sendx ($(class.name:c), "LOAD", filename, NULL);
-//
-//  Set configuration path value:
-//
-//      zstr_sendx ($(class.name:c), "SET", path, value, NULL);
-//
-//  Save configuration data to config file on disk:
-//
-//      zstr_sendx ($(class.name:c), "SAVE", filename, NULL);
-//
-//  Send zmsg_t instance to $(class.name):
-//
-//      zactor_send ($(class.name:c), &msg);
-//
-//  Receive zmsg_t instance from $(class.name):
-//
-//      zmsg_t *msg = zactor_recv ($(class.name:c));
-//
-//  This is the $(class.name) constructor as a zactor_fn:
-//
-$(CLASS.EXPORT_MACRO)void
-    $(class.name) (zsock_t *pipe, void *args);
-
-//  Self test of this class
-$(CLASS.EXPORT_MACRO)void
-    $(class.name)_test (bool verbose);
-//  @end
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
-.output "$(class.name)_engine.inc"
-/*  =========================================================================
-    $(class.name)_engine - $(class.name:) engine
-
-    ** WARNING *************************************************************
-    THIS SOURCE FILE IS 100% GENERATED. If you edit this file, you will lose
-    your changes at the next build cycle. This is great for temporary printf
-    statements. DO NOT MAKE ANY CHANGES YOU WISH TO KEEP. The correct places
-    for commits are:
-
-     * The XML model used for this code generation: $(filename), or
-     * The code generation script that built this file: $(script)
-    ************************************************************************
-.   for class.license
-    $(string.trim (license.):block                                         )
-.   endfor
     =========================================================================
 */
 
@@ -234,41 +23,61 @@ $(CLASS.EXPORT_MACRO)void
 //  State machine constants
 
 typedef enum {
-.for class.state
-.   state.comma = last()?? ""? ","
-    $(name:c)_state = $(index ())$(comma)
-.endfor
+    start_state = 1,
+    file_finding_state = 2
 } state_t;
 
 typedef enum {
     NULL_event = 0,
     terminate_event = 1,
-.for class.event
-.   event.comma = last()?? ""? ","
-    $(name)_event = $(index () + 1)$(comma)
-.endfor
+    hello_event = 2,
+    ispkghere_event = 3,
+    iwannashare_event = 4,
+    chunk_event = 5,
+    trigger_job_hunt_event = 6,
+    idontwannashare_event = 7,
+    we_couldn_t_find_it_event = 8,
+    pkghere_event = 9,
+    pkgnothere_event = 10,
+    i_have_the_hunted_event = 11,
+    pkg_here_event = 12,
+    pkg_not_here_event = 13,
+    i_might_want_to_share_event = 14,
+    pkgdel_event = 15,
+    ping_event = 16,
+    invalid_event = 17,
+    expired_event = 18
 } event_t;
 
 //  Names for state machine logging and error reporting
 static char *
 s_state_name [] = {
     "(NONE)",
-.for class.state
-    "$(name)"$(comma)
-.endfor
+    "start",
+    "file finding"
 };
 
 static char *
 s_event_name [] = {
     "(NONE)",
     "terminate",
-.for class.event
-.   if defined (event.external)
-    "$(NAME)"$(comma)
-.   else
-    "$(name)"$(comma)
-.   endif
-.endfor
+    "HELLO",
+    "ISPKGHERE",
+    "IWANNASHARE",
+    "CHUNK",
+    "trigger_job_hunt",
+    "IDONTWANNASHARE",
+    "we_couldn_t_find_it",
+    "PKGHERE",
+    "PKGNOTHERE",
+    "i_have_the_hunted",
+    "pkg_here",
+    "pkg_not_here",
+    "i_might_want_to_share",
+    "PKGDEL",
+    "PING",
+    "INVALID",
+    "expired"
 };
 
 //  ---------------------------------------------------------------------------
@@ -282,7 +91,7 @@ typedef struct {
     zsock_t *router;            //  Socket to talk to clients
     int port;                   //  Server port bound to
     zloop_t *loop;              //  Reactor for server sockets
-    $(proto)_t *message;        //  Message received or sent
+    pkgfiles_msg_t *message;    //  Message received or sent
     zhash_t *clients;           //  Clients we're connected to
     zconfig_t *config;          //  Configuration tree
     uint client_id;             //  Client identifier counter
@@ -331,14 +140,44 @@ static void
     s_client_execute (s_client_t *client, event_t event);
 static int
     s_client_handle_wakeup (zloop_t *loop, int timer_id, void *argument);
-.if count (class.event, name = "expired")
 static int
     s_client_handle_ticket (zloop_t *loop, int timer_id, void *argument);
-.endif
-.for class.prototype
-static $(ctype)
-    $(name) ($(args));
-.endfor
+static void
+    check_for_pkg_locally (client_t *self);
+static void
+    broadcast_pkg_locate_request (client_t *self);
+static void
+    establish_peer_agreement (client_t *self);
+static void
+    end_hunt (client_t *self);
+static void
+    ask_for_more (client_t *self);
+static void
+    verify_this_remote_is_the_right_peer (client_t *self);
+static void
+    write_file_chunk (client_t *self);
+static void
+    postprocess_chunk (client_t *self);
+static void
+    curhunt_to_my_own_message (client_t *self);
+static void
+    set_myself_response_pending (client_t *self);
+static void
+    obsolete_peer_agreement (client_t *self);
+static void
+    tell_asker_pkg_not_here (client_t *self);
+static void
+    mark_pkg_at_remote_location (client_t *self);
+static void
+    act_if_all_remotes_returned_or_expired (client_t *self);
+static void
+    mark_pkg_not_at_remote_location (client_t *self);
+static void
+    parse_memos (client_t *self);
+static void
+    delete_package (client_t *self);
+static void
+    mark_all_pkgs_not_at_this_remote_location (client_t *self);
 
 //  ---------------------------------------------------------------------------
 //  These methods are an internal API for actions
@@ -535,17 +374,42 @@ s_satisfy_pedantic_compilers (void)
 //  TODO: replace with lookup table, since ID is one byte
 
 static event_t
-s_protocol_event ($(proto)_t *message)
+s_protocol_event (pkgfiles_msg_t *message)
 {
     assert (message);
-    switch ($(proto)_id (message)) {
-.   for proto.message where count (class.event, event.name = message.name) = 1
-        case $(PROTO)_$(NAME):
-            return $(name)_event;
+    switch (pkgfiles_msg_id (message)) {
+        case PKGFILES_MSG_HELLO:
+            return hello_event;
             break;
-.   endfor
+        case PKGFILES_MSG_PING:
+            return ping_event;
+            break;
+        case PKGFILES_MSG_INVALID:
+            return invalid_event;
+            break;
+        case PKGFILES_MSG_PKGDEL:
+            return pkgdel_event;
+            break;
+        case PKGFILES_MSG_IWANNASHARE:
+            return iwannashare_event;
+            break;
+        case PKGFILES_MSG_IDONTWANNASHARE:
+            return idontwannashare_event;
+            break;
+        case PKGFILES_MSG_CHUNK:
+            return chunk_event;
+            break;
+        case PKGFILES_MSG_PKGNOTHERE:
+            return pkgnothere_event;
+            break;
+        case PKGFILES_MSG_PKGHERE:
+            return pkghere_event;
+            break;
+        case PKGFILES_MSG_ISPKGHERE:
+            return ispkghere_event;
+            break;
         default:
-            //  Invalid $(proto)_t
+            //  Invalid pkgfiles_msg_t
             return terminate_event;
     }
 }
@@ -570,15 +434,11 @@ s_client_new (s_server_t *server, zframe_t *routing_id)
     self->client.server = (server_t *) server;
     self->client.message = server->message;
 
-.if count (class.event, name = "expired")
     //  If expiry timers are being used, create client ticket
     if (server->timeout)
         self->ticket = zloop_ticket (server->loop, s_client_handle_ticket, self);
-.endif
     //  Give application chance to initialize and set next event
-.for class.state where item () = 1
-    self->state = $(name:c)_state;
-.endfor
+    self->state = start_state;
     self->event = NULL_event;
     client_initialize (&self->client);
     return self;
@@ -612,58 +472,6 @@ s_client_free (void *argument)
     s_client_destroy (&client);
 }
 
-.macro output_action_body ()
-.       for action
-                    if (!self->exception) {
-.           if name = "send"
-                        //  send $(MESSAGE:C)
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ $(name) $(MESSAGE:C)",
-                                self->log_prefix);
-                        $(proto)_set_id (self->server->message, $(PROTO)_$(MESSAGE:C));
-.               if switches.trace ?= 1
-                        zsys_debug ("%s: Send message to client", self->log_prefix);
-                        $(proto)_print (self->server->message);
-.               endif
-                        $(proto)_set_routing_id (self->server->message, self->routing_id);
-.               if defined (class.send_tracer)
-                        $(class.send_tracer) ((server_t *) self->server);
-.               endif
-.               if global.proto.virtual ?= 1
-                        zmsg_t* msg = zmsg_new();
-                        $(proto)_send (self->server->message, msg);
-                        zmsg_send(&msg,self->server->router);
-.               else
-                        $(proto)_send (self->server->message, self->server->router);
-.               endif                        
-.           elsif name = "terminate"
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ $(name)", self->log_prefix);
-                        self->next_event = terminate_event;
-.           else
-                        //  $(name)
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ $(name)", self->log_prefix);
-                        $(name:c) (&self->client);
-.           endif
-                    }
-.       endfor
-.endmacro
-.
-.macro output_state_change ()
-.       if defined (event.next)
-.           for state.[after]
-.               output_action_body ()
-.           endfor
-                    if (!self->exception)
-                        self->state = $(next:c)_state;
-.           my.next_state = class->state ("$(name:c)" = "$(event.next:c)")
-.           for my.next_state.[before]
-.               output_action_body ()
-.           endfor
-.       endif
-.endmacro
 
 //  Execute state machine as long as we have events
 
@@ -687,31 +495,333 @@ s_client_execute (s_client_t *self, event_t event)
                 self->log_prefix, s_event_name [self->event]);
         }
         switch (self->state) {
-.for class.state
-.   if index () > 1
-
-.   endif
-            case $(name:c)_state:
-.   for event where name <> "*"
-.       if index () > 1
-                else
-.       endif
-                if (self->event == $(name)_event) {
-.       output_action_body ()
-.       output_state_change ()
+            case start_state:
+                if (self->event == hello_event) {
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_ROGER);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception)
+                        self->state = file_finding_state;
                 }
-.   endfor
-.   for event where name = "*"
-.       if item () > 1
                 else {
-.       else
-                {
-.       endif
                     //  Handle unexpected protocol events
-.       output_action_body ()
-.       output_state_change ()
+                    if (!self->exception) {
+                        //  send IFORGOTU
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send IFORGOTU",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_IFORGOTU);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
                 }
-.   else
+                break;
+
+            case file_finding_state:
+                if (self->event == ispkghere_event) {
+                    if (!self->exception) {
+                        //  check for pkg locally
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ check for pkg locally", self->log_prefix);
+                        check_for_pkg_locally (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  broadcast pkg locate request
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ broadcast pkg locate request", self->log_prefix);
+                        broadcast_pkg_locate_request (&self->client);
+                    }
+                }
+                else
+                if (self->event == iwannashare_event) {
+                    if (!self->exception) {
+                        //  establish peer agreement
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ establish peer agreement", self->log_prefix);
+                        establish_peer_agreement (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  end hunt
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ end hunt", self->log_prefix);
+                        end_hunt (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  ask for more
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ ask for more", self->log_prefix);
+                        ask_for_more (&self->client);
+                    }
+                }
+                else
+                if (self->event == chunk_event) {
+                    if (!self->exception) {
+                        //  verify this remote is the right peer
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ verify this remote is the right peer", self->log_prefix);
+                        verify_this_remote_is_the_right_peer (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  write file chunk
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ write file chunk", self->log_prefix);
+                        write_file_chunk (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  postprocess chunk
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ postprocess chunk", self->log_prefix);
+                        postprocess_chunk (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  ask for more
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ ask for more", self->log_prefix);
+                        ask_for_more (&self->client);
+                    }
+                }
+                else
+                if (self->event == trigger_job_hunt_event) {
+                    if (!self->exception) {
+                        //  curhunt to my own message
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ curhunt to my own message", self->log_prefix);
+                        curhunt_to_my_own_message (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  set myself response pending
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ set myself response pending", self->log_prefix);
+                        set_myself_response_pending (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send ISPKGHERE
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ISPKGHERE",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_ISPKGHERE);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
+                if (self->event == idontwannashare_event) {
+                    if (!self->exception) {
+                        //  obsolete peer agreement
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ obsolete peer agreement", self->log_prefix);
+                        obsolete_peer_agreement (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  tell asker pkg not here
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ tell asker pkg not here", self->log_prefix);
+                        tell_asker_pkg_not_here (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  end hunt
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ end hunt", self->log_prefix);
+                        end_hunt (&self->client);
+                    }
+                }
+                else
+                if (self->event == we_couldn_t_find_it_event) {
+                    if (!self->exception) {
+                        //  tell asker pkg not here
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ tell asker pkg not here", self->log_prefix);
+                        tell_asker_pkg_not_here (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  end hunt
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ end hunt", self->log_prefix);
+                        end_hunt (&self->client);
+                    }
+                }
+                else
+                if (self->event == pkghere_event) {
+                    if (!self->exception) {
+                        //  mark pkg at remote location
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ mark pkg at remote location", self->log_prefix);
+                        mark_pkg_at_remote_location (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  act if all remotes returned or expired
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ act if all remotes returned or expired", self->log_prefix);
+                        act_if_all_remotes_returned_or_expired (&self->client);
+                    }
+                }
+                else
+                if (self->event == pkgnothere_event) {
+                    if (!self->exception) {
+                        //  mark pkg not at remote location
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ mark pkg not at remote location", self->log_prefix);
+                        mark_pkg_not_at_remote_location (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  act if all remotes returned or expired
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ act if all remotes returned or expired", self->log_prefix);
+                        act_if_all_remotes_returned_or_expired (&self->client);
+                    }
+                }
+                else
+                if (self->event == i_have_the_hunted_event) {
+                    if (!self->exception) {
+                        //  curhunt to my own message
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ curhunt to my own message", self->log_prefix);
+                        curhunt_to_my_own_message (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  end hunt
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ end hunt", self->log_prefix);
+                        end_hunt (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send WANNASHARE_
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send WANNASHARE_",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_WANNASHARE_);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
+                if (self->event == pkg_here_event) {
+                    if (!self->exception) {
+                        //  send PKGHERE
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send PKGHERE",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_PKGHERE);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
+                if (self->event == pkg_not_here_event) {
+                    if (!self->exception) {
+                        //  send PKGNOTHERE
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send PKGNOTHERE",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_PKGNOTHERE);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception) {
+                        //  parse memos
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ parse memos", self->log_prefix);
+                        parse_memos (&self->client);
+                    }
+                }
+                else
+                if (self->event == i_might_want_to_share_event) {
+                    if (!self->exception) {
+                        //  send WANNASHARE_
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send WANNASHARE_",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_WANNASHARE_);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception) {
+                        //  parse memos
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ parse memos", self->log_prefix);
+                        parse_memos (&self->client);
+                    }
+                }
+                else
+                if (self->event == pkgdel_event) {
+                    if (!self->exception) {
+                        //  delete package
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ delete package", self->log_prefix);
+                        delete_package (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_ROGER);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
+                if (self->event == ping_event) {
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_ROGER);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
+                if (self->event == invalid_event) {
+                    if (!self->exception)
+                        self->state = start_state;
+                }
+                else
+                if (self->event == expired_event) {
+                    if (!self->exception) {
+                        //  mark all pkgs not at this remote location
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ mark all pkgs not at this remote location", self->log_prefix);
+                        mark_all_pkgs_not_at_this_remote_location (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  act if all remotes returned or expired
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ act if all remotes returned or expired", self->log_prefix);
+                        act_if_all_remotes_returned_or_expired (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  terminate
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ terminate", self->log_prefix);
+                        self->next_event = terminate_event;
+                    }
+                }
                 else {
                     //  Handle unexpected internal events
                     zsys_warning ("%s: unhandled event %s in %s",
@@ -720,9 +830,7 @@ s_client_execute (s_client_t *self, event_t event)
                         s_state_name [self->state]);
                     assert (false);
                 }
-.   endfor
                 break;
-.endfor
         }
         //  If we had an exception event, interrupt normal programming
         if (self->exception) {
@@ -744,7 +852,6 @@ s_client_execute (s_client_t *self, event_t event)
     }
 }
 
-.if count (class.event, name = "expired")
 //  zloop callback when client ticket expires
 
 static int
@@ -758,7 +865,6 @@ s_client_handle_ticket (zloop_t *loop, int timer_id, void *argument)
     return 0;
 }
 
-.endif
 //  zloop callback when client wakeup timer expires
 
 static int
@@ -812,15 +918,13 @@ s_server_new (zsock_t *pipe)
     //  against queue overflow, they should use a credit-based flow
     //  control scheme.
     zsock_set_unbounded (self->router);
-    self->message = $(proto)_new ();
+    self->message = pkgfiles_msg_new ();
     self->clients = zhash_new ();
     self->config = zconfig_new ("root", NULL);
     self->loop = zloop_new ();
     srandom ((unsigned int) zclock_time ());
     self->client_id = randof (1000);
-.if switches.trace ?= 1
     zloop_set_verbose (self->loop, true);
-.endif
     s_server_config_global (self);
 
     //  Initialize application server context
@@ -838,7 +942,7 @@ s_server_destroy (s_server_t **self_p)
     assert (self_p);
     if (*self_p) {
         s_server_t *self = *self_p;
-        $(proto)_destroy (&self->message);
+        pkgfiles_msg_destroy (&self->message);
         //  Destroy clients before destroying the server
         zhash_destroy (&self->clients);
         server_terminate (&self->server);
@@ -859,7 +963,7 @@ static void
 s_server_config_service (s_server_t *self)
 {
     //  Apply echo commands and class methods
-    zconfig_t *section = zconfig_locate (self->config, "$(name)");
+    zconfig_t *section = zconfig_locate (self->config, "pkgfiler");
     if (section)
         section = zconfig_child (section);
 
@@ -908,11 +1012,9 @@ s_server_handle_pipe (zloop_t *loop, zsock_t *reader, void *argument)
     zmsg_t *msg = zmsg_recv (self->pipe);
     if (!msg)
         return -1;              //  Interrupted; exit zloop
-.   if switches.trace ?= 1
     zsys_debug ("API message:");
     zmsg_print (msg);
 
-.   endif
     char *method = zmsg_popstr (msg);
     if (self->verbose)
         zsys_debug ("%s:     API command=%s", self->log_prefix, method);
@@ -1000,67 +1102,29 @@ s_server_handle_protocol (zloop_t *loop, zsock_t *reader, void *argument)
     //  We process as many messages as we can, to reduce the overhead
     //  of polling and the reactor:
     while (zsock_events (self->router) & ZMQ_POLLIN) {
-.   if global.proto.virtual ?= 1
-        zframe_t* routing_id = NULL;
-
-        //If the socket is a router, save the routing Id 
-        if (zsock_type (self->router) == ZMQ_ROUTER) {
-            routing_id = zframe_recv (self->router);
-            if (!routing_id || !zsock_rcvmore (self->router)) {
-                zsys_warning ("$(class.name): no routing ID");
-                return -1;          //  Interrupted or malformed
-            }
-        }
-        zmsg_t* recvmsg = zmsg_recv(self->router);
-        if(!recvmsg)
-            return -1;      //  Interrupted; exit zloop
-        int rc = $(proto)_recv (self->message, recvmsg);
-        if(rc == -1)
-            return -1;      //  Interrupted; exit zloop
-        if(rc == -2)
-            continue;       //  Malformed; discard the message
-
-        //For router sockets, set the routing id of this messaged based on the value we saved
-        if(routing_id)
-        {    entropy_msg_set_routing_id(self->message,routing_id);
-             zframe_destroy(&routing_id);
-        }
-        
-.   else
-        int rc = $(proto)_recv (self->message, self->router);
+        int rc = pkgfiles_msg_recv (self->message, self->router);
         if (rc == -1)
             return -1;      //  Interrupted; exit zloop
 
-.   endif             
-.   if defined (class.receive_tracer)
-        $(class.receive_tracer) ((server_t *) self);
-.   endif
 
         //  TODO: use binary hashing on routing_id
-        char *hashkey = zframe_strhex ($(proto)_routing_id (self->message));
+        char *hashkey = zframe_strhex (pkgfiles_msg_routing_id (self->message));
         s_client_t *client = (s_client_t *) zhash_lookup (self->clients, hashkey);
         if (client == NULL) {
-            client = s_client_new (self, $(proto)_routing_id (self->message));
+            client = s_client_new (self, pkgfiles_msg_routing_id (self->message));
             zhash_insert (self->clients, hashkey, client);
             zhash_freefn (self->clients, hashkey, s_client_free);
         }
         free (hashkey);
-.   if switches.trace ?= 1
         zsys_debug ("%d: Client message", client->unique_id);
-        $(proto)_print (self->message);
-.   endif
+        pkgfiles_msg_print (self->message);
         //  Any input from client counts as activity
         if (client->ticket)
             zloop_ticket_reset (self->loop, client->ticket);
 
         if (rc == -2) {
-.if count (class.event, name = "malformed")
-            s_client_execute (client, malformed_event);
-            continue;
-.else
             continue;       //  Malformed, but malformed_event doesn't exist
                             //  -> discard the message
-.endif
         }
         //  Pass to client state machine
         s_client_execute (client, s_protocol_event (self->message));
@@ -1094,7 +1158,7 @@ s_watch_server_config (zloop_t *loop, int timer_id, void *argument)
 //  incoming messages
 
 void
-$(class.name) (zsock_t *pipe, void *args)
+pkgfiler (zsock_t *pipe, void *args)
 {
     //  Initialize
     s_server_t *self = s_server_new (pipe);
@@ -1115,196 +1179,3 @@ $(class.name) (zsock_t *pipe, void *args)
     //  Reactor has ended
     s_server_destroy (&self);
 }
-.#  Generate source file first time only
-.source_file = "$(class.name).c"
-.if !file.exists (source_file)
-.   output source_file
-/*  =========================================================================
-    $(class.name) - $(class.name:)
-
-.   for class.license
-    $(string.trim (license.):block                                         )
-.   endfor
-    =========================================================================
-*/
-
-/*
-@header
-    Description of class for man page.
-@discuss
-    Detailed discussion of the class, if any.
-@end
-*/
-
-.if defined (class.project_header)
-#include "$(class.project_header)"
-.endif
-//  TODO: Change these to match your project's needs
-#include "$(class.package_dir)/$(class.protocol_class).h"
-#include "$(class.package_dir)/$(class.name).h"
-
-//  ---------------------------------------------------------------------------
-//  Forward declarations for the two main classes we use here
-
-typedef struct _server_t server_t;
-typedef struct _client_t client_t;
-
-//  This structure defines the context for each running server. Store
-//  whatever properties and structures you need for the server.
-
-struct _server_t {
-    //  These properties must always be present in the server_t
-    //  and are set by the generated engine; do not modify them!
-    zsock_t *pipe;              //  Actor pipe back to caller
-    zconfig_t *config;          //  Current loaded configuration
-
-    //  TODO: Add any properties you need here
-};
-
-//  ---------------------------------------------------------------------------
-//  This structure defines the state for each client connection. It will
-//  be passed to each action in the 'self' argument.
-
-struct _client_t {
-    //  These properties must always be present in the client_t
-    //  and are set by the generated engine; do not modify them!
-    server_t *server;           //  Reference to parent server
-    $(proto)_t *message;        //  Message in and out
-
-    //  TODO: Add specific properties for your application
-};
-
-//  Include the generated server engine
-#include "$(class.name)_engine.inc"
-
-//  Allocate properties and structures for a new server instance.
-//  Return 0 if OK, or -1 if there was an error.
-
-static int
-server_initialize (server_t *self)
-{
-    ZPROTO_UNUSED(self);
-    //  Construct properties here
-    return 0;
-}
-
-//  Free properties and structures for a server instance
-
-static void
-server_terminate (server_t *self)
-{
-    ZPROTO_UNUSED(self);
-    //  Destroy properties here
-}
-
-//  Process server API method, return reply message if any
-
-static zmsg_t *
-server_method (server_t *self, const char *method, zmsg_t *msg)
-{
-    ZPROTO_UNUSED(self);
-    ZPROTO_UNUSED(method);
-    ZPROTO_UNUSED(msg);
-    return NULL;
-}
-
-//  Apply new configuration.
-
-static void
-server_configuration (server_t *self, zconfig_t *config)
-{
-    ZPROTO_UNUSED(self);
-    ZPROTO_UNUSED(config);
-    //  Apply new configuration
-}
-
-//  Allocate properties and structures for a new client connection and
-//  optionally engine_set_next_event (). Return 0 if OK, or -1 on error.
-
-static int
-client_initialize (client_t *self)
-{
-    ZPROTO_UNUSED(self);
-    //  Construct properties here
-    return 0;
-}
-
-//  Free properties and structures for a client connection
-
-static void
-client_terminate (client_t *self)
-{
-    ZPROTO_UNUSED(self);
-    //  Destroy properties here
-}
-
-//  ---------------------------------------------------------------------------
-//  Selftest
-
-void
-$(class.name)_test (bool verbose)
-{
-    printf (" * $(class.name): ");
-    if (verbose)
-        printf ("\\n");
-
-    //  @selftest
-    zactor_t *server = zactor_new ($(class.name), "server");
-    if (verbose)
-        zstr_send (server, "VERBOSE");
-    zstr_sendx (server, "BIND", "ipc://@/$(class.name)", NULL);
-
-    zsock_t *client = zsock_new (ZMQ_DEALER);
-    assert (client);
-    zsock_set_rcvtimeo (client, 2000);
-    zsock_connect (client, "ipc://@/$(class.name)");
-
-    //  TODO: fill this out
-    $(proto)_t *request = $(proto)_new ();
-    $(proto)_destroy (&request);
-
-    zsock_destroy (&client);
-    zactor_destroy (&server);
-    //  @end
-    printf ("OK\\n");
-}
-.endif
-.close
-.template 0
-
-#   Append missing prototypes to source file
-input = file.open (source_file)
-xline = file.read (input)
-while defined (xline)
-    #   Look for function declarations
-    if regexp.match ("^(\\w+) \\(", xline, token)
-        for class.prototype where name = token
-            prototype.exists = 1
-        endfor
-    endif
-    xline = file.read (input)?
-endwhile
-file.close (input)
-
-append source_file
-for class.prototype where exists = 0
-    echo "Generating stub for $(name)..."
-    >
-    >
-    >//  ---------------------------------------------------------------------------
-    >//  $(name)
-    >//
-    >
-    >static $(ctype)
-    >$(name) ($(args))
-    >{
-    if ctype = "long"
-        >    return 0;
-    elsif ctype = "char *"
-        >    return NULL
-    else
-        >
-    endif
-    >}
-endfor
-.endtemplate

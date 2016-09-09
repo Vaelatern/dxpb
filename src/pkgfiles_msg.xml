@@ -1,0 +1,69 @@
+<class
+	name = "pkgfiles_msg"
+	signature = "0"
+	title = "DXPB File Location and Management Protocol"
+	script = "zproto_codec_c"
+	package_dir = "../include"
+	source_dir = "."
+	>
+
+	<header>
+		<field name = "proto_version" type = "string" value = "DPKG00">DXPB PKG Management Protocol Version 00</field>
+	</header>
+
+	<message name = "HELLO" />
+	<message name = "ROGER" />
+	<message name = "IFORGOTU" />
+	<message name = "PING" />
+	<message name = "INVALID" />
+	<message name = "PKGDEL">
+		<field name = "pkgname" type = "string" />
+		<field name = "version" type = "string" />
+		<field name = "arch" type = "string" />
+	</message>
+	<message name = "WANNASHARE?">
+		<field name = "pkgname" type = "string" />
+		<field name = "version" type = "string" />
+		<field name = "arch" type = "string" />
+	</message>
+	<message name = "IWANNASHARE">
+		<field name = "pkgname" type = "string" />
+		<field name = "version" type = "string" />
+		<field name = "arch" type = "string" />
+	</message>
+	<message name = "IDONTWANNASHARE">
+		<field name = "pkgname" type = "string" />
+		<field name = "version" type = "string" />
+		<field name = "arch" type = "string" />
+	</message>
+	<message name = "GIMMEGIMMEGIMME">
+		<!-- A man after midnight -->
+	</message>
+	<message name = "CHUNK">
+		<field name = "validchunk" type = "number" size = "1" />
+		<field name = "pkgname" type = "string" />
+		<field name = "version" type = "string" />
+		<field name = "arch" type = "string" />
+		<field name = "subpath" type = "string">
+			Subdir of hostdir where the pkg can be found
+		</field>
+		<field name = "position" type = "number" size = "8"/>
+		<field name = "eof" type = "number" size = "1" />
+		<field name = "data" type = "chunk" />
+	</message>
+	<message name = "PKGNOTHERE">
+		<field name = "pkgname" type = "string" />
+		<field name = "version" type = "string" />
+		<field name = "arch" type = "string" />
+	</message>
+	<message name = "PKGHERE">
+		<field name = "pkgname" type = "string" />
+		<field name = "version" type = "string" />
+		<field name = "arch" type = "string" />
+	</message>
+	<message name = "ISPKGHERE">
+		<field name = "pkgname" type = "string" />
+		<field name = "version" type = "string" />
+		<field name = "arch" type = "string" />
+	</message>
+</class>

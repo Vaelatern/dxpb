@@ -1,0 +1,61 @@
+<class
+	name = "pkgfiler_remote"
+	title = "Remote Hostdir Manager"
+	script = "../exec/zproto_client_c"
+	protocol_class = "pkgfiles_msg"
+	project_header = "pkgfiler_remote.h"
+	package_dir = "."
+	>
+
+	This class models a single agent on top of a single remote hostdir
+	and reports its contents.
+
+	<state name = "start">
+		<event name = "construct">
+			<action name = "connect to server" />
+			<action name = "send" message = "HELLO" />
+		</event>
+		<event name = "ROGER" next = "time2wrk" />
+		<event name = "connect error">
+			<action name = "complain about connection error" />
+			<action name = "terminate" />
+		</event>
+		<event name = "IFORGOTU">
+			<action name = "send" message = "HELLO" />
+		</event>
+	</state>
+	<state name = "time2wrk">
+		<event name = "ISPKGHERE">
+			<action name = "check for pkg locally">
+				Set pkg_here or pkg_not_here event on response
+			</action>
+		</event>
+		<event name = "WANNASHARE?">
+			<action name = "confirm pkg is local and want to share" />
+			<action name = "send" message = "IWANNASHARE" />
+			<action name = "open file for sending" />
+		</event>
+		<event name = "GIMMEGIMMEGIMME">
+			<action name = "pick a fetch" />
+			<action name = "prepare chunk" />
+			<action name = "send" message = "CHUNK" />
+			<action name = "postprocess chunk" />
+		</event>
+		<event name = "ROGER" />
+		<event name = "expired">
+			<action name = "send" message = "PING" />
+		</event>
+		<event name = "INVALID" next = "start">
+			<action name = "send" message = "HELLO" />
+		</event>
+		<event name = "*">
+			<action name = "send" message = "INVALID" />
+			<action name = "terminate" />
+		</event>
+	</state>
+
+	<method name = "construct">
+		Used to connect to the server.
+		<field name = "endpoint" type = "string" />
+	</method>
+</class>

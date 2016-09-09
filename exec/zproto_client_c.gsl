@@ -304,6 +304,8 @@ endif
     $(string.trim (license.):block                                         )
 .   endfor
  -->
+
+
 <class name = "$(class.name)">
     $(class.title:)
 
@@ -444,6 +446,8 @@ $(api.:)
 #ifndef $(CLASS.NAME)_H_INCLUDED
 #define $(CLASS.NAME)_H_INCLUDED
 
+#define ZPROTO_UNUSED(object) (void)object
+
 .if file.exists ("../include/czmq.h")
 #include "czmq.h"
 .else
@@ -464,7 +468,11 @@ typedef struct _$(class.name)_t $(class.name)_t;
 //  Create a new $(class.name), return the reference if successful, or NULL
 //  if construction failed due to lack of available memory.
 $(CLASS.EXPORT_MACRO)$(class.name)_t *
-    $(class.name)_new (void);
+.if count(class.provided_pipe) = 0
+$(class.name)_new (void);
+.else
+$(class.name)_new (zsock_t *);
+.endif
 
 //  Destroy the $(class.name) and free all memory used by the object.
 $(CLASS.EXPORT_MACRO)void
@@ -628,6 +636,7 @@ typedef struct {
     client_t client;            //  Application-level client context
     zsock_t *cmdpipe;           //  Get/send commands from caller API
     zsock_t *msgpipe;           //  Get/send messages from caller API
+    zsock_t *provided_pipe;     //  Do whatever the caller defines
     zsock_t *dealer;            //  Socket to talk to server
     zloop_t *loop;              //  Listen to pipe and dealer
     $(proto)_t *message;        //  Message received or sent
@@ -677,13 +686,14 @@ static void
 //  Create a new client connection
 
 static s_client_t *
-s_client_new (zsock_t *cmdpipe, zsock_t *msgpipe)
+s_client_new (zsock_t *cmdpipe, zsock_t *msgpipe, zsock_t *provided_pipe)
 {
     s_client_t *self = (s_client_t *) zmalloc (sizeof (s_client_t));
     if (self) {
         assert ((s_client_t *) &self->client == self);
         self->cmdpipe = cmdpipe;
         self->msgpipe = msgpipe;
+        self->provided_pipe = provided_pipe;
 .for class.state where item () = 1
         self->state = $(name:c)_state;
 .endfor
@@ -699,6 +709,7 @@ s_client_new (zsock_t *cmdpipe, zsock_t *msgpipe)
             //  Give application chance to initialize and set next event
             self->client.cmdpipe = self->cmdpipe;
             self->client.msgpipe = self->msgpipe;
+            self->client.provided_pipe = self->provided_pipe;
             self->client.dealer = self->dealer;
             self->client.message = self->message;
             self->client.args = &self->args;
@@ -1039,6 +1050,7 @@ s_client_handle_heartbeat (zloop_t *loop, int timer_id, void *argument)
 static int
 s_client_handle_expiry (zloop_t *loop, int timer_id, void *argument)
 {
+    ZPROTO_UNUSED(timer_id);
     s_client_t *self = (s_client_t *) argument;
     s_client_execute (self, expired_event);
     if (self->terminated)
@@ -1056,6 +1068,8 @@ s_client_handle_expiry (zloop_t *loop, int timer_id, void *argument)
 static int
 s_client_handle_wakeup (zloop_t *loop, int timer_id, void *argument)
 {
+    ZPROTO_UNUSED(loop);
+    ZPROTO_UNUSED(timer_id);
     s_client_t *self = (s_client_t *) argument;
     s_client_execute (self, self->wakeup_event);
     return 0;
@@ -1067,6 +1081,8 @@ s_client_handle_wakeup (zloop_t *loop, int timer_id, void *argument)
 static int
 s_client_handle_cmdpipe (zloop_t *loop, zsock_t *reader, void *argument)
 {
+    ZPROTO_UNUSED(loop);
+    ZPROTO_UNUSED(reader);
     s_client_t *self = (s_client_t *) argument;
     char *method = zstr_recv (self->cmdpipe);
     if (!method)
@@ -1116,6 +1132,8 @@ s_client_handle_cmdpipe (zloop_t *loop, zsock_t *reader, void *argument)
 static int
 s_client_handle_msgpipe (zloop_t *loop, zsock_t *reader, void *argument)
 {
+    ZPROTO_UNUSED(loop);
+    ZPROTO_UNUSED(reader);
     s_client_t *self = (s_client_t *) argument;
 
     //  We will process as many messages as we can, to reduce the overhead
@@ -1178,6 +1196,8 @@ s_client_handle_msgpipe (zloop_t *loop, zsock_t *reader, void *argument)
 static int
 s_client_handle_protocol (zloop_t *loop, zsock_t *reader, void *argument)
 {
+    ZPROTO_UNUSED(loop);
+    ZPROTO_UNUSED(reader);
     s_client_t *self = (s_client_t *) argument;
 
     //  We will process as many messages as we can, to reduce the overhead
@@ -1214,10 +1234,11 @@ s_client_handle_protocol (zloop_t *loop, zsock_t *reader, void *argument)
 //  incoming messages
 
 void
-$(class.name) (zsock_t *cmdpipe, void *msgpipe)
+$(class.name) (zsock_t *cmdpipe, void *piperays)
 {
     //  Initialize
-    s_client_t *self = s_client_new (cmdpipe, (zsock_t *) msgpipe);
+    zsock_t **pipes = piperays;
+    s_client_t *self = s_client_new (cmdpipe, pipes[0], pipes[1]);
     if (self) {
         zsock_signal (cmdpipe, 0);
 
@@ -1267,14 +1288,21 @@ $(args)\
 .endfor
 
 $(CLASS.EXPORT_MACRO)$(class.name)_t *
+.if count(class.provided_pipe) = 0
 $(class.name)_new (void)
 {
+    zsock_t *provided_pipe = NULL;
+.else
+$(class.name)_new (zsock_t *provided_pipe)
+{
+.endif
     $(class.name)_t *self = ($(class.name)_t *) zmalloc (sizeof ($(class.name)_t));
     if (self) {
         zsock_t *backend;
         self->msgpipe = zsys_create_pipe (&backend);
+	zsock_t *piperays[] = {backend, provided_pipe};
         if (self->msgpipe)
-            self->actor = zactor_new ($(class.name), backend);
+            self->actor = zactor_new ($(class.name), piperays);
         if (!self->actor)
             $(class.name)_destroy (&self);
     }
@@ -1622,6 +1650,7 @@ typedef struct {
     //  faster asynchronous message flows.
     zsock_t *cmdpipe;           //  Command pipe to/from caller API
     zsock_t *msgpipe;           //  Message pipe to/from caller API
+    zsock_t *provided_pipe;     //  Do whatever the caller defines
     zsock_t *dealer;            //  Socket to talk to server
     $(proto)_t *message;        //  Message to/from server
     client_args_t *args;        //  Arguments from methods
@@ -1662,7 +1691,11 @@ $(class.name)_test (bool verbose)
 
     //  @selftest
     // TODO: fill this out
+.if count(class.provided_pipe) = 0
     $(class.name)_t *client = $(class.name)_new ();
+.else
+    $(class.name)_t *client = $(class.name)_new (NULL);
+.endif
     $(class.name)_set_verbose(client, verbose);
     $(class.name)_destroy (&client);
     //  @end

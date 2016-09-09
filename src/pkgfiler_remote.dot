@@ -1,0 +1,40 @@
+## Automatically generated from pkgfiler_remote.xml by gsl
+digraph "pkgfiler_remote" {
+
+ "start" [shape = "doublecircle"];
+ "start construct" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">construct</font></td></tr><tr><td align="left" port="r3">connect to server</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "start" -> "start construct";
+ "start construct" -> "start";
+ "start roger" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "start" -> "start roger";
+ "start roger" -> "time2wrk";
+ "start connect error" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">connect error</font></td></tr><tr><td align="left" port="r3">complain about connection error</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "start" -> "start connect error";
+ "start connect error" -> "start";
+ "start iforgotu" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "start" -> "start iforgotu";
+ "start iforgotu" -> "start";
+
+ "time2wrk" [shape = "doublecircle"];
+ "time2wrk ispkghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ispkghere</font></td></tr><tr><td align="left" port="r3">check for pkg locally</td></tr></table>>];
+ "time2wrk" -> "time2wrk ispkghere";
+ "time2wrk ispkghere" -> "time2wrk";
+ "time2wrk wannashare?" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">wannashare?</font></td></tr><tr><td align="left" port="r3">confirm pkg is local and want to share</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">open file for sending</td></tr></table>>];
+ "time2wrk" -> "time2wrk wannashare?";
+ "time2wrk wannashare?" -> "time2wrk";
+ "time2wrk gimmegimmegimme" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">gimmegimmegimme</font></td></tr><tr><td align="left" port="r3">pick a fetch</td></tr><tr><td align="left" port="r3">prepare chunk</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">postprocess chunk</td></tr></table>>];
+ "time2wrk" -> "time2wrk gimmegimmegimme";
+ "time2wrk gimmegimmegimme" -> "time2wrk";
+ "time2wrk roger" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "time2wrk" -> "time2wrk roger";
+ "time2wrk roger" -> "time2wrk";
+ "time2wrk expired" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "time2wrk" -> "time2wrk expired";
+ "time2wrk expired" -> "time2wrk";
+ "time2wrk invalid" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "time2wrk" -> "time2wrk invalid";
+ "time2wrk invalid" -> "start";
+ "time2wrk *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "time2wrk" -> "time2wrk *";
+ "time2wrk *" -> "time2wrk";
+}

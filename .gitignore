@@ -1,0 +1,5 @@
+**/*.o
+**/dxpb-*
+!**/dxpb-*.c
+**/.container/
+src/gmon.out

@@ -1,0 +1,98 @@
+<class
+	name = "pkgfiler"
+	title = "Package Filer and Repository Manager"
+	script = "../exec/zproto_server_c"
+	protocol_class = "pkgfiles_msg"
+	project_header = "pkgfiler.h"
+	package_dir = "../include"
+	source_dir = "."
+	>
+
+	What this currently does (2017-05-19) is just find a package locally or
+	remotely in a non-blocking way
+
+	<state name = "start">
+		<event name = "HELLO" next = "file finding">
+			<action name = "send" message = "ROGER" />
+		</event>
+		<event name = "*">
+			<action name = "send" message = "IFORGOTU" />
+		</event>
+	</state>
+	<state name = "file finding">
+		A big state because we want this to always work and to be
+		asyncronous to all clients.
+		<event name = "ISPKGHERE">
+			Step 1 of locating a file
+			<action name = "check for pkg locally">
+				If locally found, set an exception to pkg here
+			</action>
+			<action name = "broadcast pkg locate request" />
+		</event>
+		<event name = "IWANNASHARE">
+			The remote wants to share the file. It's in our records as being there and the remote agrees.
+			<action name = "establish peer agreement" />
+			<action name = "end hunt" />
+			<action name = "ask for more" />
+		</event>
+		<event name = "CHUNK">
+			<action name = "verify this remote is the right peer" />
+			<action name = "write file chunk" />
+			<action name = "postprocess chunk" />
+			<action name = "ask for more" />
+		</event>
+		<event name = "trigger job hunt">
+			<action name = "curhunt to my own message" />
+			<action name = "set myself response pending" />
+			<action name = "send" message = "ISPKGHERE" />
+		</event>
+		<event name = "IDONTWANNASHARE">
+			It's in our records as being there and the remote disagrees.
+			<action name = "obsolete peer agreement" />
+			<action name = "tell asker pkg not here" />
+			<action name = "end hunt" />
+		</event>
+		<event name = "we couldn't find it">
+			<action name = "tell asker pkg not here" />
+			<action name = "end hunt" />
+		</event>
+		<event name = "PKGHERE">
+			<action name = "mark pkg at remote location" />
+			<action name = "act if all remotes returned or expired" />
+		</event>
+		<event name = "PKGNOTHERE">
+			<action name = "mark pkg not at remote location" />
+			<action name = "act if all remotes returned or expired" />
+		</event>
+		<event name = "I have the hunted">
+			<action name = "curhunt to my own message" />
+			<action name = "end hunt" />
+			<action name = "send" message = "WANNASHARE?" />
+		</event>
+		<event name = "pkg here">
+			<action name = "send" message= "PKGHERE" />
+		</event>
+		<event name = "pkg not here">
+			<action name = "send" message= "PKGNOTHERE" />
+			<action name = "parse memos" />
+		</event>
+		<event name = "I might want to share">
+			<action name = "send" message= "WANNASHARE?" />
+			<action name = "parse memos" />
+		</event>
+		<event name = "PKGDEL">
+			<action name = "delete package" />
+			<action name = "send" message = "ROGER" />
+		</event>
+		<event name = "PING">
+			<action name = "send" message = "ROGER" />
+		</event>
+		<event name = "INVALID" next = "start" />
+		<event name = "expired">
+			This state should only trigger if a remote e.g. has a bad nfs or sshfs mount that causes them to hang up on file system operations. That or a bad remote.
+			<action name = "mark all pkgs not at this remote location" />
+			<action name = "act if all remotes returned or expired" />
+			<action name = "terminate" />
+		</event>
+	</state>
+</class>

@@ -1,0 +1,55 @@
+<class
+	name = "pkgfiler_grapher"
+	title = "Package Grapher - File Manager Link"
+	script = "../exec/zproto_client_c"
+	protocol_class = "pkgfiles_msg"
+	project_header = "pkgfiler_grapher.h"
+	package_dir = "."
+	>
+
+	This class links the grapher with the file manager
+
+	<send>
+		<message name = "ISPKGHERE" />
+		<message name = "PKGDEL" />
+	</send>
+
+	<state name = "start">
+		<event name = "construct">
+			<action name = "connect to server" />
+			<action name = "send" message = "HELLO" />
+		</event>
+		<event name = "ROGER" next = "time2wrk" />
+		<event name = "connect error">
+			<action name = "complain about connection error" />
+			<action name = "terminate" />
+		</event>
+		<event name = "IFORGOTU">
+			<action name = "send" message = "HELLO" />
+		</event>
+	</state>
+	<state name = "time2wrk">
+		<event name = "ISPKGHERE">
+			<action name = "send" message = "PKGNOTHERE" />
+		</event>
+		<event name = "PKGHERE">
+			<action name = "tell msgpipe we have a pkg" />
+		</event>
+		<event name = "PKGNOTHERE">
+			<action name = "tell msgpipe we do not have a pkg" />
+		</event>
+		<event name = "ROGER" />
+		<event name = "expired">
+			<action name = "send" message = "PING" />
+		</event>
+		<event name = "*">
+			<action name = "send" message = "INVALID" />
+			<action name = "terminate" />
+		</event>
+	</state>
+
+	<method name = "construct">
+		Used to connect to the server.
+		<field name = "endpoint" type = "string" />
+	</method>
+</class>

@@ -1,0 +1,8 @@
+-> stable
+	get next pkgs
+	inquire about each, marking visited
+
+	-> not here
+		find match and make it happen.
+	-> here
+		get next pkgs, marking visited.

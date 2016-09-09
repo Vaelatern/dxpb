@@ -1,0 +1,84 @@
+<class
+	name = "pkggraph_grapher"
+	title = "Package Grapher - World Link"
+	script = "../exec/zproto_client_c"
+	protocol_class = "pkggraph_msg"
+	project_header = "pkggraph_grapher.h"
+	package_dir = "."
+	>
+
+	<send>
+		<message name = "UPDATE BOOTSTRAP" />
+		<message name = "WORKERCANHELP" />
+	</send>
+
+	<!-- And I will be sending down the msgpipe:
+		<message name = "ICANHELP" />
+		<message name = "PKGDONE" />
+		<message name = "FORGET_ABOUT_ME" />
+		<message name = "JOB_ENDED" />
+	But won't say it outright since zproto is unhelpful here.
+	-->
+
+	<state name = "start" inherit = "defaults">
+		<event name = "construct" next = "negotiate">
+			<action name = "connect to server" />
+			<action name = "send" message = "HELLO" />
+		</event>
+		<event name = "connect error" next = "die">
+			<action name = "complain about connection error" />
+		</event>
+	</state>
+	<state name = "negotiate" inherit = "defaults">
+		<event name = "ROGER" next = "hesitate">
+			<action name = "send" message = "IMTHEGRAPHER" />
+		</event>
+	</state>
+	<state name = "hesitate" inherit = "defaults">
+		<event name = "ROGER" next = "ready">
+			<action name = "tell msgpipe we are connected" />
+		</event>
+	</state>
+
+	<state name = "ready" inherit = "defaults">
+		<event name = "PKGDONE">
+			<action name = "send message verbatim down the msgpipe">
+				The reader at the end of the msgpipe will know what to do.
+			</action>
+		</event>
+		<event name = "ICANHELP">
+			<action name = "send message verbatim down the msgpipe" />
+		</event>
+		<event name = "FORGET ABOUT ME">
+			<action name = "send message verbatim down the msgpipe" />
+		</event>
+	</state>
+
+	<state name = "die">
+		<before>
+			<action name = "cease all operations" />
+			<action name = "terminate" />
+		</before>
+		<event name = "*">
+			We shouldn't ever get here... but the code generation
+			doesn't like empty states.
+			<action name = "send" message = "INVALID" />
+		</event>
+	</state>
+
+	<state name = "defaults">
+		<event name = "INVALID" next = "die" />
+		<event name = "*" next = "die">
+			<action name = "send" message = "INVALID" />
+		</event>
+		<event name = "KTHNKSBYE" next = "die" />
+		<event name = "expired">
+			<action name = "send" message = "PING" />
+		</event>
+	</state>
+
+	<method name = "construct">
+		Used to connect to the server.
+		<field name = "endpoint" type = "string" />
+	</method>
+</class>

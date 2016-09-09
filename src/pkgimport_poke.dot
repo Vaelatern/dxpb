@@ -1,0 +1,37 @@
+## Automatically generated from pkgimport_poke.xml by gsl
+digraph "pkgimport_poke" {
+
+ "start" [shape = "doublecircle"];
+ "start invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
+ "start" -> "start invalid";
+ "start invalid" -> "start";
+ "start *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "start" -> "start *";
+ "start *" -> "start";
+ "start expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "start" -> "start expired";
+ "start expired" -> "start";
+ "start connect now" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">connect now</font></td></tr><tr><td align="left" port="r3">connect to server</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "start" -> "start connect now";
+ "start connect now" -> "start";
+ "start roger" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "start" -> "start roger";
+ "start roger" -> "action";
+ "start connect error" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">connect error</font></td></tr><tr><td align="left" port="r3">complain about connection error</td></tr></table>>];
+ "start" -> "start connect error";
+ "start connect error" -> "start";
+
+ "action" [shape = "doublecircle"];
+ "action invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
+ "action" -> "action invalid";
+ "action invalid" -> "start";
+ "action *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "action" -> "action *";
+ "action *" -> "start";
+ "action expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "action" -> "action expired";
+ "action expired" -> "action";
+ "action roger" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "action" -> "action roger";
+ "action roger" -> "start";
+}

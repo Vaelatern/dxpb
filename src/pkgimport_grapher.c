@@ -1,0 +1,647 @@
+/*  =========================================================================
+    pkgimport_grapher - Package Grapher
+
+    =========================================================================
+*/
+
+/*
+@header
+    Description of class for man page.
+@discuss
+    Detailed discussion of the class, if any.
+@end
+*/
+
+#include <sqlite3.h>
+#include <czmq.h>
+#include "pkgimport_grapher.h"
+#include "pkgimport_msg.h"
+#include "pkggraph_msg.h"
+#include "pkgfiles_msg.h"
+#include "dxpb.h"
+#include "bwords.h"
+#include "bxpkg.h"
+#include "bpkg.h"
+#include "bgraph.h"
+#include "bdb.h"
+#include "bworker.h"
+#include "btranslate.h"
+
+//  Forward reference to method arguments structure
+typedef struct _client_args_t client_args_t;
+
+//  This structure defines the context for a client connection
+typedef struct {
+	//  These properties must always be present in the client_t
+	//  and are set by the generated engine. The cmdpipe gets
+	//  messages sent to the actor; the msgpipe may be used for
+	//  faster asynchronous message flows.
+	zsock_t *cmdpipe;           //  Command pipe to/from caller API
+	zsock_t *msgpipe;           //  Message pipe to/from caller API
+	zsock_t *provided_pipe;     //  Not in use
+	zsock_t *dealer;            //  Socket to talk to server
+	pkgimport_msg_t *message;   //  Message to/from server
+	client_args_t *args;        //  Arguments from methods
+
+	//  Specific properties for this application
+	char 			 hash[256];
+	char			*dbpath;
+	zlist_t			*nextup[ARCH_HOST];
+	bgraph			 pkggraph;
+	struct bworkgroup	*workers;
+} client_t;
+
+//  Include the generated client engine
+#include "pkgimport_grapher_engine.inc"
+
+//  Allocate properties and structures for a new client instance.
+//  Return 0 if OK, -1 if failed
+
+static int
+client_initialize (client_t *self)
+{
+	/* Every 15 seconds, expire. This has the practical effect of
+	 * causing the expire state to be called if no other traffic is 
+	 * present. This has the effect of a keepalive and prevents us from 
+	 * being marked obsolete just because we've had nothing to do.
+	 */
+	self->workers = bworker_group_new();
+	engine_set_expiry(self, 15000);
+	self->pkggraph = bgraph_new();
+	self->dbpath = NULL;
+	self->hash[0] = '\0';
+	return 0;
+}
+
+//  Free properties and structures for a client instance
+
+static void
+client_terminate (client_t *self)
+{
+	bworker_group_destroy(&(self->workers));
+	if (self->dbpath)
+		free(self->dbpath);
+	self->dbpath = NULL;
+	bgraph_destroy(&(self->pkggraph));
+}
+
+
+//  ---------------------------------------------------------------------------
+//  Selftest
+
+void
+pkgimport_grapher_test (bool verbose)
+{
+    printf (" * pkgimport_grapher: ");
+    if (verbose)
+        printf ("\n");
+
+    //  @selftest
+    // TODO: fill this out
+    pkgimport_grapher_t *client = pkgimport_grapher_new ();
+    pkgimport_grapher_set_verbose(client, verbose);
+    pkgimport_grapher_destroy (&client);
+    //  @end
+    printf ("OK\n");
+}
+
+//  ---------------------------------------------------------------------------
+//  connect_to_server
+//
+
+static void
+connect_to_server (client_t *self)
+{
+	assert(self);
+	if (zsock_connect(self->dealer, "%s", self->args->endpoint) != 0) {
+		engine_set_exception(self, connect_error_event);
+		zsys_warning("could not connect to %s", self->args->endpoint);
+		zsock_send(self->cmdpipe, "si", "FAILURE", -1, NULL);
+	} else {
+		zsys_debug("connected to %s", self->args->endpoint);
+		zsock_send(self->cmdpipe, "si", "SUCCESS", 0, NULL);
+		engine_set_connected(self, true);
+	}
+}
+
+//  ---------------------------------------------------------------------------
+//  complain_about_connection_error
+//
+
+static void
+complain_about_connection_error (client_t *self)
+{
+	assert(self);
+	zstr_sendx(self->cmdpipe, "NOCONN", NULL);
+}
+
+//  ---------------------------------------------------------------------------
+//  create_pkg_from_info
+//
+
+static void
+create_pkg_from_info (client_t *self)
+{
+	assert(self);
+	assert(self->pkggraph);
+	int rc;
+	rc = bgraph_insert_pkg(self->pkggraph, bpkg_read(self->message));
+	assert(rc == 0); // only != 0 if top level graph is very broken.
+}
+
+//  ---------------------------------------------------------------------------
+//  mark_pkg_for_deletion
+//
+
+static void
+mark_pkg_for_deletion (client_t *self)
+{
+	pkgfiles_msg_t *msg;
+	int rc;
+
+	rc = btranslate_prepare_socket(self->msgpipe, TRANSLATE_FILES);
+	if (rc != ERR_CODE_OK)
+		return; // TODO: Probably take action here.
+
+	msg = pkgfiles_msg_new();
+	pkgfiles_msg_set_id(msg, PKGFILES_MSG_PKGDEL);
+	pkgfiles_msg_set_pkgname(msg, pkgimport_msg_pkgname(self->message));
+	pkgfiles_msg_set_version(msg, NULL);
+	pkgfiles_msg_set_arch(msg, NULL);
+	rc = pkgfiles_msg_send(msg, self->msgpipe);
+	if (rc != 0)
+		return; // TODO: Perhaps take action here.
+	pkgfiles_msg_destroy(&msg);
+}
+
+//  ---------------------------------------------------------------------------
+//  cease_all_operations
+//
+
+static void
+cease_all_operations (client_t *self)
+{
+	ZPROTO_UNUSED(self);
+}
+
+//  ---------------------------------------------------------------------------
+//  add_worker_to_list
+//
+
+static void
+add_worker_to_list (client_t *self)
+{
+	enum pkg_archs targetarch, hostarch;
+
+	targetarch = bpkg_enum_lookup(self->args->targetarch);
+	if (strcmp(self->args->targetarch, self->args->hostarch) == 0)
+		hostarch = targetarch;
+	else
+		hostarch = bpkg_enum_lookup(self->args->hostarch);
+
+	if (bworker_group_insert(self->workers, self->args->addr, self->args->check,
+				targetarch, hostarch, self->args->iscross,
+				self->args->cost) == UINT16_MAX)
+		return; // Just ignoring any unproblematic failure silently.
+	else // Success adding workers
+		return; // The state machine will take care of the rest
+}
+
+//  ---------------------------------------------------------------------------
+//  match_workers_to_packages
+//  Goals: Be quick. Run this many times. Never break. Choose the most
+//  important packages first, then make sure to get everybody you can.
+
+static enum ret_codes
+pkgimport_grapher_ask_worker_to_help(client_t *self, struct bworker *wrkr, struct pkg *pkg)
+{
+	assert(pkg->arch == wrkr->arch);
+	pkggraph_msg_t *msg;
+	int rc;
+
+	rc = btranslate_prepare_socket(self->msgpipe, TRANSLATE_GRAPH);
+	if (rc != ERR_CODE_OK)
+		return rc;
+
+	msg = pkggraph_msg_new();
+	pkggraph_msg_set_id(msg, PKGGRAPH_MSG_WORKERCANHELP);
+	pkggraph_msg_set_addr(msg, wrkr->addr);
+	pkggraph_msg_set_check(msg, wrkr->check);
+	pkggraph_msg_set_pkgname(msg, pkg->name);
+	pkggraph_msg_set_version(msg, pkg->ver);
+	pkggraph_msg_set_arch(msg, pkg_archs_str[pkg->arch]);
+	rc = pkggraph_msg_send(msg, self->msgpipe);
+	if (rc != 0)
+		rc = ERR_CODE_SADSOCK;
+	pkggraph_msg_destroy(&msg);
+
+	return ERR_CODE_OK;
+}
+
+static enum ret_codes
+pkgimport_grapher_ask_around_for_pkg(client_t *self, struct pkg *pkg)
+{
+	pkgfiles_msg_t *msg;
+	int rc;
+
+	rc = btranslate_prepare_socket(self->msgpipe, TRANSLATE_FILES);
+	if (rc != ERR_CODE_OK)
+		return rc;
+
+	msg = pkgfiles_msg_new();
+	pkgfiles_msg_set_id(msg, PKGFILES_MSG_ISPKGHERE);
+	pkgfiles_msg_set_pkgname(msg, pkg->name);
+	pkgfiles_msg_set_version(msg, pkg->ver);
+	pkgfiles_msg_set_arch(msg, pkg_archs_str[pkg->arch]);
+	rc = pkgfiles_msg_send(msg, self->msgpipe);
+	if (rc != 0)
+		rc = ERR_CODE_SADSOCK;
+	pkgfiles_msg_destroy(&msg);
+
+	return ERR_CODE_OK;
+
+}
+
+static enum ret_codes
+pkgimport_grapher_ask_files_for_missing_pkgs(client_t *self)
+{
+	enum ret_codes retVal = ERR_CODE_OK;
+	struct pkg *pkg;
+	enum pkg_archs i;
+
+	for (i = ARCH_NOARCH; i < ARCH_HOST; i++) {
+		for (pkg = zlist_first(self->nextup[i]);
+				pkg; // zlist_* returns NULL at end of list
+				pkg = zlist_next(self->nextup[i])) {
+			assert(pkg->status != PKG_STATUS_IN_REPO); // can't be nextup if in_repo
+			if (pkg->status > PKG_STATUS_NONE)
+				continue;
+
+			retVal = pkgimport_grapher_ask_around_for_pkg(self, pkg);
+			if (retVal == ERR_CODE_OK)
+				pkg->status = PKG_STATUS_ASKING;
+			else
+				break;
+		}
+	}
+	return retVal;
+}
+
+//  ---------------------------------------------------------------------------
+//  write_graph_to_db
+//
+
+static void
+write_graph_to_db (client_t *self)
+{
+	assert(self->dbpath);
+	int rc = bdb_write_all(self->dbpath, self->pkggraph, self->hash);
+	if (rc != ERR_CODE_OK) {
+		perror("rc != ERR_CODE_OK for writing stuff");
+		/* TODO: XXX: MUST HAVE a provision to work around this!
+		     2017-05-02*/
+	}
+}
+
+//  ---------------------------------------------------------------------------
+//  resolve_graph
+//
+
+static void
+resolve_graph (client_t *self)
+{
+	int rc = bgraph_attempt_resolution(self->pkggraph);
+	if (rc != ERR_CODE_OK) {
+		; /* An action here may be well advised.
+		     Should not be going unstable though. We can be stable and
+		     unresolveable, just certain packages may be unworkable.
+		     Maybe a log notice to IRC about how this might need
+		     fixing.*/
+	}
+}
+
+//  ---------------------------------------------------------------------------
+//  get_packages
+//
+
+static void
+get_packages (client_t *self)
+{
+	for (enum pkg_archs i = ARCH_NOARCH; i < ARCH_HOST; i++) {
+		if (self->nextup[i] != NULL)
+			zlist_destroy(&(self->nextup[i]));
+		self->nextup[i] = bgraph_what_next_for_arch(self->pkggraph, i);
+	}
+}
+
+//  ---------------------------------------------------------------------------
+//  store_hash
+//
+
+static void
+store_hash (client_t *self)
+{
+	const char *tmp = pkgimport_msg_commithash(self->message);
+	if (tmp != NULL)
+		strncpy(self->hash, tmp, 255);
+	else
+		self->hash[0] = '\0';
+	self->hash[255] = '\0'; // Ensure a null termination.
+}
+
+//  ---------------------------------------------------------------------------
+//  read_all_from_db
+//
+
+static void
+read_all_from_db (client_t *self)
+{
+	assert(self->dbpath);
+	int rc;
+	struct bdb_bound_params *params = bdb_params_init_ro(self->dbpath);
+	if (params->DO_NOT_USE_PARAMS)
+		self->hash[0] = '\0';
+	else {
+		char *tmp = bdb_read_hash(params);
+		strncpy(self->hash, tmp != NULL ? tmp : "", 255);
+		self->hash[255] = '\0';
+
+		rc = bdb_read_pkgs_to_graph(self->pkggraph, params);
+		if (rc != ERR_CODE_OK) {
+			; /* TODO: XXX: MUST HAVE a provision to work around
+			     this!
+			     2017-03-15*/
+		}
+	}
+	bdb_params_destroy(&params);
+}
+
+//  ---------------------------------------------------------------------------
+//  decide_next_action_from_hash
+//
+
+static void
+decide_next_action_from_hash (client_t *self)
+{
+	pkgimport_msg_set_commithash(self->message, self->hash);
+	if (self->hash[0] == '\0')
+		engine_set_next_event(self, no_hash_found_event);
+	else
+		engine_set_next_event(self, confirm_hash_event);
+}
+
+//  ---------------------------------------------------------------------------
+//  remove_worker_from_list
+//
+
+static void
+remove_worker_from_list (client_t *self)
+{
+	void *bworker = bworker_from_remote_addr(self->workers, self->args->addr, self->args->check);
+	if (!bworker)
+		return; // TODO: Take an action
+	bworker_group_remove(bworker);
+}
+
+//  ---------------------------------------------------------------------------
+//  set_expiry_low
+//
+
+static void
+set_expiry_low (client_t *self)
+{
+	// 0 ms
+	engine_set_expiry(self, 0);
+}
+
+//  ---------------------------------------------------------------------------
+//  set_expiry_high
+//
+
+static void
+set_expiry_high (client_t *self)
+{
+	// 15 seconds
+	engine_set_expiry(self, 15000);
+}
+
+
+//  ---------------------------------------------------------------------------
+//  unassign_worker
+//
+
+static void
+unassign_worker (client_t *self)
+{
+	struct bworker *wrkr = bworker_from_remote_addr(self->workers,
+			self->args->addr, self->args->check);
+	if (wrkr != NULL)
+		bworker_job_remove(wrkr);
+}
+
+
+//  ---------------------------------------------------------------------------
+//  note_pkg_not_yet_around
+//
+
+static void
+note_pkg_not_yet_around (client_t *self)
+{
+	enum pkg_archs arch = bpkg_enum_lookup(self->args->arch);
+	if (arch == ARCH_NUM_MAX)
+		return; // TODO: Decide if an action is appropiate on bad input
+
+	int rc = bgraph_mark_pkg_absent(self->pkggraph, self->args->pkgname,
+			self->args->version, arch);
+
+	if (rc != ERR_CODE_OK && rc != ERR_CODE_NO)
+		return; // TODO: Decide if an action is appropiate.
+}
+
+
+//  ---------------------------------------------------------------------------
+//  note_pkg_present
+//  We can rely on the package of version and arch being around.
+
+static void
+note_pkg_present (client_t *self)
+{
+	enum pkg_archs arch = bpkg_enum_lookup(self->args->arch);
+	if (arch == ARCH_NUM_MAX)
+		return; // TODO: Decide if an action is appropiate on bad input
+
+	int rc = bgraph_mark_pkg_present(self->pkggraph, self->args->pkgname,
+			self->args->version, arch);
+
+	if (rc != ERR_CODE_OK && rc != ERR_CODE_NO)
+		return; // TODO: Decide if an action is appropiate.
+}
+
+
+//  ---------------------------------------------------------------------------
+//  mark_pkg_bad
+//  The package is not to be built again until the template is edited.
+
+static void
+mark_pkg_bad (client_t *self)
+{
+	enum pkg_archs arch = bpkg_enum_lookup(self->args->arch);
+	if (arch == ARCH_NUM_MAX)
+		return; // TODO: Decide if an action is appropiate on bad input
+
+	int rc = bgraph_mark_pkg_bad(self->pkggraph, self->args->pkgname,
+			self->args->version, arch);
+
+	if (rc != ERR_CODE_OK && rc != ERR_CODE_NO)
+		return; // TODO: Decide if an action is appropiate.
+}
+
+
+//  ---------------------------------------------------------------------------
+//  return_pkg_to_pending
+//
+
+static void
+return_pkg_to_pending (client_t *self)
+{
+	enum pkg_archs arch = bpkg_enum_lookup(self->args->arch);
+	if (arch == ARCH_NUM_MAX)
+		return; // TODO: Decide if an action is appropiate on bad input
+
+	int rc = bgraph_mark_pkg_not_in_progress(self->pkggraph,
+			self->args->pkgname, self->args->version, arch);
+
+	if (rc != ERR_CODE_OK && rc != ERR_CODE_NO)
+		return; // TODO: Decide if an action is appropiate.
+}
+
+//  ---------------------------------------------------------------------------
+//  negative_pkg_affinity_for_wrkr
+//
+
+static void
+negative_pkg_affinity_for_wrkr (client_t *self)
+{
+	// TODO: Consider implementing. Perhaps should be fixed to be part of
+	// bworker_group_matches_choose(matches), maybe adding a pkg parameter.
+	// The trick is making it performant, and I don't think it's necessary
+	// for 0.0.1
+	// Vaelatern, 2017-07-10
+	(void) self;
+}
+
+
+//  ---------------------------------------------------------------------------
+//  ask_around_for_wanted_pkgs
+//
+
+static void
+ask_around_for_wanted_pkgs (client_t *self)
+{
+	int rc = pkgimport_grapher_ask_files_for_missing_pkgs(self);
+	if (rc != ERR_CODE_OK)
+		return; // TODO: Decide if action here is appropiate
+}
+
+
+//  ---------------------------------------------------------------------------
+//  match_workers_to_this_pkg
+//
+
+static void
+match_workers_to_this_pkg (client_t *self)
+{
+	struct bworkermatch *matches;
+	struct bworker *wrkr;
+	struct pkg *pkg = bgraph_get_pkg(self->pkggraph, self->args->pkgname,
+				self->args->version, bpkg_enum_lookup(self->args->arch));
+	if (pkg == NULL)
+		return; // TODO: We don't need a reaction here, perhaps. To be determined...
+
+	assert(pkg->status == PKG_STATUS_TOBUILD);
+
+	if ((matches = bworker_grp_pkg_matches(self->workers, pkg)) == NULL)
+		return;
+	if ((wrkr = bworker_group_matches_choose(matches)) == NULL)
+		exit(ERR_CODE_BADDOBBY);
+	bworker_match_destroy(&matches);
+
+	if (pkgimport_grapher_ask_worker_to_help(self, wrkr, pkg) == ERR_CODE_OK)
+		pkg->status = PKG_STATUS_BUILDING;
+	else
+		return; // TODO: Is a reaction appropiate?
+}
+
+
+//  ---------------------------------------------------------------------------
+//  get_package_for_arch
+//
+
+static void
+get_package_list_for_arch (client_t *self)
+{
+	enum pkg_archs i = bpkg_enum_lookup(self->args->arch);
+	if (self->nextup[i] != NULL)
+		zlist_destroy(&(self->nextup[i]));
+	self->nextup[i] = bgraph_what_next_for_arch(self->pkggraph, i);
+}
+
+
+//  ---------------------------------------------------------------------------
+//  find_package_for_worker
+//
+
+static void
+find_package_for_worker (client_t *self)
+{
+	struct bworker *wrkr = bworker_from_remote_addr(self->workers,
+			self->args->addr, self->args->check);
+	assert(wrkr->job.name == NULL);
+	enum pkg_archs arch = wrkr->arch;
+	struct pkg *pkg;
+	for (pkg = zlist_first(self->nextup[arch]);
+			pkg; // zlist_* returns NULL at end of list
+			pkg = zlist_next(self->nextup[arch])) {
+		if (pkg->status == PKG_STATUS_TOBUILD && bworker_pkg_match(wrkr, pkg)) {
+			if (pkgimport_grapher_ask_worker_to_help(self, wrkr, pkg) != ERR_CODE_OK)
+				return; // Possible an action should be taken
+			else
+				break; // We found a package for this worker, now we let it work.
+		}
+	}
+}
+
+
+//  ---------------------------------------------------------------------------
+//  ask_around_for_this_pkg
+//
+
+static void
+ask_around_for_this_pkg (client_t *self)
+{
+	struct pkg *pkg = bgraph_get_pkg(self->pkggraph, self->args->pkgname,
+				self->args->version, bpkg_enum_lookup(self->args->arch));
+
+	if (pkg == NULL)
+		return; // TODO: We don't need a reaction here, perhaps. To be determined...
+
+	if (pkg->status != PKG_STATUS_BUILDING)
+		return; // TODO: Maybe a strong reaction
+
+	if (pkgimport_grapher_ask_around_for_pkg(self, pkg) == ERR_CODE_OK)
+		pkg->status = PKG_STATUS_ASKING; // Also this way we are always sure we get the package in the end.
+	else
+		return; // TODO: Is a reaction appropiate?
+}
+
+
+//  ---------------------------------------------------------------------------
+//  set_db_path_as_supplied
+//
+
+static void
+set_db_path_as_supplied (client_t *self)
+{
+	self->dbpath = strdup(self->args->dbpath);
+	assert(self->dbpath);
+}

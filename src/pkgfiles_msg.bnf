@@ -1,0 +1,114 @@
+The following ABNF grammar defines the DXPB File Location and Management Protocol:
+
+    pkgfiles_msg    = *( HELLO | ROGER | IFORGOTU | PING | INVALID | PKGDEL | WANNASHARE- | IWANNASHARE | IDONTWANNASHARE | GIMMEGIMMEGIMME | CHUNK | PKGNOTHERE | PKGHERE | ISPKGHERE )
+
+    ;  No description                                                        
+
+    HELLO           = signature %d1 proto_version
+    signature       = %xAA %xA0             ; two octets
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+
+    ;  No description                                                        
+
+    ROGER           = signature %d2 proto_version
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+
+    ;  No description                                                        
+
+    IFORGOTU        = signature %d3 proto_version
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+
+    ;  No description                                                        
+
+    PING            = signature %d4 proto_version
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+
+    ;  No description                                                        
+
+    INVALID         = signature %d5 proto_version
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+
+    ;  No description                                                        
+
+    PKGDEL          = signature %d6 proto_version pkgname version arch
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+    pkgname         = string                ; 
+    version         = string                ; 
+    arch            = string                ; 
+
+    ;  No description                                                        
+
+    WANNASHARE-     = signature %d7 proto_version pkgname version arch
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+    pkgname         = string                ; 
+    version         = string                ; 
+    arch            = string                ; 
+
+    ;  No description                                                        
+
+    IWANNASHARE     = signature %d8 proto_version pkgname version arch
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+    pkgname         = string                ; 
+    version         = string                ; 
+    arch            = string                ; 
+
+    ;  No description                                                        
+
+    IDONTWANNASHARE = signature %d9 proto_version pkgname version arch
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+    pkgname         = string                ; 
+    version         = string                ; 
+    arch            = string                ; 
+
+    ;  No description                                                        
+
+    GIMMEGIMMEGIMME = signature %d10 proto_version
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+
+    ;  No description                                                        
+
+    CHUNK           = signature %d11 proto_version validchunk pkgname version arch subpath position eof data
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+    validchunk      = number-1              ; 
+    pkgname         = string                ; 
+    version         = string                ; 
+    arch            = string                ; 
+    subpath         = string                ; Subdir of hostdir where the pkg can be found
+    position        = number-8              ; 
+    eof             = number-1              ; 
+    data            = chunk                 ; 
+
+    ;  No description                                                        
+
+    PKGNOTHERE      = signature %d12 proto_version pkgname version arch
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+    pkgname         = string                ; 
+    version         = string                ; 
+    arch            = string                ; 
+
+    ;  No description                                                        
+
+    PKGHERE         = signature %d13 proto_version pkgname version arch
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+    pkgname         = string                ; 
+    version         = string                ; 
+    arch            = string                ; 
+
+    ;  No description                                                        
+
+    ISPKGHERE       = signature %d14 proto_version pkgname version arch
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+    pkgname         = string                ; 
+    version         = string                ; 
+    arch            = string                ; 
+
+    ; A chunk has 4-octet length + binary contents
+    chunk           = number-4 *OCTET
+
+    ; Strings are always length + text contents
+    string          = number-1 *VCHAR
+
+    ; Numbers are unsigned integers in network byte order
+    number-1        = 1OCTET
+    number-4        = 4OCTET
+    number-8        = 8OCTET
