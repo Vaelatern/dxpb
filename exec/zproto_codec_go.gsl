@@ -1,0 +1,924 @@
+.template 0
+#
+#   Generates a codec for a protocol specification
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+include "zproto_lib.gsl"
+include "zproto_lib_go.gsl"
+include "zproto_bnf.gsl"
+resolve_includes ()
+expand_headers ()
+generate_bnf ()
+set_defaults ()
+.endtemplate
+
+.directory.create(go_package_path())
+.output "$(go_package_path())/$(go_package_name()).go"
+// Package $(go_package_name()) is 100% generated. If you edit this file,
+// you will lose your changes at the next build cycle.
+// DO NOT MAKE ANY CHANGES YOU WISH TO KEEP.
+//
+// The correct places for commits are:
+//  - The XML model used for this code generation: $(filename)
+//  - The code generation script that built this file: $(script)
+package $(go_package_name())
+
+import (
+	"bytes"
+	"encoding/binary"
+	"errors"
+	"fmt"
+
+.if class.package = "github.com/pebbe/zmq4"
+	zmq "github.com/pebbe/zmq4"
+.elsif class.package = "github.com/zeromq/goczmq"
+	"github.com/zeromq/goczmq"
+.endif
+)
+
+.const_maxlen = 16 # 16 is number of characters of Signature and its type
+.for define
+.    if const_maxlen < string.length($(define.Name:c))
+.        const_maxlen = string.length($(define.Name:c))
+.    endif
+.endfor
+const (
+	// Signature is put into every protocol message and lets us filter bogus
+	// or unknown protocols. It is a 4-bit number from 0 to 15. Use a unique value
+	// for each protocol you write, at least.
+	Signature uint16 = 0xAAA0 | $(class.signature)
+.for define
+	$(define.Name:c%-$(const_maxlen)s) = $(value)
+.endfor
+)
+
+.id_maxlen = 0
+.for message
+.    message.origname = message.name
+.    message.name = go_name(message.name)
+.    if id_maxlen < string.length(message.name)+2
+.        id_maxlen = string.length(message.name)+2
+.    endif
+.endfor
+// Definition of message IDs
+const (
+.for message
+	$("$(name:no)ID"%-$(id_maxlen)s) uint8 = $(id)
+.endfor
+)
+
+// Transit is a codec interface
+type Transit interface {
+	Marshal() ([]byte, error)
+	Unmarshal(...[]byte) error
+	String() string
+.if class.package = "github.com/pebbe/zmq4"
+	Send(*zmq.Socket) error
+.elsif class.package = "github.com/zeromq/goczmq"
+	Send(*goczmq.Sock) error
+.endif
+	SetRoutingID([]byte)
+	RoutingID() []byte
+.for field where defined(in_header)
+	Set$(fname:no)($(gotype))
+	$(fname:no)() $(gotype)
+.endfor
+}
+
+// Unmarshal unmarshals data from raw frames.
+func Unmarshal(frames ...[]byte) (t Transit, err error) {
+	if frames == nil {
+		return nil, errors.New("can't unmarshal an empty message")
+	}
+	var buffer *bytes.Buffer
+
+	// Check the signature
+	var signature uint16
+	buffer = bytes.NewBuffer(frames[0])
+	binary.Read(buffer, binary.BigEndian, &signature)
+	if signature != Signature {
+		// Invalid signature
+		return nil, fmt.Errorf("invalid signature %X != %X", Signature, signature)
+	}
+
+	// Get message id and parse per message type
+	var id uint8
+	binary.Read(buffer, binary.BigEndian, &id)
+
+	switch id {
+.for message
+	case $(name:no)ID:
+		t = New$(name:no)()
+.endfor
+	}
+	err = t.Unmarshal(frames...)
+
+	return t, err
+}
+
+.if class.package = "github.com/pebbe/zmq4"
+// Recv receives marshaled data from a 0mq socket.
+func Recv(socket *zmq.Socket) (t Transit, err error) {
+	return recv(socket, 0)
+}
+
+// RecvNoWait receives marshaled data from 0mq socket. It won't wait for input.
+func RecvNoWait(socket *zmq.Socket) (t Transit, err error) {
+	return recv(socket, zmq.DONTWAIT)
+}
+
+.elsif class.package = "github.com/zeromq/goczmq"
+// Recv receives marshaled data from a 0mq socket.
+func Recv(sock *goczmq.Sock) (t Transit, err error) {
+	return recv(sock, 0)
+}
+
+// RecvNoWait receives marshaled data from 0mq socket. It won't wait for input.
+func RecvNoWait(sock *goczmq.Sock) (t Transit, err error) {
+	return recv(sock, goczmq.FlagDontWait)
+}
+
+.endif
+// recv receives marshaled data from 0mq socket.
+.if class.package = "github.com/pebbe/zmq4"
+func recv(socket *zmq.Socket, flag zmq.Flag) (t Transit, err error) {
+	// Read all frames
+	frames, err := socket.RecvMessageBytes(flag)
+.elsif class.package = "github.com/zeromq/goczmq"
+func recv(sock *goczmq.Sock, flag int) (t Transit, err error) {
+	var frames [][]byte
+
+	if flag == goczmq.FlagDontWait {
+		frames, err = sock.RecvMessageNoWait()
+	} else {
+		frames, err = sock.RecvMessage()
+	}
+
+.endif
+	if err != nil {
+		return nil, err
+	}
+
+.if class.package = "github.com/pebbe/zmq4"
+	sType, err := socket.GetType()
+.elsif class.package = "github.com/zeromq/goczmq"
+	sType := sock.GetType()
+.endif
+	if err != nil {
+		return nil, err
+	}
+
+	var routingID []byte
+	// If message came from a router socket, first frame is routingID
+.if class.package = "github.com/pebbe/zmq4"
+	if sType == zmq.ROUTER {
+.elsif class.package = "github.com/zeromq/goczmq"
+	if sType == goczmq.Router {
+.endif
+		if len(frames) <= 1 {
+			return nil, errors.New("no routingID")
+		}
+		routingID = frames[0]
+		frames = frames[1:]
+	}
+
+	t, err = Unmarshal(frames...)
+	if err != nil {
+		return nil, err
+	}
+
+.if class.package = "github.com/pebbe/zmq4"
+	if sType == zmq.ROUTER {
+.elsif class.package = "github.com/zeromq/goczmq"
+	if sType == goczmq.Router {
+.endif
+		t.SetRoutingID(routingID)
+	}
+	return t, err
+}
+
+// Clone clones a message.
+func Clone(t Transit) Transit {
+
+	switch msg := t.(type) {
+.for message
+	case *$(name:no):
+		cloned := New$(name:no)()
+		routingID := make([]byte, len(msg.RoutingID()))
+		copy(routingID, msg.RoutingID())
+		cloned.SetRoutingID(routingID)
+.    for field
+.       if type = "hash"
+		for key, val := range msg.$(name:no) {
+			cloned.$(name:no)[key] = val
+		}
+.       elsif type = "strings"
+		for idx, str := range msg.$(name:no) {
+			cloned.$(name:no)[idx] = str
+		}
+.       elsif type = "octets"
+		copy(cloned.$(name:no), msg.$(name:no))
+.       elsif type = "chunk" | type = "uuid" | type = "frame" | type = "msg"
+		cloned.$(name:no) = append(cloned.$(name:no), msg.$(name:no)...)
+.       else
+		cloned.$(name:no) = msg.$(name:no)
+.       endif
+.    endfor
+		return cloned
+.    if last ()
+.    else
+
+.endif
+.endfor
+	}
+
+	return nil
+}
+
+// putString marshals a string into the buffer.
+func putString(buffer *bytes.Buffer, str string) {
+	size := len(str)
+	binary.Write(buffer, binary.BigEndian, byte(size))
+	binary.Write(buffer, binary.BigEndian, []byte(str[0:size]))
+}
+
+// getString unmarshals a string from the buffer.
+func getString(buffer *bytes.Buffer) string {
+	var size byte
+	binary.Read(buffer, binary.BigEndian, &size)
+	str := make([]byte, size)
+	binary.Read(buffer, binary.BigEndian, &str)
+	return string(str)
+}
+
+// putLongString marshals a string into the buffer.
+func putLongString(buffer *bytes.Buffer, str string) {
+	size := len(str)
+	binary.Write(buffer, binary.BigEndian, uint32(size))
+	binary.Write(buffer, binary.BigEndian, []byte(str[0:size]))
+}
+
+// getLongString unmarshals a string from the buffer.
+func getLongString(buffer *bytes.Buffer) string {
+	var size uint32
+	binary.Read(buffer, binary.BigEndian, &size)
+	str := make([]byte, size)
+	binary.Read(buffer, binary.BigEndian, &str)
+	return string(str)
+}
+
+// putBytes marshals []byte into the buffer.
+func putBytes(buffer *bytes.Buffer, data []byte) {
+	size := uint32(len(data))
+	binary.Write(buffer, binary.BigEndian, size)
+	binary.Write(buffer, binary.BigEndian, data)
+}
+
+// getBytes unmarshals []byte from the buffer.
+func getBytes(buffer *bytes.Buffer) []byte {
+	var size uint32
+	binary.Read(buffer, binary.BigEndian, &size)
+	data := make([]byte, size)
+	binary.Read(buffer, binary.BigEndian, &data)
+	return data
+}
+.#
+.# Each message is in a separate file
+.#
+.directory.create(go_package_path())
+.for message
+.output "$(go_package_path())/$(origname).go"
+package $(go_package_name())
+
+import (
+	"bytes"
+	"encoding/binary"
+	"errors"
+	"fmt"
+.if defined(message.strconv)
+	"strconv"
+.endif
+
+.if class.package = "github.com/pebbe/zmq4"
+	zmq "github.com/pebbe/zmq4"
+.elsif class.package = "github.com/zeromq/goczmq"
+	"github.com/zeromq/goczmq"
+.endif
+)
+
+// $(name:no) struct
+// $(string.trim (.?''):block,left)
+type $(name:no) struct {
+	$("routingID"%-$(field_maxlen + 1)s)[]byte
+.for field
+.   if defined(in_header)
+	$(name%-$(field_maxlen + 1)s)$(gotype)
+.   else
+	$(name:no%-$(field_maxlen + 1)s)$(gotype)
+.   endif
+.endfor
+}
+.self = string.substr(name,0,0)
+
+// New$(name:no) creates new $(name:no) message.
+func New$(name:no)() *$(name:no) {
+	$(name) := &$(name:no){}
+.struct = "$(name)"
+.for field where type = "hash"
+	$(struct).$(name:no) = make(map[string]string)
+.endfor
+	return $(name)
+}
+
+// String returns print friendly name.
+func ($(self) *$(name:no)) String() string {
+	str := "$(CLASS.NAME)_$(NAME):\\n"
+.for field
+	str += fmt.Sprintf("    $(name:no) = %v\\n", $(self).$(name:no))
+.endfor
+	return str
+}
+
+// Marshal serializes the message.
+func ($(self) *$(name:no)) Marshal() ([]byte, error) {
+	// Calculate size of serialized data
+	bufferSize := 2 + 1 // Signature and message ID
+.for field
+.    if type = "number"
+
+	// $(name:no) is a $(size)-byte integer
+.        if size = 1
+	bufferSize++
+.        else
+	bufferSize += $(size)
+.        endif
+.    elsif type = "octets"
+
+	// $(name:no) is a block of [$(size)]byte
+.        if size = 1
+	bufferSize++
+.        else
+	bufferSize += $(size)
+.        endif
+.    elsif type = "uuid"
+	// ZUUID_LEN == 16
+	bufferSize += 16
+.    elsif type = "chunk"
+
+	// $(name:no) is a block of []byte with one byte length
+	bufferSize += 1 + len($(self).$(name:no))
+.    elsif type = "frame" | type = "msg"
+.    elsif type = "string"
+
+	// $(name:no) is a string with 1-byte length
+.        if defined (field.value)
+	bufferSize += 1 + len("$(field.value:)")
+.        else
+	bufferSize++ // Size is one byte
+	bufferSize += len($(self).$(name:no))
+.        endif
+.    elsif type = "longstr"
+
+	// $(name:no) is a string with 4-byte length
+.        if defined (field.value)
+	bufferSize += 4 + len("$(field.value:)")
+.        else
+	bufferSize += 4 // Size is 4 bytes
+	bufferSize += len($(self).$(name:no))
+.        endif
+.    elsif type = "strings"
+
+	// $(name:no) is an array of strings
+	bufferSize += 4 // Size is 4 bytes
+	// Add up size of string contents
+	for _, val := range $(self).$(name:no) {
+		bufferSize += 4 + len(val)
+	}
+.    elsif type = "hash"
+
+	// $(name:no) is a hash table
+	bufferSize += 4 // Size is 4 bytes
+	for key, val := range $(self).$(name:no) {
+		bufferSize += 1 + len(key)
+		bufferSize += 4 + len(val)
+	}
+.    endif
+.endfor
+
+	// Now serialize the message
+	tmpBuf := make([]byte, bufferSize)
+	tmpBuf = tmpBuf[:0]
+	buffer := bytes.NewBuffer(tmpBuf)
+	binary.Write(buffer, binary.BigEndian, Signature)
+	binary.Write(buffer, binary.BigEndian, $(name:no)ID)
+.for field
+.    if type = "number"
+
+	// $(name:no)
+.        if defined (field.value)
+	value, _ := strconv.ParseUint("$(field.value:)", 10, $(size)*8)
+	binary.Write(buffer, binary.BigEndian, $(gotype)(value))
+.        else
+	binary.Write(buffer, binary.BigEndian, $(self).$(name:no))
+.        endif
+.    elsif type = "octets"
+
+	// $(name:no)
+	binary.Write(buffer, binary.BigEndian, $(self).$(name:no)[:$(size)])
+.    elsif type = "uuid"
+
+	// ZUUID_LEN == 16
+	binary.Write(buffer, binary.BigEndian, $(self).$(name:no)[:16])
+.    elsif type = "chunk"
+
+	putBytes(buffer, $(self).$(name:no))
+.    elsif type = "frame" | type = "msg"
+.    elsif type = "string"
+
+	// $(name:no)
+.        if defined (field.value)
+	putString(buffer, "$(field.value:)")
+.        else
+	putString(buffer, $(self).$(name:no))
+.        endif
+.    elsif type = "longstr"
+
+	// $(name:no)
+.        if defined (field.value)
+	putLongString(buffer, "$(field.value:)")
+.        else
+	putLongString(buffer, $(self).$(name:no))
+.        endif
+.    elsif type = "strings"
+
+	// $(name:no)
+	binary.Write(buffer, binary.BigEndian, uint32(len($(self).$(name:no))))
+	for _, val := range $(self).$(name:no) {
+		putLongString(buffer, val)
+	}
+.    elsif type = "hash"
+
+	// $(name:no)
+	binary.Write(buffer, binary.BigEndian, uint32(len($(self).$(name:no))))
+	for key, val := range $(self).$(name:no) {
+		putString(buffer, key)
+		putLongString(buffer, val)
+	}
+.    endif
+.endfor
+
+	return buffer.Bytes(), nil
+}
+
+// Unmarshal unmarshals the message.
+func ($(self) *$(name:no)) Unmarshal(frames ...[]byte) error {
+	if frames == nil {
+		return errors.New("Can't unmarshal empty message")
+	}
+
+	frame := frames[0]
+	frames = frames[1:]
+
+	buffer := bytes.NewBuffer(frame)
+
+	// Get and check protocol signature
+	var signature uint16
+	binary.Read(buffer, binary.BigEndian, &signature)
+	if signature != Signature {
+		return fmt.Errorf("invalid signature %X != %X", Signature, signature)
+	}
+
+	// Get message id and parse per message type
+	var id uint8
+	binary.Read(buffer, binary.BigEndian, &id)
+	if id != $(name:no)ID {
+		return errors.New("malformed $(name:no) message")
+	}
+.frames = 0
+.for field
+	// $(name:no)
+.    if type = "number"
+	binary.Read(buffer, binary.BigEndian, &$(self).$(name:no))
+.        if defined (field.value)
+	if $(self).$(name:no) != $(field.value:) {
+		return errors.New("malformed $(name:no) message")
+	}
+.        endif
+.    elsif type = "octets"
+
+	$(self).$(name:no) = make($(gotype), $(size))
+	binary.Read(buffer, binary.BigEndian, &$(self).$(name:no))
+.    elsif type = "uuid"
+	// ZUUID_LEN == 16
+	$(self).$(name:no) = make([]byte, 16)
+	binary.Read(buffer, binary.BigEndian, &$(self).$(name:no))
+.    elsif type = "chunk"
+
+	$(self).$(name:no) = getBytes(buffer)
+.    elsif type = "frame" | type = "msg"
+	if $(frames) <= len(frames)-1 {
+		$(self).$(name:no) = frames[$(frames)]
+	}
+.    frames = frames + 1
+.    elsif type = "string"
+	$(self).$(name:no) = getString(buffer)
+.        if defined (field.value)
+	if $(self).$(name:no) != "$(field.value:)" {
+		return errors.New("malformed $(name:no) message")
+	}
+.        endif
+.    elsif type = "longstr"
+	$(self).$(name:no) = getLongString(buffer)
+.        if defined (field.value)
+	if $(self).$(name:no) != "$(field.value:)" {
+		return errors.New("malformed $(name:no) message")
+	}
+.        endif
+.    elsif type = "strings"
+.        _size = "$(name)Size"
+	var $(_size:no) uint32
+	binary.Read(buffer, binary.BigEndian, &$(_size:no))
+	for ; $(_size:no) != 0; $(_size:no)-- {
+		$(self).$(name:no) = append($(self).$(name:no), getLongString(buffer))
+	}
+.    elsif type = "hash"
+.        _size = "$(name)Size"
+	var $(_size:no) uint32
+	binary.Read(buffer, binary.BigEndian, &$(_size:no))
+	for ; $(_size:no) != 0; $(_size:no)-- {
+		key := getString(buffer)
+		val := getLongString(buffer)
+		$(self).$(name:no)[key] = val
+	}
+.    endif
+.endfor
+
+	return nil
+}
+
+// Send sends marshaled data through 0mq socket.
+.if class.package = "github.com/pebbe/zmq4"
+func ($(self) *$(name:no)) Send(socket *zmq.Socket) (err error) {
+.elsif class.package = "github.com/zeromq/goczmq"
+func ($(self) *$(name:no)) Send(sock *goczmq.Sock) (err error) {
+.endif
+	frame, err := $(self).Marshal()
+	if err != nil {
+		return err
+	}
+
+.if class.package = "github.com/pebbe/zmq4"
+	socType, err := socket.GetType()
+.elsif class.package = "github.com/zeromq/goczmq"
+	socType := sock.GetType()
+.endif
+	if err != nil {
+		return err
+	}
+
+	// If we're sending to a ROUTER, we send the routingID first
+.if class.package = "github.com/pebbe/zmq4"
+	if socType == zmq.ROUTER {
+		_, err = socket.SendBytes($(self).routingID, zmq.SNDMORE)
+		if err != nil {
+			return err
+		}
+	}
+.elsif class.package = "github.com/zeromq/goczmq"
+	if socType == goczmq.Router {
+		err = sock.SendFrame($(self).routingID, goczmq.FlagMore)
+		if err != nil {
+			return err
+		}
+	}
+.endif
+
+	// Now send the data frame
+.if !count (field, type = "frame") & !count (field, type = "msg")
+.if class.package = "github.com/pebbe/zmq4"
+	_, err = socket.SendBytes(frame, 0)
+.elsif class.package = "github.com/zeromq/goczmq"
+	err = sock.SendFrame(frame, 0)
+.endif
+.else
+.if class.package = "github.com/pebbe/zmq4"
+	_, err = socket.SendBytes(frame, zmq.SNDMORE)
+.elsif class.package = "github.com/zeromq/goczmq"
+	err = sock.SendFrame(frame, goczmq.FlagMore)
+.endif
+.endif
+	if err != nil {
+		return err
+	}
+.if count (field, type = "frame") | count (field, type = "msg")
+	// Now send any frame fields, in order
+.endif
+.for field where type = "frame" | type = "msg"
+.    if last ()
+.if class.package = "github.com/pebbe/zmq4"
+	_, err = socket.SendBytes($(self).$(name:no), 0)
+.elsif class.package = "github.com/zeromq/goczmq"
+	err = sock.SendFrame($(self).$(name:no), 0)
+.endif
+.    else
+.if class.package = "github.com/pebbe/zmq4"
+	_, err = socket.SendBytes($(self).$(name:no), zmq.SNDMORE)
+.elsif class.package = "github.com/zeromq/goczmq"
+	err = sock.SendFrame($(self).$(name:no), goczmq.FlagMore)
+.endif
+.    endif
+.endfor
+
+	return err
+}
+
+// RoutingID returns the routingID for this message, routingID should be set
+// whenever talking to a ROUTER.
+func ($(self) *$(name:no)) RoutingID() []byte {
+	return $(self).routingID
+}
+
+// SetRoutingID sets the routingID for this message, routingID should be set
+// whenever talking to a ROUTER.
+func ($(self) *$(name:no)) SetRoutingID(routingID []byte) {
+	$(self).routingID = routingID
+}
+.struct = "$(name:no)"
+.for field where defined(in_header)
+
+// Set$(fname:no) sets the $(name).
+func ($(self) *$(struct:no)) Set$(fname:no)($(name) $(gotype)) {
+	$(self).$(name) = $(name)
+}
+
+// $(fname:no) returns the $(name).
+func ($(self) *$(struct:no)) $(fname:no)() $(gotype) {
+	return $(self).$(name)
+}
+.endfor
+.directory.create(go_package_path())
+.output "$(go_package_path())/$(origname)_test.go"
+package $(go_package_name())
+
+import (
+.if defined (digest)
+	"crypto/sha1"
+.endif
+.if defined(message.hex)
+	"encoding/hex"
+.endif
+.if defined (digest)
+	"fmt"
+.endif
+	"testing"
+
+.if class.package = "github.com/pebbe/zmq4"
+	zmq "github.com/pebbe/zmq4"
+.elsif class.package = "github.com/zeromq/goczmq"
+	"github.com/zeromq/goczmq"
+.endif
+)
+
+// Yay! Test function.
+func Test$(name:no)(t *testing.T) {
+
+.if defined (digest)
+	var (
+		sndMsg    []byte
+		rcvMsg    []byte
+		rcvDigest string
+		sndDigest string
+	)
+
+.endif
+	// Create pair of sockets we can send through
+
+	// Output socket
+.if class.package = "github.com/pebbe/zmq4"
+	output, err := zmq.NewSocket(zmq.DEALER)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer output.Close()
+.elsif class.package = "github.com/zeromq/goczmq"
+	output := goczmq.NewSock(goczmq.Dealer)
+	defer output.Destroy()
+.endif
+
+	routingID := "Shout"
+	output.SetIdentity(routingID)
+.if class.package = "github.com/pebbe/zmq4"
+	err = output.Bind("inproc://selftest-$(name)")
+.elsif class.package = "github.com/zeromq/goczmq"
+	_, err := output.Bind("inproc://selftest-$(name)")
+.endif
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer output.Unbind("inproc://selftest-$(name)")
+
+	// Input socket
+.if class.package = "github.com/pebbe/zmq4"
+	input, err := zmq.NewSocket(zmq.ROUTER)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer input.Close()
+.elsif class.package = "github.com/zeromq/goczmq"
+	input := goczmq.NewSock(goczmq.Router)
+	defer input.Destroy()
+.endif
+
+	err = input.Connect("inproc://selftest-$(name)")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer input.Disconnect("inproc://selftest-$(name)")
+
+	// Create a $(Name) message and send it through the wire
+	$(name) := New$(name:no)()
+.   struct = "$(name)"
+.   for field where !defined (value)
+.       if type = "number"
+	$(struct).$(name:no) = $(->test.?123:)
+.       elsif type = "octets"
+.           if defined (->test)
+	$(struct).$(name:no) = []byte("$(->test.)")
+.           else
+.           data = "'z', " * size
+.           data_len = string.length(data)
+.           data = string.substr(data, 0, data_len-3)
+	$(struct).$(name:no) = []byte{$(data)}
+.           endif
+.       elsif type = "string" | type = "longstr"
+	$(struct).$(name:no) = "$(->test.?"Life is short but Now lasts for ever":)"
+.       elsif type = "strings"
+.           if defined (->test)
+	$(struct).$(name:no) = []string{
+.               for test
+		"$(test.)",
+.               endfor
+	}
+.           else
+	$(struct).$(name:no) = []string{"Name: Brutus", "Age: 43"}
+.           endif
+.       elsif type = "hash"
+.           hash = ""
+.           if defined (->test)
+.               for test
+.                   hash += '"$(test.name:no)": "$(test.:no)"'
+.                   if !last ()
+.                       hash += ","
+.                   endif
+.               endfor
+.           else
+.               hash = '"Name": "Brutus", "Age": "43"'
+.           endif
+	$(struct).$(name:no) = map[string]string{$(hash:no)}
+.       elsif type = "uuid"
+	$(struct).$(name:no), _ = hex.DecodeString("$(->test.?"Captcha Diem":)")
+.       elsif type = "chunk"
+	$(struct).$(name:no) = []byte("$(->test.?"Captcha Diem":)")
+.       elsif type = "frame" | type = "msg"
+	$(struct).$(name:no) = []byte("$(->test.?"Captcha Diem":)")
+.       endif
+.   endfor
+
+	err = $(name).Send(output)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+.if defined (digest)
+	sndMsg, err = $(struct).Marshal()
+	if err != nil {
+		t.Fatal(err)
+	}
+	sndDigest = fmt.Sprintf("%x", sha1.Sum(sndMsg))
+	if "$(digest)" != sndDigest {
+		fmt.Printf("sndMsg: %x\\n", sndMsg)
+		t.Fatalf("expected %q digest for $(struct), got %s", "$(digest)", sndDigest)
+	}
+
+.endif
+	transit, err := Recv(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tr := transit.(*$(name:no))
+
+.if defined (digest)
+	rcvMsg, err = tr.Marshal()
+	if err != nil {
+		t.Fatal(err)
+	}
+	rcvDigest = fmt.Sprintf("%x", sha1.Sum(rcvMsg))
+	if sndDigest != rcvDigest {
+		fmt.Printf("sndMsg: %x\\n", sndMsg)
+		fmt.Printf("rcvMsg: %x\\n", rcvMsg)
+		t.Fatalf("inconsistent digest after sending and after receiving msg: %q != %q", sndDigest, rcvDigest)
+	}
+	if "$(digest)" != rcvDigest {
+		t.Fatalf("expected %q digest for $(struct), got %s", "$(digest)", rcvDigest)
+	}
+
+.endif
+.   for field where !defined (value)
+	// Tests $(type)
+.       if type = "number"
+	if tr.$(name:no) != $(->test.?123:) {
+		t.Fatalf("expected %d, got %d", $(->test.?123:), tr.$(name:no))
+	}
+.       elsif type = "octets"
+.           if defined (->test)
+.           data = '[]byte("$(->test.)")'
+.           else
+.           data = "'z', " * size
+.           data_len = string.length(data)
+.           data = string.substr(data, 0, data_len-3)
+.           data = "[]byte{$(data:no)"
+.           endif
+	if len(tr.$(name:no)) != $(size) {
+		t.Fatalf("mismatch octets size for %s", "$(name:no)")
+	}
+	for idx, b := range $(data:no) {
+		if tr.$(name:no)[idx] != b {
+			t.Fatalf("mismatch octets value for %s", "$(name:no)")
+		}
+	}
+.       elsif type = "string" | type = "longstr"
+	if tr.$(name:no) != "$(->test.?"Life is short but Now lasts for ever":)" {
+		t.Fatalf("expected %s, got %s", "$(->test.?"Life is short but Now lasts for ever":)", tr.$(name:no))
+	}
+.       elsif type = "strings"
+.           strslice = ""
+.           if defined (->test)
+.               for test
+.                   strslice += '"$(test.:no)"'
+.                   if !last ()
+.                       strslice += ","
+.                   endif
+.               endfor
+.           else
+.               strslice = '"Name: Brutus", "Age: 43"'
+.           endif
+	for idx, str := range []string{$(strslice:no)} {
+		if tr.$(name:no)[idx] != str {
+			t.Fatalf("expected %s, got %s", str, tr.$(name:no)[idx])
+		}
+	}
+.       elsif type = "hash"
+.           hash = ""
+.           if defined (->test)
+.               for test
+.                   hash += '"$(test.name:no)": "$(test.:no)"'
+.                   if !last ()
+.                       hash += ","
+.                   endif
+.               endfor
+.           else
+.               hash = '"Name": "Brutus", "Age": "43"'
+.           endif
+	for key, val := range map[string]string{$(hash:no)} {
+		if tr.$(name:no)[key] != val {
+			t.Fatalf("expected %s, got %s", val, tr.$(name:no)[key])
+		}
+	}
+.       elsif type = "uuid"
+	if hex.EncodeToString(tr.$(name:no)) != "$(->test.?"Captcha Diem":)" {
+		t.Fatalf("expected %s, got %s", "$(->test.?"Captcha Diem":)", tr.$(name:no))
+	}
+.       elsif type = "chunk"
+	if string(tr.$(name:no)) != "$(->test.?"Captcha Diem":)" {
+		t.Fatalf("expected %s, got %s", "$(->test.?"Captcha Diem":)", tr.$(name:no))
+	}
+.       elsif type = "frame" | type = "msg"
+	if string(tr.$(name:no)) != "$(->test.?"Captcha Diem":)" {
+		t.Fatalf("expected %s, got %s", "$(->test.?"Captcha Diem":)", tr.$(name:no))
+	}
+.       endif
+.   endfor
+	err = tr.Send(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	transit, err = Recv(output)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if routingID != string(tr.RoutingID()) {
+		t.Fatalf("expected %s, got %s", routingID, string(tr.RoutingID()))
+	}
+}
+.endfor

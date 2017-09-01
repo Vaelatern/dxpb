@@ -1,0 +1,139 @@
+#
+#   Library functions
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+function expand_headers ()
+    for message
+        if !defined (message.id)
+            message.id = item ()
+        endif
+        for field where item () = 1
+            for class.header
+                for field as hfield
+                    hfield.in_header = "true"
+                    copy hfield before field
+                endfor
+            endfor
+        else
+            for class.header
+                for field as hfield
+                    hfield.in_header = "true"
+                    copy hfield to message
+                endfor
+            endfor
+        endfor
+    endfor
+endfunction
+
+function set_defaults ()
+    resolve_types ()
+
+    class.signature ?= 0
+    class.package_dir ?= "go"
+    class.package ?= "github.com/pebbe/zmq4"
+
+    class.package_dir = defined(switches.package_dir) ?? switches.package_dir ? class.package_dir
+    class.package = defined(switches.package) ?? switches.package ? class.package
+    class.script = defined(switches.script) ?? switches.script ? class.script
+
+    for message
+        message.name = "$(message.name:c)"
+        # 9 = number of characters of "routingId". maxlen is used to format structure fields correctly.
+        message.field_maxlen = 9
+        for field
+            field.name = go_name(field.name)
+            field.fname = field.name
+            field.name = defined(field.in_header) ?? "$(field.name)" ? field.name
+            if type = "number"
+                if defined (value)
+                    # strconv package is needed if the number has a constant value
+                    message.strconv = 1
+                endif
+                field.size ?= 1
+                if size = 1
+                    field.gotype = "byte"
+                elsif size = 2
+                    field.gotype = "uint16"
+                elsif size = 4
+                    field.gotype = "uint32"
+                elsif size = 8
+                    field.gotype = "uint64"
+                else
+                    echo "E: bad size $(size) for $(name)"
+                endif
+            elsif type = "octets"
+                field.gotype = "[]byte"
+            elsif type = "strings"
+                field.gotype = "[]string"
+            elsif type = "hash"
+                field.gotype = "map[string]string"
+            elsif type = "string" | type = "longstr"
+                field.gotype = "string"
+            elsif type = "uuid"
+                field.gotype = "[]byte"
+                message.hex = 1
+            elsif type = "frame" | type = "msg" | type = "chunk" | type = "uuid"
+                field.gotype = "[]byte"
+            else
+                echo "E: unknown type '$(type)'"
+            endif
+            if message.field_maxlen < string.length(field.name)
+                message.field_maxlen = string.length(field.name)
+            endif
+            for class.field as cfield where cfield.name = field.name
+                if cfield.type <> field.type
+                    echo "E: field '$(name)' must have same type everywhere"
+                endif
+            else
+                copy field to class
+            endfor
+        endfor
+    endfor
+endfunction
+
+function go_name (name)
+    my.name = "$(my.name:c)"
+    my.name = "$(my.Name)"
+    return string.replace(my.name,'_')
+endfunction
+
+# Go private name
+function go_pname (name)
+    my.name = go_name(my.name)
+    my.first = string.substr(my.name, 0, 0)
+    my.rest = string.substr(my.name, 1)
+    return "$(my.first)$(my.rest:no)"
+endfunction
+
+function go_short (name)
+    return string.substr("$(my.name)", 0, 0)
+endfunction
+
+function go_package_name (name)
+    my.name = my.name ? class.name
+    if string.matchpat(my.name, "*_*")
+        return string.substr(my.name, string.locate_last(my.name, "_") + 1)
+    endif
+    return my.name
+endfunction
+
+function go_package_path (name)
+    my.name = my.name ? class.name
+    my.name = string.replace(my.name, "_|/")
+    my.path = directory.resolve(class.package_dir + "/" + my.name)
+    return my.path
+endfunction
+
+function go_package (name)
+    my.name = my.name ? class.name
+    my.name = string.replace(my.name, "_|/")
+    return my.name
+endfunction

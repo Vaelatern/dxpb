@@ -1,0 +1,159 @@
+.template 0
+#   Generate a BNF grammar from a protocol specification
+#   The grammar may need manual reworking to be sensible
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+function generate_bnf
+    [gsl].shuffle = 1
+    output "$(class.name).bnf"
+    >The following ABNF grammar defines the $(class.title:):
+    >
+
+    for message
+        message.name = "$(message.name:COBOL,upper)"
+    endfor
+    class.signature ?= 0
+    for class.grammar
+        >$(string.trim (grammar.?''):)
+    else
+        >    $(class.name)   = *(\
+        for message
+            if role ?= "client"
+            >    C:$(message.name:)\
+            elsif role ?= "server"
+            >    S:$(message.name:)\
+            else
+            >    $(message.name:)\
+            endif
+            if !last ()
+                > |\
+            endif
+        endfor
+        >\ )
+    endfor
+
+    for message
+        if !defined (message.id)
+            message.id = item ()
+        endif
+        >
+        >    ;  $(message.?'No description':justify,block%-70s)
+        >
+            >    $(name:)        = signature %d$(id)\
+        for field
+            > $(field.name:c)\
+        endfor
+        >
+        if first()
+            >    signature       = %xAA %xA$(signature)  ; two octets
+        endif
+        for field
+            if type = "number"
+                    >    $(name:c)       = number-$(size)        ; $(string.trim (field.)?'':left)
+                    class.use_number_$(size) = 1
+            elsif type = "octets"
+                    >    $(name:c)       = $(size)OCTET          ; $(string.trim (field.)?'':left)
+            else
+                    >    $(name:c)       = $(type)               ; $(string.trim (field.)?'':left)
+                    class.use_$(type) = 1
+            endif
+        endfor
+        for class.type where !defined (type.expressed)
+            if defined (class.use_$(name))
+                >    $(name:c)       =\
+                for field
+                    > $(field.name:c)\
+                endfor
+                >
+                for field
+                    if field.type = "number"
+                        >    $(name:c)       = number-$(size)        ; $(string.trim (field.)?'':left)
+                        class.use_number_$(size) = 1
+                    elsif field.type = "octets"
+                        >    $(name:c)       = $(size)OCTET          ; $(string.trim (field.)?'':left)
+                    else
+                        >    $(name:c)       = $(field.type)         ; $(string.trim (field.)?'':left)
+                        class.use_$(field.type) = 1
+                    endif
+                endfor
+                type.expressed = 1
+            endif
+        endfor
+
+    endfor
+    if defined (class.use_strings)
+    >
+    >    ; A list of string values
+    >    strings         = strings-count *strings-value
+    >    strings-count   = number-4
+    >    strings-value   = longstr
+        class.use_number_4 = 1
+        class.use_longstr = 1
+    endif
+    if defined (class.use_hash)
+    >
+    >    ; A list of name/value pairs
+    >    hash            = hash-count *( hash-name hash-value )
+    >    hash-count      = number-4
+    >    hash-value      = longstr
+    >    hash-name       = string
+        class.use_number_4 = 1
+        class.use_string = 1
+        class.use_longstr = 1
+    endif
+    if defined (class.use_chunk)
+    >
+    >    ; A chunk has 4-octet length + binary contents
+    >    chunk           = number-4 *OCTET
+        class.use_number_4 = 1
+    endif
+    if defined (class.use_uuid)
+    >
+    >    ; A uuid is 16-octet binary content 
+    >    uuid            = 16OCTET
+    endif
+    if defined (class.use_frame)
+    >
+    >    ; A frame is zero or more octets encoded as a ZeroMQ frame
+    >    frame           = *OCTET
+    endif
+    if defined (class.use_msg)
+    >
+    >    ; A msg is zero or more distinct frames
+    >    msg             = *frame
+    endif
+    >
+    >    ; Strings are always length + text contents
+    if defined (class.use_string)
+    >    string          = number-1 *VCHAR
+         class.use_number_1 = 1
+    endif
+    if defined (class.use_longstr)
+    >    longstr         = number-4 *VCHAR
+         class.use_number_4 = 1
+    endif
+    >
+    >    ; Numbers are unsigned integers in network byte order
+    if defined (class.use_number_1)
+    >    number-1        = 1OCTET
+    endif
+    if defined (class.use_number_2)
+    >    number-2        = 2OCTET
+    endif
+    if defined (class.use_number_4)
+    >    number-4        = 4OCTET
+    endif
+    if defined (class.use_number_8)
+    >    number-8        = 8OCTET
+    endif
+    [gsl].shuffle = 2
+endfunction
+.endtemplate

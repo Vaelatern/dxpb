@@ -1,0 +1,138 @@
+.template 0
+#
+#   Generates a codec for a protocol specification
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+include "zproto_codec_java.gsl"
+include "zproto_lib_clj.gsl"
+global.ClassName = java_class_name($(class.name))
+global.namespace = "org.zproto"
+global.name_path = "org/zproto"
+global.topdir ?= "$(switches.topdir)/main" ? "main"
+global.source_path = "$(topdir)/clojure/src"
+global.test_path = "$(topdir)/clojure/test"
+directory.create ("$(source_path)/$(name_path)")
+directory.create ("$(test_path)/$(name_path)")
+.endtemplate
+.output "$(source_path)/$(name_path)/$(class.name).clj"
+;;  =========================================================================
+;;    $(ClassName) - $(class.title:)
+;;
+;;    ** WARNING *************************************************************
+;;    THIS SOURCE FILE IS 100% GENERATED. If you edit this file, you will lose
+;;    your changes at the next build cycle. This is great for temporary printf
+;;    statements. DO NOT MAKE ANY CHANGES YOU WISH TO KEEP. The correct places
+;;    for commits are:
+;;
+;;    * The XML model used for this code generation: $(filename)
+;;    * The code generation script that built this file: $(script)
+;;    ************************************************************************
+.   for class.license
+;;    $(string.trim (license.):block                                         )
+.   endfor
+;;    =========================================================================
+
+(ns $(namespace).$(clj_name(class.name))
+  (:require [zeromq.zmq :as zmq])
+  (:import [$(namespace) $(ClassName)]))
+
+(defprotocol P$(ClassName)
+.for message
+  ($(clj_name(message.name)) [this\
+.for field where !defined (value)
+ $(clj_name(name))\
+.endfor
+]
+    [this routing-id\
+.for field where !defined (value)
+ $(clj_name(name))\
+.endfor
+])\
+.if last()
+\
+.else
+
+.endif
+.endfor
+)
+
+(defrecord $(ClassName)Socket [socket]
+  P$(ClassName)
+.for message
+  ($(clj_name(message.name)) [this\
+. for field where !defined (value)
+ $(clj_name(name))\
+. endfor
+]
+    ($(ClassName)/send$(Name) socket\
+. for field where !defined (value)
+ $(clj_name(field))\
+. endfor
+))
+  ($(clj_name(message.name)) [this routing-id\
+. for field where !defined (value)
+ $(clj_name(field))\
+. endfor
+]
+    ($(ClassName)/send$(Name) socket routing-id\
+. for field where !defined (value)
+ $(clj_name(field))\
+. endfor
+))\
+.if last()
+\
+.else
+
+.endif
+.endfor
+)
+
+
+;;
+;; message setters
+;;
+
+(defn id! [^$(ClassName) msg id]
+  (.setId msg id))
+.for class.field where !defined (value)
+
+. if type = "string" | type = "longstr"
+(defn $(clj_name (name))! [^$(ClassName) msg format & opts]
+ (.set$(Name) msg format (object-array opts)))
+. else
+(defn $(clj_name (name))! [^$(ClassName) msg $(clj_name (name))]
+ (.set$(Name) msg $(clj_name (name))))
+. endif
+.endfor
+
+(def context (zmq/context))
+
+(defn client-socket [endpoint]
+  (let [socket (doto (zmq/socket context :dealer)
+                 (zmq/set-receive-timeout 1000)
+                 (zmq/connect endpoint))]
+    (->$(ClassName)Socket socket)))
+
+(defn server-socket [endpoint]
+  (let [socket (doto (zmq/socket context :router)
+                 (zmq/set-receive-timeout 1000)
+                 (zmq/bind endpoint))]
+     (->$(ClassName)Socket socket)))
+
+(defn recv [{:keys [socket]}]
+  ($(ClassName)/recv socket))
+.output "$(test_path)/$(name_path)/$(class.name)_test.clj"
+(ns $(namespace).$(clj_name(class.name))-test
+  (:require [clojure.test :refer :all])
+  (:import [$(namespace) Test$(ClassName)]))
+
+(deftest test-$(clj_name(class.name))
+  (is (nil? (.test$(ClassName) (Test$(ClassName).)))))

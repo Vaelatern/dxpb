@@ -1,0 +1,303 @@
+.template 0
+#
+#   Generates a server class for a protocol specification
+#   This manages ROUTER server talking to DEALER clients
+#
+#   This is a code generator built using the iMatix GSL code generation
+#   language. See https://github.com/imatix/gsl for details.
+#
+#   Copyright (c) the Contributors as noted in the AUTHORS file.
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+include "zproto_lib_java.gsl"
+include "zproto_lib_clj.gsl"
+global.ClassName = java_class_name ($(class.name))
+global.namespace = "org.zproto"
+global.name_path = "org/zproto"
+global.topdir ?= "$(switches.topdir)/main" ? "main"
+global.root_path ?= switches.root_path? "main"
+global.java_source_path = "$(topdir)/java"
+global.source_path = "$(topdir)/clojure/src"
+global.test_path = "$(topdir)/clojure/test"
+#   Load message structures for this engine
+global.proto = xml.load_file (class.protocol_class + ".xml")
+class.proto = class.protocol_class
+
+#   Lowercase state/event/action names
+for class.state
+    state.name = "$(name)"
+    for event
+        event.name = "$(name)"
+        if defined (event.next)
+            event.next = "$(next)"
+        endif
+        for action
+            action.name = "$(name)"
+        endfor
+    endfor
+endfor
+
+# Collect named event fields from protocol class and
+# attach to actions
+for class.state
+    for event
+        for action
+            for proto.message where name = event.name
+              for field where !defined (value)
+                new action.param
+                  param.name = "$(field.name:c)"
+                endnew
+              endfor
+            endfor
+        endfor
+    endfor
+endfor
+
+#  Collect all events and actions at class level
+for class.state
+    state.comma = last()?? ""? ","
+    for event where name <> "*"
+        event.name = "$(name:c)"
+        #   Mark event as external if it a protocol message
+        if count (proto.message, message.name = event.name)
+            event.external = 1
+        endif
+        #   Copy event to class if not yet defined there
+        if count (class.event, name = -1.name) = 0
+            copy event to class
+        endif
+    endfor
+    for event
+        for action where count (class.action, name = -1.name) = 0
+            copy action to class
+        endfor
+    endfor
+endfor
+
+#   Process super states
+for class.state where defined (inherit)
+    for class.state as superstate where name = inherit
+        for event where count (state.event, name = -1.name) = 0
+            copy event to state
+        endfor
+    else
+        echo "E: superstate $(inherit) isn't defined"
+    endfor
+endfor
+.endtemplate
+.output "$(source_path)/$(name_path)/$(class.name).clj"
+;;  =========================================================================
+;;    $(class.name)
+;;
+;;    ** WARNING *************************************************************
+;;    THIS SOURCE FILE IS 100% GENERATED. If you edit this file, you will lose
+;;    your changes at the next build cycle. This is great for temporary printf
+;;    statements. DO NOT MAKE ANY CHANGES YOU WISH TO KEEP. The correct places
+;;    for commits are:
+;;
+;;     * The XML model used for this code generation: $(class.name).xml, or
+;;     * The code generation script that built this file: zproto_server_clj
+;;    ************************************************************************
+;;    Copyright (c) the Contributors as noted in the AUTHORS file.       
+;;    This file is part of zbroker, the ZeroMQ broker project.           
+;;                                                                       
+;;    This Source Code Form is subject to the terms of the Mozilla Public
+;;    License, v. 2.0. If a copy of the MPL was not distributed with this
+;;    file, You can obtain one at http://mozilla.org/MPL/2.0/.           
+;;    =========================================================================
+
+(ns $(namespace).$(clj_name (class.name))
+  (:refer-clojure :exclude [send])
+  (:require [zeromq.zmq :as zmq]
+            [org.zproto.$(clj_protocol_class ()) :as msg])
+  (:import  [org.zproto $(java_protocol_class ())]))
+
+;;
+;; The $(java_class_name (class.name))Backend Protocol specifies
+;; the actions that have to be implemented for a functional server.
+;; Currently, return values are expected to match be the arguments to
+;; the returning send function as a vector.
+;;
+(defprotocol $(java_class_name (class.name))Backend\
+.for class.action
+. if name <> "send" & name <> "terminate"
+
+  ($(clj_name (name)) [this msg\
+. for action.param
+ $(clj_name(name))\
+. endfor
+])\
+. endif
+.endfor
+)
+
+(defn terminate [{:keys [state]} routing-id _]
+  (swap! state dissoc routing-id))
+
+(defn next-state [to-state]
+  (fn [{:keys [state]} routing-id _]
+    (swap! state assoc-in [routing-id] to-state)))
+
+;;
+;; Wrapper function that facilitates correct parameter
+;; assignments to the send-fn depending on the shape
+;; of the response generated by the backend
+;;
+(defn send [message-id]
+   (fn [{:keys [socket]} _ ^$(java_protocol_class ()) msg]
+      (msg/id! msg message-id)
+      (.send msg (:socket socket))))
+
+;;
+;; Creates a function that calls the backend action-fn with the
+;; appropriate parameters extracted from the msg.
+;;
+(defmacro action [action-fn & extractors]
+  `(fn [{:keys [~'backend]} ~'_ ~'msg]
+     (~action-fn ~'backend ~'msg ~@(mapv (fn [e] (list e 'msg)) extractors))
+     ~'msg))
+
+;;
+;; Encodes the transition from states via events through
+;; a number of actions. This is pretty close to the structure
+;; given in the model, super states are expanded.
+;;
+(def state-events {
+. for state
+  :$(clj_name (name)) {
+. for state.event where defined (external) | name = "*"
+.  if name = "*"
+    :*\
+.else
+    $(java_protocol_class ())/$(NAME)\
+.endif
+ [ \
+.                      for action
+. if name = "send"
+(send $(java_protocol_class ())/$(MESSAGE:c)) \
+. elsif name = "terminate"
+terminate \
+. else
+(action $(clj_name (name))\
+. for action.param
+ .$(name)\
+. endfor
+) \
+. endif
+.                      endfor
+. if defined(next)
+(next-state :$(next)) \
+. endif
+]
+.                 endfor                      
+  }\
+.   if last ()
+\
+.   else
+
+.   endif
+. endfor
+})
+
+(def determine-actions
+  (memoize
+   (fn [state event-id]
+     (or (get-in state-events [state event-id])
+         (get-in state-events [state :*])))))
+
+(defn maybe-setup-session [state routing-id]
+  (if (get state routing-id)
+    state
+    (assoc state routing-id :start)))
+
+(defn match-msg
+  [{:keys [state] :as server} ^$(java_protocol_class ()) msg]
+  (let [id (.id msg)
+        routing-id (.getData (.routingId msg))
+        initialized-state (-> (swap! state maybe-setup-session routing-id)
+                              (get routing-id))]
+    (reduce (fn [msg handler]
+               (handler server routing-id msg))
+            msg
+            (determine-actions initialized-state id))))
+
+(defrecord Server [socket state backend])
+
+(defn server-loop
+  [socket backend]
+  (let [server (Server. socket (atom {}) backend)]
+    (loop []
+      (when-let [received (msg/recv socket)]
+        (try
+          (match-msg server received)
+          (catch Exception e
+            (.printStackTrace e))))
+      (if (not (.isInterrupted (Thread/currentThread)))
+        (recur)
+        (println "Server shutdown")))))
+.source_file = "$(source_path)/$(name_path)/$(class.name)_impl.clj"
+.if !file.exists (source_file)
+.output source_file
+;;  =========================================================================
+;;    $(class.name:) implementation
+;;
+.   for class.license
+;;    $(string.trim (license.):block                                          )
+.   endfor
+;;  =========================================================================
+(ns $(namespace).$(clj_name (class.name))-impl
+  (:require [$(namespace).$(clj_name (class.name)) :as server]
+            [org.zproto.$(clj_protocol_class ()) :as m]))
+
+(def backend
+  (reify server/$(java_class_name (class.name))Backend\
+.for class.action
+. if name <> "send" & name <> "terminate"
+
+    ($(clj_name (name)) [this msg\
+. for action.param
+ $(clj_name(name))\
+. endfor
+])\
+. endif
+.endfor
+))
+
+(defn -main [& [endpoint]]
+  (println (format "starting up $(class.name) at %s" endpoint))
+  (server/server-loop (m/server-socket endpoint) backend))
+.endif
+.if !file.exists ("../project.clj")
+.output "../project.clj"
+;;  =========================================================================
+;;    $(class.title:)
+;;
+;;    ** WARNING *************************************************************
+;;    THIS SOURCE FILE IS 100% GENERATED. If you edit this file, you will lose
+;;    your changes at the next build cycle. This is great for temporary printf
+;;    statements. DO NOT MAKE ANY CHANGES YOU WISH TO KEEP. The correct places
+;;    for commits are:
+;;
+;;    * The XML model used for this code generation: $(filename)
+;;    * The code generation script that built this file: $(script)
+;;    ************************************************************************
+.   for class.license
+;;    $(string.trim (license.):block                                          )
+.   endfor
+;;    =========================================================================
+(defproject $(clj_name(class.title)) "0.1.0-SNAPSHOT"
+  :description "FIXME: write description"
+  :url "http://example.com/FIXME"
+  :java-source-paths ["$(string.defix (java_source_path, "../"))"]
+  :source-paths ["$(string.defix (source_path, "../"))"]
+  :test-paths ["$(string.defix (test_path, "../"))"]
+  :prep-tasks ["javac"]
+  :dependencies [[org.clojure/clojure "1.6.0"]
+                 [junit/junit "4.11"]
+                 [org.zeromq/cljzmq "0.1.4" :exclusions [jzmq]]
+                 [org.zeromq/jeromq "0.3.4"]]
+  :main $(namespace).$(clj_name (class.name))-impl)
+.endif
