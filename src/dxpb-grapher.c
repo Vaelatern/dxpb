@@ -322,10 +322,10 @@ main(int argc, char * const *argv)
 			break;
 		case 'L':
 			print_license();
-			break;
+			return 0;
 		case 'h':
 			help();
-			break;
+			return 0;
 		case 'v':
 			flags |= VERBOSE_FLAG;
 			break;

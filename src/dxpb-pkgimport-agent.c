@@ -77,10 +77,10 @@ main(int argc, char * const *argv)
 		switch(c) {
 		case 'L':
 			print_license();
-			break;
+			return 0;
 		case 'h':
 			help();
-			break;
+			return 0;
 		case 'i':
 			endpoint = optarg;
 			break;

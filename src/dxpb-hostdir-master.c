@@ -89,6 +89,9 @@ main(int argc, char * const *argv)
 		case 'L':
 			print_license();
 			return 0;
+		case 'h':
+			help();
+			return 0;
 		case 'g':
 			graph_endpoint = optarg;
 			break;
@@ -110,9 +113,6 @@ main(int argc, char * const *argv)
 		case 'v':
 			flags |= VERBOSE_FLAG;
 			break;
-		case 'h':
-			help();
-			return 0;
 		case '?':
 			flags |= ERR_FLAG;
 			break;
