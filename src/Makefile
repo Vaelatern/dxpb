@@ -22,12 +22,13 @@ COMPILE.c = $(CC) $(LOCAL_CFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 PREFIX ?= /usr/local
 
+GSL_BIN ?= gsl
+
 LOCAL_CFLAGS = -std=c11 -I../include/
 CFLAGS = -g -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -O3 -fstack-protector-strong -D_FORTIFY_SOURCE=2
 LDFLAGS = -fPIC -fPIE
 LDLIBS += -lzmq -lczmq
 
-GSL_BIN ?= gsl
 BINARIES = \
 	dxpb-builder \
 	dxpb-frontend \
@@ -57,6 +58,8 @@ OBJECTS = \
 	dxpb-common.o \
 	dxpb-frontend.o \
 	dxpb-grapher.o \
+	dxpb-hostdir-master.o \
+	dxpb-hostdir-remote.o \
 	dxpb-pkgimport-agent.o \
 	dxpb-pkgimport-master.o \
 	dxpb-poke.o \
