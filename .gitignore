@@ -3,3 +3,4 @@
 !**/dxpb-*.c
 **/.container/
 src/gmon.out
+src/license.inc
