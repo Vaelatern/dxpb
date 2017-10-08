@@ -1,16 +1,11 @@
 Vaelatern's short list (v0.1.0):
-	- Replace bworker with a more flexible alternative which involves
-	  registering indexes to subgroups permanently, for better flexibility.
-	- Fix all warnings (write missing functionality)
-	- Write graph component of filer
 	- Fix memory leaks in the graph. Run all tests with valgrind.
 	- Ensure that all pipes are always read to the end before closing.
-	- Remove dead code once it can be saved by version control.
 	- Run tests (https://toyamcox.net/repo in the future)
 
 Todo (v0.1.1):
 	- Shim to unmark package as bad (similar to dxpb-poke)
-	- Add h2o-based web servers to every long-running daemon (not dxpb-poke)
+	- Add libevhtp-based web servers to every long-running daemon (not dxpb-poke)
 	  that listens on port 13249 (base64 valud of "DPB" since DXPB was too
 	  big to be a port) and respondes like node_exporter from Prometheus.
 	- Build basic IRC bot functionality
