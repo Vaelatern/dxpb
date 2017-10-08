@@ -335,19 +335,20 @@ act_on_job_return (client_t *self)
 		fprintf(stderr, "Someone forgot to update a switch(){}...\n");
 		exit(ERR_CODE_BAD);
 	}
-	if (failed)
+	if (failed) {
 		if (self->server->pub)
 			zstr_sendf(self->server->pub, "%s/%s/%s: build failed: %s",
-				pkggraph_msg_pkgname(self->message),
-				pkggraph_msg_version(self->message),
-				pkggraph_msg_arch(self->message),
-				reason);
-	else
+					pkggraph_msg_pkgname(self->message),
+					pkggraph_msg_version(self->message),
+					pkggraph_msg_arch(self->message),
+					reason);
+	} else {
 		if (self->server->pub)
 			zstr_sendf(self->server->pub, "%s/%s/%s: built successfully",
-				pkggraph_msg_pkgname(self->message),
-				pkggraph_msg_version(self->message),
-				pkggraph_msg_arch(self->message));
+					pkggraph_msg_pkgname(self->message),
+					pkggraph_msg_version(self->message),
+					pkggraph_msg_arch(self->message));
+	}
 
 	struct memo *memo = malloc(sizeof(struct memo));
 	if (!memo) {
