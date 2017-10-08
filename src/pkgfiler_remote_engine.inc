@@ -24,15 +24,16 @@ typedef enum {
 
 typedef enum {
     NULL_event = 0,
-    construct_event = 1,
-    roger_event = 2,
-    connect_error_event = 3,
-    iforgotu_event = 4,
-    ispkghere_event = 5,
-    wannashare__event = 6,
-    gimmegimmegimme_event = 7,
-    expired_event = 8,
-    invalid_event = 9
+    set_hostdir_event = 1,
+    construct_event = 2,
+    roger_event = 3,
+    connect_error_event = 4,
+    iforgotu_event = 5,
+    ispkghere_event = 6,
+    wannashare__event = 7,
+    gimmegimmegimme_event = 8,
+    expired_event = 9,
+    invalid_event = 10
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -46,6 +47,7 @@ s_state_name [] = {
 static char *
 s_event_name [] = {
     "(NONE)",
+    "set_hostdir",
     "construct",
     "ROGER",
     "connect_error",
@@ -66,6 +68,7 @@ s_event_name [] = {
 //  These are the different method arguments we manage automatically
 struct _client_args_t {
     char *endpoint;
+    char *hostdir;
 };
 
 typedef struct {
@@ -108,6 +111,8 @@ static int
     s_client_handle_expiry (zloop_t *loop, int timer_id, void *argument);
 static void
     s_satisfy_pedantic_compilers (void);
+static void
+    set_hostdir_location (client_t *self);
 static void
     connect_to_server (client_t *self);
 static void
@@ -172,6 +177,7 @@ s_client_destroy (s_client_t **self_p)
     if (*self_p) {
         s_client_t *self = *self_p;
         zstr_free (&self->args.endpoint);
+        zstr_free (&self->args.hostdir);
         client_terminate (&self->client);
         pkgfiles_msg_destroy (&self->message);
         zsock_destroy (&self->msgpipe);
@@ -375,6 +381,15 @@ s_client_execute (s_client_t *self, event_t event)
         }
         switch (self->state) {
             case start_state:
+                if (self->event == set_hostdir_event) {
+                    if (!self->exception) {
+                        //  set hostdir location
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set hostdir location", self->log_prefix);
+                        set_hostdir_location (&self->client);
+                    }
+                }
+                else
                 if (self->event == construct_event) {
                     if (!self->exception) {
                         //  connect to server
@@ -625,6 +640,12 @@ s_client_handle_cmdpipe (zloop_t *loop, zsock_t *reader, void *argument)
         zsock_recv (self->cmdpipe, "s", &self->args.endpoint);
         s_client_execute (self, construct_event);
     }
+    else
+    if (streq (method, "SET HOSTDIR")) {
+        zstr_free (&self->args.hostdir);
+        zsock_recv (self->cmdpipe, "s", &self->args.hostdir);
+        s_client_execute (self, set_hostdir_event);
+    }
     //  Cleanup pipe if any argument frames are still waiting to be eaten
     if (zsock_rcvmore (self->cmdpipe)) {
         zsys_error ("%s: trailing API command frames (%s)",
@@ -830,6 +851,19 @@ pkgfiler_remote_construct (pkgfiler_remote_t *self, const char *endpoint)
     assert (self);
 
     zsock_send (self->actor, "ss", "CONSTRUCT", endpoint);
+    return 0;
+}
+
+
+//  ---------------------------------------------------------------------------
+//  Used to connect to the server.                                                  
+
+int 
+pkgfiler_remote_set_hostdir (pkgfiler_remote_t *self, const char *hostdir)
+{
+    assert (self);
+
+    zsock_send (self->actor, "ss", "SET HOSTDIR", hostdir);
     return 0;
 }
 

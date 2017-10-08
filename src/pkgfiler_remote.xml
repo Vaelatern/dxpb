@@ -11,6 +11,9 @@
 	and reports its contents.
 
 	<state name = "start">
+		<event name = "set hostdir">
+			<action name = "set hostdir location" />
+		</event>
 		<event name = "construct">
 			<action name = "connect to server" />
 			<action name = "send" message = "HELLO" />
@@ -57,5 +60,9 @@
 	<method name = "construct">
 		Used to connect to the server.
 		<field name = "endpoint" type = "string" />
+	</method>
+	<method name = "set hostdir">
+		Used to connect to the server.
+		<field name = "hostdir" type = "string" />
 	</method>
 </class>

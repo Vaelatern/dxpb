@@ -2,6 +2,9 @@
 digraph "pkgfiler_remote" {
 
  "start" [shape = "doublecircle"];
+ "start set hostdir" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set hostdir</font></td></tr><tr><td align="left" port="r3">set hostdir location</td></tr></table>>];
+ "start" -> "start set hostdir";
+ "start set hostdir" -> "start";
  "start construct" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">construct</font></td></tr><tr><td align="left" port="r3">connect to server</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "start" -> "start construct";
  "start construct" -> "start";

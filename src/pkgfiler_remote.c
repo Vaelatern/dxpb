@@ -141,6 +141,7 @@ complain_about_connection_error (client_t *self)
 static void
 check_for_pkg_locally (client_t *self)
 {
+	assert(self->hostdir);
 	char *pkgfile = bxbps_pkg_to_filename(
 				pkgfiles_msg_pkgname(self->message),
 				pkgfiles_msg_version(self->message),
@@ -163,6 +164,8 @@ check_for_pkg_locally (client_t *self)
 static void
 open_file_for_sending (client_t *self)
 {
+	assert(self->hostdir);
+	assert(self->open_fds);
 	struct filefetch *fd = malloc(sizeof(struct filefetch));
 	if (!fd) {
 		fprintf(stderr, "Couldn't allocate memory for a simple file pointer\n");
@@ -259,6 +262,8 @@ postprocess_chunk (client_t *self)
 static void
 confirm_pkg_is_local_and_want_to_share (client_t *self)
 {
+	assert(self);
+	assert(self->hostdir);
 	char *pkgfile = bxbps_pkg_to_filename(
 				pkgfiles_msg_pkgname(self->message),
 				pkgfiles_msg_version(self->message),
@@ -271,4 +276,21 @@ confirm_pkg_is_local_and_want_to_share (client_t *self)
 	}
 	free(pkgfile);
 	pkgfile = NULL;
+}
+
+
+//  ---------------------------------------------------------------------------
+//  set_hostdir_location
+//
+
+static void
+set_hostdir_location (client_t *self)
+{
+	if (self->hostdir)
+		free(self->hostdir);
+	self->hostdir = strdup(self->args->hostdir);
+	if (!self->hostdir) {
+		fprintf(stderr, "Couldn't set hostdir\n");
+		exit(ERR_CODE_NOMEM);
+	}
 }

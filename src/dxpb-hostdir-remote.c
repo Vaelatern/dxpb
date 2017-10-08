@@ -26,6 +26,7 @@ help(void)
 int
 run(int flags, const char *endpoint, const char *hostdir, const char *ssldir)
 {
+	SSLDIR_UNUSED(ssldir);
 	assert((flags & ERR_FLAG) == 0);
 	enum ret_codes retVal = ERR_CODE_BAD;
 	pkgfiler_remote_t *client;
@@ -35,6 +36,7 @@ run(int flags, const char *endpoint, const char *hostdir, const char *ssldir)
 	assert(client);
 	actor = pkgfiler_remote_actor(client);
 	assert(actor);
+	zstr_sendx(actor, "SET HOSTDIR", hostdir, NULL);
 	zstr_sendx(actor, "CONSTRUCT", endpoint, NULL);
 
 	zpoller_t *polling = zpoller_new(actor);

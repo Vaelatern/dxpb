@@ -63,6 +63,10 @@ bool
 int 
     pkgfiler_remote_construct (pkgfiler_remote_t *self, const char *endpoint);
 
+//  Used to connect to the server.                                                  
+int 
+    pkgfiler_remote_set_hostdir (pkgfiler_remote_t *self, const char *hostdir);
+
 //  Enable verbose tracing (animation) of state machine activity.
 void
     pkgfiler_remote_set_verbose (pkgfiler_remote_t *self, bool verbose);
