@@ -336,13 +336,15 @@ act_on_job_return (client_t *self)
 		exit(ERR_CODE_BAD);
 	}
 	if (failed)
-		zstr_sendf(self->server->pub, "%s/%s/%s: build failed: %s",
+		if (self->server->pub)
+			zstr_sendf(self->server->pub, "%s/%s/%s: build failed: %s",
 				pkggraph_msg_pkgname(self->message),
 				pkggraph_msg_version(self->message),
 				pkggraph_msg_arch(self->message),
 				reason);
 	else
-		zstr_sendf(self->server->pub, "%s/%s/%s: built successfully",
+		if (self->server->pub)
+			zstr_sendf(self->server->pub, "%s/%s/%s: built successfully",
 				pkggraph_msg_pkgname(self->message),
 				pkggraph_msg_version(self->message),
 				pkggraph_msg_arch(self->message));
