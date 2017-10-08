@@ -134,8 +134,11 @@ main_loop(pkgimport_grapher_t *importer, pkggraph_grapher_t *grapher,
 	pkgfiles_msg_t *file_msg;
 
 	import_sock = pkgimport_grapher_msgpipe(importer);
+	assert(import_sock);
 	graph_sock = pkggraph_grapher_msgpipe(grapher);
+	assert(graph_sock);
 	file_sock = pkgfiler_grapher_msgpipe(filer);
+	assert(file_sock);
 
 	import_msg = pkgimport_msg_new();
 	graph_msg = pkggraph_msg_new();
@@ -147,8 +150,12 @@ main_loop(pkgimport_grapher_t *importer, pkggraph_grapher_t *grapher,
 	 * but we just call the appropiate methods instead of passing messages
 	 * in, and we know what to pass because of messages on the msgpipe.
 	 */
-	polling = zpoller_new(import_sock, graph_sock, file_sock);
+	polling = zpoller_new(import_sock);
 	assert(polling);
+	rc = zpoller_add(polling, graph_sock);
+	assert(rc == 0);
+	rc = zpoller_add(polling, file_sock);
+	assert(rc == 0);
 	fprintf(stderr, "Now entering main loop\n");
 	while (retVal == ERR_CODE_OK &&
 				(in_sock = zpoller_wait(polling, -1)) != NULL) {
