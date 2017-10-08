@@ -452,12 +452,14 @@ post_process_sending_log_chunk (client_t *self)
 static void
 transform_worker_job_for_assignment (client_t *self)
 {
+	assert(zlist_size(self->assign_addrs) == 1);
 	const struct bworker *wrkr = zlist_pop(self->assign_addrs);
 	pkggraph_msg_set_addr(self->message, wrkr->addr);
 	pkggraph_msg_set_check(self->message, wrkr->check);
 	pkggraph_msg_set_pkgname(self->message, wrkr->job.name);
 	pkggraph_msg_set_version(self->message, wrkr->job.ver);
 	pkggraph_msg_set_arch(self->message, pkg_archs_str[wrkr->job.arch]);
+	wrkr = NULL;
 }
 
 
