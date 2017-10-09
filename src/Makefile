@@ -192,7 +192,6 @@ mostlyclean:
 	rm -f $(OBJECTS)
 	rm -f $(TEST_OBJECTS)
 	rm -f $(TEST_BINARIES)
-	rm -f license.inc
 
 clean: mostlyclean
 	rm -f $(BINARIES)
