@@ -67,6 +67,7 @@ main(int argc, char * const *argv)
 	const char *optstring = "vhLH:k:f:";
 	char *default_hostdir = DEFAULT_REPOPATH;
 	char *default_ssldir = DEFAULT_SSLDIR;
+	char *default_endpoint = DEFAULT_GRAPH_ENDPOINT;
 	char *hostdir = NULL;
 	char *ssldir = NULL;
 	char *endpoint = NULL;
@@ -107,13 +108,11 @@ main(int argc, char * const *argv)
 		exit(ERR_CODE_BADWORLD);
 	}
 
-	if (!endpoint) {
-		fprintf(stderr, "Endpoint required for operation\n");
-		exit(ERR_CODE_BADWORLD);
-	}
 	if (!ssldir)
 		ssldir = default_ssldir;
 	if (!hostdir)
 		hostdir = default_hostdir;
+	if (!endpoint)
+		endpoint = default_endpoint;
 	return run(flags, endpoint, hostdir, ssldir);
 }
