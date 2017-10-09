@@ -13,9 +13,6 @@
 #define VERBOSE_FLAG 1
 #define ERR_FLAG 2
 
-#define DEFAULT_HOSTDIR "./"
-#define DEFAULT_SSLDIR "/etc/dxpb/curve/"
-
 void
 help(void)
 {
@@ -68,7 +65,7 @@ main(int argc, char * const *argv)
 	int c;
 	int flags = 0;
 	const char *optstring = "vhLH:k:f:";
-	char *default_hostdir = DEFAULT_HOSTDIR;
+	char *default_hostdir = DEFAULT_REPOPATH;
 	char *default_ssldir = DEFAULT_SSLDIR;
 	char *hostdir = NULL;
 	char *ssldir = NULL;

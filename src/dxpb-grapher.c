@@ -21,12 +21,6 @@
 #define VERBOSE_FLAG 1
 #define ERR_FLAG 2
 
-#define DEFAULT_DBPATH "/var/cache/dxpb/pkgs.db"
-#define DEFAULT_IMPORT_ENDPOINT "ipc:///var/run/dxpb/pkgimport.sock"
-#define DEFAULT_GRAPH_ENDPOINT "tcp://127.0.0.1:5195"
-#define DEFAULT_FILE_ENDPOINT "ipc:///var/run/dxpb/pkgfiler.sock"
-#define DEFAULT_SSLDIR "/etc/dxpb/curve/"
-
 void
 help(void)
 {

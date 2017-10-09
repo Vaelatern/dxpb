@@ -10,8 +10,6 @@
 
 #include "dxpb-common.h"
 
-#define DEFAULT_IMPORT_ENDPOINT "ipc:///var/run/dxpb/pkgimport.sock"
-
 #define VERBOSE_FLAG 1
 #define ERR_FLAG 2
 

@@ -14,13 +14,6 @@
 #define VERBOSE_FLAG 1
 #define ERR_FLAG 2
 
-#define DEFAULT_STAGINGDIR "/var/lib/dxpb/staging/"
-#define DEFAULT_REPODIR "/var/lib/dxpb/pkgs/"
-#define DEFAULT_LOGDIR "/var/lib/dxpb/logs/"
-#define DEFAULT_FILE_ENDPOINT "ipc:///var/run/dxpb/pkgfiler.sock"
-#define DEFAULT_GRAPH_ENDPOINT "tcp://127.0.0.1:5195"
-#define DEFAULT_SSLDIR "/etc/dxpb/curve/"
-
 #include "dxpb-common.h"
 
 void

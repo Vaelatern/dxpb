@@ -11,9 +11,6 @@
 
 #include "dxpb-common.h"
 
-#define DEFAULT_GRAPH_ENDPOINT "tcp://127.0.0.1:5195"
-#define DEFAULT_SSLDIR "/etc/dxpb/curve/"
-
 #define VERBOSE_FLAG 1
 #define ERR_FLAG 2
 

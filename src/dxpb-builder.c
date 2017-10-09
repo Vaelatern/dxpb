@@ -7,19 +7,14 @@
 #include <getopt.h>
 #include <czmq.h>
 #include "dxpb.h"
-#include "dxpb-common.h"
 #include "bfs.h"
 #include "bbuilder.h"
 #include "pkggraph_worker.h"
 
-#define	DEFAULT_MASTERDIR "./masterdir"
-#define	DEFAULT_HOSTDIR "./hostdir"
-#define	DEFAULT_SSLDIR "/etc/dxpb/curve/"
-#define	DEFAULT_ENDPOINT "tcp://127.0.0.1:5195"
-#define	DEFAULT_XBPS_SRC "./xbps-src"
-
 #define VERBOSE_FLAG 1
 #define ERR_FLAG 2
+
+#include "dxpb-common.h"
 
 void
 help(void)
@@ -111,7 +106,7 @@ main(int argc, char * const *argv)
 	char *default_masterdir = DEFAULT_MASTERDIR;
 	char *default_hostdir = DEFAULT_HOSTDIR;
 	char *default_ssldir = DEFAULT_SSLDIR;
-	char *default_endpoint = DEFAULT_ENDPOINT;
+	char *default_endpoint = DEFAULT_GRAPH_ENDPOINT;
 	char *default_xbps_src = DEFAULT_XBPS_SRC;
 	char *masterdir = NULL;
 	char *hostdir = NULL;
