@@ -18,6 +18,9 @@
 		<event name = "*">
 			<action name = "send" message = "IFORGOTU" />
 		</event>
+		<after>
+			<action name = "ensure configuration is set" />
+		</after>
 	</state>
 	<state name = "file finding">
 		A big state because we want this to always work and to be

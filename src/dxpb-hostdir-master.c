@@ -49,8 +49,12 @@ run(int flags, const char *ssldir, const char *sdir, const char *rdir,
 	if (flags & VERBOSE_FLAG)
 		zstr_sendx(log_client, "VERBOSE", NULL);
 
+	zstr_sendx(file_actor, "SET", "dxpb/stagingdir", sdir, NULL);
+	zstr_sendx(file_actor, "SET", "dxpb/repodir", rdir, NULL);
 	zstr_sendx(file_actor, "BIND", file_endpoint, NULL);
-	zstr_sendx(file_actor, "CONSTRUCT", graph_endpoint, NULL);
+
+	zstr_sendx(log_client, "SET LOGDIR", ldir, NULL);
+	zstr_sendx(log_client, "CONSTRUCT", graph_endpoint, NULL);
 
 	zpoller_t *polling = zpoller_new(file_actor, log_client);
 	assert(polling);

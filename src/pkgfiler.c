@@ -128,7 +128,7 @@ struct _server_t {
 	zhash_t *hunts;
 	zlist_t *followups;
 	zhash_t *peering; // list of struct filefetch *
-	char *hostdir;
+	char *repodir;
 	char *stagingdir;
 	uint8_t max_fetch_slots;
 	uint8_t available_fetch_slots;
@@ -172,7 +172,7 @@ server_initialize (server_t *self)
 	self->followups = zlist_new();
 	self->hunts = zhash_new();
 	self->peering = zhash_new();
-	self->hostdir = NULL;
+	self->repodir = NULL;
 	self->stagingdir = NULL;
 	//  Construct properties here
 	return 0;
@@ -269,12 +269,12 @@ pkgfiler_test (bool verbose)
 static void
 check_for_pkg_locally (client_t *self)
 {
-	assert(self->server->hostdir);
+	assert(self->server->repodir);
 	char *pkgfile = bxbps_pkg_to_filename(
 			pkgfiles_msg_pkgname(self->message),
 			pkgfiles_msg_version(self->message),
 			pkgfiles_msg_arch(self->message));
-	int present = bfs_find_file_in_subdir(self->server->hostdir, pkgfile, 0);
+	int present = bfs_find_file_in_subdir(self->server->repodir, pkgfile, 0);
 	if (present)
 		engine_set_exception(self, pkg_here_event);
 	free(pkgfile);
@@ -308,6 +308,7 @@ broadcast_pkg_locate_request (client_t *self)
 static void
 delete_package (client_t *self)
 {
+	assert(self->server->stagingdir);
 	char *filename = bxbps_pkg_to_filename(
 			pkgfiles_msg_pkgname(self->message),
 			pkgfiles_msg_version(self->message),
@@ -315,7 +316,7 @@ delete_package (client_t *self)
 	uint32_t parA, parB;
 	parA = parB = 0;
 	char *subdir;
-	int rc = bfs_find_file_in_subdir(self->server->hostdir, filename, &subdir);
+	int rc = bfs_find_file_in_subdir(self->server->repodir, filename, &subdir);
 	if (rc == 0)
 		return; // Package doesn't exist to be deleted.
 	char *delfilename = bstring_add(bstring_add(bstring_add(bstring_add(
@@ -650,7 +651,7 @@ postprocess_chunk (client_t *self)
 
 		uint32_t parA, parB;
 		parA = parB = 0;
-		char *newfilepath = bstring_add(NULL, self->server->hostdir,
+		char *newfilepath = bstring_add(NULL, self->server->repodir,
 				&parA, &parB);
 		if (newfilepath[parB] != '/')
 			newfilepath = bstring_add(newfilepath, "/", &parA, &parB);
@@ -728,4 +729,22 @@ parse_memos (client_t *self)
 	if (memo)
 		free(memo);
 	memo = NULL;
+}
+
+
+//  ---------------------------------------------------------------------------
+//  ensure_configuration_is_set
+//
+
+static void
+ensure_configuration_is_set (client_t *self)
+{
+	if (!self->server->stagingdir)
+		self->server->stagingdir = zconfig_get(self->server->config, "dxpb/stagingdir", NULL);
+	if (!self->server->repodir)
+		self->server->repodir = zconfig_get(self->server->config, "dxpb/repodir", NULL);
+	if (!self->server->stagingdir || !self->server->repodir) {
+		fprintf(stderr, "Caller neglected to set both staging and repo directory paths\n");
+		exit(ERR_CODE_BAD);
+	}
 }

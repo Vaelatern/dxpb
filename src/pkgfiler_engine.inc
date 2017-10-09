@@ -143,6 +143,8 @@ static int
 static int
     s_client_handle_ticket (zloop_t *loop, int timer_id, void *argument);
 static void
+    ensure_configuration_is_set (client_t *self);
+static void
     check_for_pkg_locally (client_t *self);
 static void
     broadcast_pkg_locate_request (client_t *self);
@@ -507,6 +509,12 @@ s_client_execute (s_client_t *self, event_t event)
                         pkgfiles_msg_print (self->server->message);
                         pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
                         pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception) {
+                        //  ensure configuration is set
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ ensure configuration is set", self->log_prefix);
+                        ensure_configuration_is_set (&self->client);
                     }
                     if (!self->exception)
                         self->state = file_finding_state;
