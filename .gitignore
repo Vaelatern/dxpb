@@ -2,5 +2,7 @@
 **/dxpb-*
 !**/dxpb-*.c
 !**/dxpb-common.h
+!**/dxpb-*-help.txt
+!**/dxpb-*-help.inc
 **/.container/
 src/gmon.out

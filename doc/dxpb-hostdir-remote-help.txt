@@ -1,0 +1,20 @@
+usage: dxpb-hostdir-remote [arguments]
+
+Arguments:
+  -h		This help, and exit
+  -L		Print license information and exit
+  -H <dir>	Hostdir (binpkgs) which is the root of the repository
+		Must have read/write access.
+  -k <dir>	Directory with owner-only read/write for storing curve keys
+                If not specified, no encryption will be performed, warnings
+		will be printed, and the entire setup will be unfit for
+		operation over an insecure network.
+  -f <endpoint>	ZeroMQ endpoint for connecting to the hostdir agent
+
+The following flags have defaults.
+  -h: ./
+  -k: /etc/dxpb/curve/
+  -f tcp://127.0.0.1:5196
+
+-f has a default simply for matters of testing, though with ssh trickery the
+default may have a real value.

@@ -1,0 +1,27 @@
+usage: dxpb-builder [arguments]
+
+Arguments:
+  -h		This help, and exit
+  -L		Print license information and exit
+  -g <endpoint>	ZeroMQ endpoint to connect to the package grapher
+  -k <dir>	Directory with owner-only read/write for storing curve keys
+                If not specified at all or the directory does not exist with
+		read permissions, no encryption will be performed, warnings
+		will be printed, and the entire setup will be unfit for
+		operation over an insecure network.
+  -H <dir>	Hostdir builder can use
+  -m <dir>	Masterdir builder can use
+  -x <path>	Path to xbps-src executable
+
+The following flags have defaults.
+  -H: ./hostdir
+  -g: tcp://127.0.0.1:5195
+  -k: /etc/dxpb/curve/
+  -m: ./masterdir
+  -x: ./xbps-src
+
+It is important to note that, if -k is valid, the client key used by this
+process will be whatever argument 0 is to the process, appended with ".key".
+For example, if you call
+`chpst -u xbuilder1 -b builder1 /usr/bin/dxpb-builder`, then the key
+`/etc/dxpb/curve/builder1.key` will be used to authenticate to the server.

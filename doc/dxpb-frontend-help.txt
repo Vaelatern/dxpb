@@ -1,0 +1,14 @@
+usage: dxpb-frontend [arguments]
+
+Arguments:
+  -h		This help, and exit
+  -L		Print license information and exit
+  -k <dir>	Directory with owner-only read/write for storing curve keys If
+  		not specified, no encryption will be performed, warnings will
+		be printed, and the entire setup will be unfit for operation
+		over an insecure network.
+  -g <endpoint>	ZeroMQ endpoint to bind the graph master
+
+The following flags have defaults.
+  -k: /etc/dxpb/curve/
+  -g: tcp://127.0.0.1:5195
