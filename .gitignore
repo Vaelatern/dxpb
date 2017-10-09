@@ -1,5 +1,6 @@
 **/*.o
 **/dxpb-*
 !**/dxpb-*.c
+!**/dxpb-common.h
 **/.container/
 src/gmon.out
