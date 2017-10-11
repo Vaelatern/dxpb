@@ -6,6 +6,15 @@ Yo.
 
 2017-October-14
 
+# List of packages necessary for build
+
+- zeromq-devel
+- czmq-devel
+- sqlite-devel
+- libgit2-devel
+- libbsd-devel
+- libxbps-devel
+
 # Information for development
 
 This space will be used for rambling, unordered comments for right now.
