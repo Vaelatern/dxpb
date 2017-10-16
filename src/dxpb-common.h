@@ -3,8 +3,7 @@
 
 void	prologue(const char *);
 void	print_license(void);
-
-
+void	flushsock(void *, const char *);
 
 #define DEFAULT_SSLDIR "/etc/dxpb/curve/"
 

@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <czmq.h>
 #include "dxpb-common.h"
 
 #define VERSION "alpha-0.1.0"
@@ -30,4 +31,13 @@ print_license(void)
 {
 #include "license.inc"
 	printf("%.*s", ___COPYING_len, ___COPYING);
+}
+
+void
+flushsock(void *sock, const char *prefix)
+{
+	char *tmp = zstr_recv(sock);
+	fprintf(stderr, "%s: %s\n", prefix, tmp);
+	free(tmp);
+	zsock_flush(sock);
 }
