@@ -47,9 +47,7 @@ run(int flags, const char *endpoint, const char *xbps_src)
 	zsock_flush(rc);
 
 	while (retVal == ERR_CODE_OK && (rc = zpoller_wait(polling, -1)) != NULL) {
-		fprintf(stderr, "pkgimport-agent: %s\n", zstr_recv(rc));
-		// We don't have any communication specified.
-		zsock_flush(rc);
+		flushsock(rc, "pkgimport-agent");
 	}
 
 	zstr_sendx(actor, "$TERM", NULL);
