@@ -62,7 +62,7 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "Lvr:i:x:";
+	const char *optstring = "hLvr:i:x:";
 	char *default_endpoint = DEFAULT_IMPORT_ENDPOINT;
 	char *default_xbps_src = DEFAULT_XBPS_SRC;
 	char *endpoint = NULL;
