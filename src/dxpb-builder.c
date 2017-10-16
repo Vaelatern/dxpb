@@ -26,7 +26,7 @@ help(void)
 char *
 gimme_unix_socket()
 {
-	char *retVal = bfs_new_tmpsock("/var/run/dxpb/dxpb-XXXXXX", "default");
+	char *retVal = bfs_new_tmpsock("/var/run/dxpb/dxpb-XXXXXX", "builder-1");
 	if (!retVal)
 		exit(ERR_CODE_BAD);
 	return retVal;
