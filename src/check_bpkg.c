@@ -1,5 +1,5 @@
 #include "bpkg.c"
-#include "check_main.c"
+#include "check_main.inc"
 
 START_TEST(test_bpkg_enum_lookup)
 {

@@ -1,5 +1,5 @@
 #include "btranslate.c"
-#include "check_main.c"
+#include "check_main.inc"
 
 #include "pkgimport_msg.h"
 #include "pkggraph_msg.h"

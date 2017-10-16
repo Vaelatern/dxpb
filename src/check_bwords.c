@@ -1,5 +1,5 @@
 #include "bwords.c"
-#include "check_main.c"
+#include "check_main.inc"
 
 START_TEST(test_bwords_add_word)
 {

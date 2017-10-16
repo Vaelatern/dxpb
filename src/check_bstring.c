@@ -1,5 +1,5 @@
 #include "bstring.c"
-#include "check_main.c"
+#include "check_main.inc"
 
 START_TEST(test_bstring_add)
 {

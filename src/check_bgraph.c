@@ -1,5 +1,5 @@
 #include "bgraph.c"
-#include "check_main.c"
+#include "check_main.inc"
 
 START_TEST(test_basic_bgraph)
 {

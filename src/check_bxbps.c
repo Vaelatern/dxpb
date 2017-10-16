@@ -1,6 +1,6 @@
 #include "bxbps.c"
 
-#include "check_main.c"
+#include "check_main.inc"
 #include <check.h>
 
 START_TEST(test_bxbps_get_pkgname)

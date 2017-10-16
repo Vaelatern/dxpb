@@ -1,7 +1,7 @@
 #error "This class must be re-worked before it can be relied upon as a test of bworker"
 
 #include "bworker.c"
-#include "check_main.c"
+#include "check_main.inc"
 
 #define GIMME_A_SUBGROUP struct bworkgroup *group = NULL; struct bworksubgroup *subgroup = NULL; group = bworker_group_new(); ck_assert_ptr_nonnull(group); ck_assert_int_eq(group->num_workers, 0); ck_assert_int_eq(group->direct_use, 1); subgroup = bworker_subgroup_init(group); ck_assert_ptr_nonnull(subgroup); ck_assert_int_eq(group->direct_use, 0);
 
