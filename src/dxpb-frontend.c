@@ -1,8 +1,10 @@
 /*
- * dxpb-pkgimport-agent.c
+ * dxpb-frontend.c
  *
- * Manager for xbps-src readers
+ * Manager for remote builders, reporting to grapher
  */
+
+#define _POSIX_C_SOURCE 200809L
 
 #include <getopt.h>
 #include <czmq.h>

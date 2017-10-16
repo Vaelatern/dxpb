@@ -4,6 +4,8 @@
  * Runtime for xbps-src reader.
  */
 
+#define _POSIX_C_SOURCE 200809L
+
 #include <getopt.h>
 #include <czmq.h>
 #include "pkgfiler_remote.h"

@@ -12,6 +12,8 @@
 @end
 */
 
+#define _POSIX_C_SOURCE 200809L
+
 #include "pkgimport_server.h"
 #include "pkgimport_msg.h"
 #include "dxpb.h"

@@ -12,6 +12,8 @@
    @end
    */
 
+#define _POSIX_C_SOURCE 200809L
+
 #include "pkgfiler.h"
 //  TODO: Change these to match your project's needs
 #include "../include/pkgfiles_msg.h"

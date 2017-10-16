@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 200809L
+
 #error "This class must be re-worked before it can be relied upon as a test of bworker"
 
 #include "bworker.c"

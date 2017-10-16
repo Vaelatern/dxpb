@@ -1,8 +1,10 @@
 /*
- * dxpb-graph.c
+ * dxpb-grapher.c
  *
  * Heart of dxpb
  */
+
+#define _POSIX_C_SOURCE 200809L
 
 #include <getopt.h>
 #include <czmq.h>

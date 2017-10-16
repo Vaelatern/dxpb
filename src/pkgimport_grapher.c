@@ -12,6 +12,8 @@
 @end
 */
 
+#define _POSIX_C_SOURCE 200809L
+
 #include <sqlite3.h>
 #include <czmq.h>
 #include "pkgimport_grapher.h"

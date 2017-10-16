@@ -1,8 +1,10 @@
 /*
- * dxpb_pkgimport_agent.c
+ * dxpb-poke.c
  *
- * Runtime for xbps-src reader.
+ * Notification one-shot to tell pkgimport-master to check git
  */
+
+#define _POSIX_C_SOURCE 200809L
 
 #include <getopt.h>
 #include "dxpb.h"

@@ -4,6 +4,8 @@
     =========================================================================
 */
 
+#define _POSIX_C_SOURCE 200809L
+
 /*
 @header
     Description of class for man page.

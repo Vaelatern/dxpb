@@ -11,6 +11,9 @@
    Detailed discussion of the class, if any.
    @end
    */
+
+#define _POSIX_C_SOURCE 200809L
+
 #include "pkggraph_worker.h"
 //  TODO: Change these to match your project's needs
 #include "./pkggraph_msg.h"
