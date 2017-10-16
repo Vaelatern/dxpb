@@ -33,6 +33,8 @@ run(int flags, const char *endpoint, const char *hostdir, const char *ssldir)
 	assert(client);
 	actor = pkgfiler_remote_actor(client);
 	assert(actor);
+	if (flags & VERBOSE_FLAG)
+		zstr_sendx(actor, "SET VERBOSE", 1, NULL);
 	zstr_sendx(actor, "SET HOSTDIR", hostdir, NULL);
 	zstr_sendx(actor, "CONSTRUCT", endpoint, NULL);
 
