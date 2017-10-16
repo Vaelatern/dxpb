@@ -43,13 +43,19 @@ spawn_child(char *endpoint, char *masterdir, char *hostdir, char *xbps_src)
 		perror("Ran into issue in first fork");
 		exit(ERR_CODE_NOFORK);
 	case 0: /* I am a child */
-		mypipe = zsock_new_pair(endpoint);
+		mypipe = zsock_new(ZMQ_PAIR);
 		assert(mypipe);
+		// rc1 and rc2 else they are allocated on the stack at the same
+		// time and they should be allowed to be different values.
+		int rc1 = zsock_bind(mypipe, "ipc://%s", endpoint);
+		assert(rc1 != -1);
 		exit(bbuilder_agent(mypipe, masterdir, hostdir, xbps_src));
 	default:
 		sched_yield(); /* Give the child space to mature */
-		zsock_t *retVal = zsock_new_pair(endpoint);
+		zsock_t *retVal = zsock_new(ZMQ_PAIR);
 		assert(retVal);
+		int rc2 = zsock_connect(retVal, "ipc://%s", endpoint);
+		assert(rc2 != -1);
 		return retVal;
 	}
 }
