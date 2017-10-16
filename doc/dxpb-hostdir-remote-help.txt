@@ -9,12 +9,13 @@ Arguments:
                 If not specified, no encryption will be performed, warnings
 		will be printed, and the entire setup will be unfit for
 		operation over an insecure network.
-  -f <endpoint>	ZeroMQ endpoint for connecting to the hostdir agent
+  -f <endpoint>	ZeroMQ endpoint for connecting to the hostdir agent. A default
+		is provided, but mostly for testing purposes.
 
 The following flags have defaults.
-  -h: ./
+  -H: ./
   -k: /etc/dxpb/curve/
-  -f tcp://127.0.0.1:5196
+  -f: tcp://127.0.0.1:5196
 
 -f has a default simply for matters of testing, though with ssh trickery the
-default may have a real value.
+default may be usable in a production setup.

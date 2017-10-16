@@ -21,6 +21,6 @@ The following flags have defaults.
   -k: /etc/dxpb/curve/
   -l: /var/lib/dxpb/logs/
   -s: /var/lib/dxpb/staging/
-  -h: /var/lib/dxpb/pkgs/
+  -r: /var/lib/dxpb/pkgs/
   -g: tcp://127.0.0.1:5195
   -f: tcp://127.0.0.1:5196
