@@ -23,15 +23,17 @@ help(void)
 	printf("%.*s\n", ___doc_dxpb_hostdir_master_help_txt_len, ___doc_dxpb_hostdir_master_help_txt);
 }
 
-void
+enum ret_codes
 run(int flags, const char *ssldir, const char *sdir, const char *rdir,
 		const char *ldir, const char *file_endpoint,
 		const char *graph_endpoint)
 {
 	SSLDIR_UNUSED(ssldir);
 	assert((flags & ERR_FLAG) == 0);
-	zactor_t *file_actor;
+	zactor_t *file_actor, *log_actor;
 	pkggraph_filer_t *log_client;
+	int rc;
+	enum ret_codes retVal = ERR_CODE_OK;
 
 	file_actor = zactor_new(pkgfiler, "pkgfiler");
 	if (flags & VERBOSE_FLAG)
@@ -39,31 +41,43 @@ run(int flags, const char *ssldir, const char *sdir, const char *rdir,
 
 	log_client = pkggraph_filer_new();
 	assert(log_client);
+	log_actor = pkggraph_filer_actor(log_client);
 	if (flags & VERBOSE_FLAG)
-		zstr_sendx(log_client, "VERBOSE", NULL);
+		zstr_sendx(log_actor, "VERBOSE", NULL);
 
 	zstr_sendx(file_actor, "SET", "dxpb/stagingdir", sdir, NULL);
 	zstr_sendx(file_actor, "SET", "dxpb/repodir", rdir, NULL);
 	zstr_sendx(file_actor, "BIND", file_endpoint, NULL);
 
-	zstr_sendx(log_client, "SET LOGDIR", ldir, NULL);
-	zstr_sendx(log_client, "CONSTRUCT", graph_endpoint, NULL);
+	zstr_sendx(log_actor, "SET LOGDIR", ldir, NULL);
+	zstr_sendx(log_actor, "CONSTRUCT", graph_endpoint, NULL);
 
-	zpoller_t *polling = zpoller_new(file_actor, log_client);
+	zpoller_t *polling = zpoller_new(file_actor);
 	assert(polling);
-	zactor_t *rc;
-	while ((rc = zpoller_wait(polling, -1)) != NULL) {
+	rc = zpoller_add(polling, log_actor);
+	assert(rc == 0);
+
+	char *tmp = zstr_recv(log_actor);
+	if (!strcmp(tmp, "FAILURE"))
+		retVal = ERR_CODE_SADSOCK;
+	else if (!strcmp(tmp, "SUCCESS"))
+		retVal = ERR_CODE_OK;
+	zsock_flush(log_actor);
+
+
+	zactor_t *sock_to_clear;
+	while (retVal == ERR_CODE_OK && (sock_to_clear = zpoller_wait(polling, -1)) != NULL) {
 		// We don't have any communication specified.
-		zsock_flush(rc);
+		flushsock(sock_to_clear, "hostdir-master");
 	}
 
 	zstr_sendx(file_actor, "$TERM", NULL);
-	zstr_sendx(log_client, "$TERM", NULL);
+	zstr_sendx(log_actor, "$TERM", NULL);
 
 	zpoller_destroy(&polling);
 	zactor_destroy(&file_actor);
 	pkggraph_filer_destroy(&log_client);
-	return;
+	return retVal;
 }
 
 int
@@ -138,6 +152,5 @@ main(int argc, char * const *argv)
 	if (!graph_endpoint)
 		graph_endpoint = default_graph_endpoint;
 
-	run(flags, ssldir, stagingdir, repodir, logdir, file_endpoint, graph_endpoint);
-	return 0;
+	return run(flags, ssldir, stagingdir, repodir, logdir, file_endpoint, graph_endpoint);
 }
