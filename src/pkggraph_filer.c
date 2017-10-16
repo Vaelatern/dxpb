@@ -197,10 +197,12 @@ set_logdir_to_provided (client_t *self)
 	if (self->logfd >= 0)
 		close(self->logfd);
 	self->logdir = strdup(self->args->dir);
-	if (!self->logdir)
+	if (!self->logdir) {
+		perror("Couldn't dupe the logdir path");
 		exit(ERR_CODE_NOMEM);
+	}
 	errno = 0;
-	self->logfd = open(self->logdir, O_RDWR | O_DIRECTORY, 0755);
+	self->logfd = open(self->logdir, O_RDONLY | O_DIRECTORY, 0755);
 	if (errno != 0) {
 		perror("Tried to open the logdir and failed");
 		exit(ERR_CODE_BADDIR);
