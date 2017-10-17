@@ -62,15 +62,15 @@ bgit_ff(git_repository *repo)
 	git_checkout_options opts = GIT_CHECKOUT_OPTIONS_INIT;
 	opts.checkout_strategy = BGIT_CHECKOUT_STRATEGY;
 
-	/* Fetch the origin, updating refs */
-	rc = git_remote_lookup(&remote, repo, "origin");
+	/* Fetch the origin at dxpb-remote, updating refs */
+	rc = git_remote_lookup(&remote, repo, "dxpb-remote");
 	assert(rc == 0);
 	rc = git_remote_get_fetch_refspecs(refspecs, remote);
 	rc = git_remote_fetch(remote, refspecs, NULL, NULL);
 	assert(rc == 0);
 
 	/* Figure out what the new tree is */
-	rc = git_reference_name_to_id(&oid, repo, "refs/remotes/origin/master");
+	rc = git_reference_name_to_id(&oid, repo, "refs/remotes/dxpb-remote/master");
 	assert(rc == 0);
 	rc = git_commit_lookup(&commit, repo, &oid);
 	assert(rc == 0);
@@ -81,7 +81,7 @@ bgit_ff(git_repository *repo)
 	rc = git_checkout_tree(repo, (git_object *)newtree, &opts);
 	assert(rc == 0);
 
-	/* Move the references to make master mirror origin/master */
+	/* Move the references to make master mirror dxpb-remote/master */
 	rc = git_repository_head(&newref, repo);
 	assert(rc == 0);
 	rc = git_reference_set_target(&lastref, newref, &oid, "fast-forwarding");
