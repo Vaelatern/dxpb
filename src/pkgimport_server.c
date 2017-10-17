@@ -365,7 +365,7 @@ return_job_to_queue (client_t *self)
 static void
 add_all_packages_to_the_queue (client_t *self)
 {
-	bfs_srcpkgs_to_cb(zlist_append_wrapper, (void *)self->server->toread);
+	bfs_srcpkgs_to_cb(self->server->repopath, zlist_append_wrapper, (void *)self->server->toread);
 }
 
 //  ---------------------------------------------------------------------------

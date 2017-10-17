@@ -4,7 +4,7 @@
  * Just a function for dealing with the filesystem directly.
  */
 
-void	 bfs_srcpkgs_to_cb(int (*)(void *, char *), void *);
+void	 bfs_srcpkgs_to_cb(const char *, int (*)(void *, char *), void *);
 int	 bfs_file_exists(const char *);
 int	 bfs_find_file_in_subdir(const char *, const char *, char **);
 char	*bfs_new_tmpsock(char *, char *);

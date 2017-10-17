@@ -21,8 +21,6 @@
 #include "dxpb.h"
 #include "bstring.h"
 
-const char *REPOPATH = "/var/cache/dxpb/void-packages/srcpkgs/";
-
 struct sockaddr_un {
 	unsigned short sun_family;  /* AF_UNIX */
 	char sun_path[108]; /* Max length allowed by bind()? */
@@ -35,15 +33,18 @@ struct sockaddr_un {
  * assumed to be in the same dir.
  */
 void
-bfs_srcpkgs_to_cb(int (*cb)(void *, void *), void *topass)
+bfs_srcpkgs_to_cb(const char *repopath, int (*cb)(void *, void *), void *topass)
 {
 	DIR *dir = NULL;
 	struct dirent *dp = NULL;
 	struct stat sinfo = {0};
 	int fd_top, rc;
 
+	char *srcpkgspath = strdup(repopath);
+	srcpkgspath = bstring_add(srcpkgspath, "/", NULL, NULL);
+	srcpkgspath = bstring_add(srcpkgspath, "srcpkgs", NULL, NULL);
 	errno = 0;
-	if ((fd_top = open(REPOPATH, O_DIRECTORY | O_RDONLY)) == 0) {
+	if ((fd_top = open(srcpkgspath, O_DIRECTORY | O_RDONLY)) == 0) {
 		perror("Can not open fd to dir");
 		exit(ERR_CODE_BADDIR);
 	}
