@@ -350,11 +350,9 @@ return_job_to_queue (client_t *self)
 	if (self->imaworker == 0 || self->curjob == NULL) {
 		return;
 	}
-	zlist_t *queue = self->server->toread;
-	zlist_t *actives = self->server->curjobs;
 	char *job = self->curjob;
-	zlist_push(queue, job);
-	zlist_remove(actives, job);
+	zlist_push(self->server->toread, job);
+	zlist_remove(self->server->curjobs, job);
 	self->curjob = NULL;
 }
 
