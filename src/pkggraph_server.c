@@ -338,18 +338,22 @@ act_on_job_return (client_t *self)
 		exit(ERR_CODE_BAD);
 	}
 	if (failed) {
-		if (self->server->pub)
+		if (self->server->pub) {
+			zstr_sendm(self->server->pub, "ERROR");
 			zstr_sendf(self->server->pub, "%s/%s/%s: build failed: %s",
 					pkggraph_msg_pkgname(self->message),
 					pkggraph_msg_version(self->message),
 					pkggraph_msg_arch(self->message),
 					reason);
+		}
 	} else {
-		if (self->server->pub)
+		if (self->server->pub) {
+			zstr_sendm(self->server->pub, "NORMAL");
 			zstr_sendf(self->server->pub, "%s/%s/%s: built successfully",
 					pkggraph_msg_pkgname(self->message),
 					pkggraph_msg_version(self->message),
 					pkggraph_msg_arch(self->message));
+		}
 	}
 
 	struct memo *memo = malloc(sizeof(struct memo));
@@ -392,6 +396,13 @@ route_log (client_t *self)
 		engine_send_event(self->server->storage, send_the_log_event);
 		self->server->storage->num_logs_sent = 0;
 	}
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "%s/%s/%s: routing log",
+				pkggraph_msg_pkgname(self->message),
+				pkggraph_msg_version(self->message),
+				pkggraph_msg_arch(self->message));
+	}
 }
 
 
@@ -404,6 +415,10 @@ remove_self_as_grapher (client_t *self)
 {
 	assert(self->server->grapher == self);
 	self->server->grapher = NULL;
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "Removing grapher");
+	}
 }
 
 
@@ -464,6 +479,10 @@ transform_worker_job_for_assignment (client_t *self)
 	pkggraph_msg_set_pkgname(self->message, wrkr->job.name);
 	pkggraph_msg_set_version(self->message, wrkr->job.ver);
 	pkggraph_msg_set_arch(self->message, pkg_archs_str[wrkr->job.arch]);
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "Telling worker it's assigned");
+	}
 	wrkr = NULL;
 }
 
@@ -505,6 +524,10 @@ tell_the_worker_to_start_work (client_t *self)
 	} else {
 		fprintf(stderr, "Couldn't assign a measly job\n");
 		exit(ERR_CODE_BAD);
+	}
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "Finished telling worker it's assigned");
 	}
 }
 
@@ -557,6 +580,10 @@ parse_memo (client_t *self)
 	}
 	free(memo);
 	memo = NULL;
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "Grapher told to parse a memo");
+	}
 }
 
 
@@ -613,6 +640,10 @@ remove_worker (client_t *self)
 	zlist_append(self->server->memos_to_grapher, memo);
 
 	bworker_group_remove(wrkr);
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "Bworker removed");
+	}
 }
 
 
@@ -634,6 +665,10 @@ tell_logger_to_reset_log (client_t *self)
 	if (self->server->storage) {
 		engine_send_event(self->server->storage, send_the_log_event);
 		self->server->storage->num_logs_sent = 0;
+	}
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "Telling logger to reset log");
 	}
 }
 

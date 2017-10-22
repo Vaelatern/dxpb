@@ -46,6 +46,7 @@ typedef struct {
 	client_args_t *args;        //  Arguments from methods
 
 	//  Specific properties for this application
+	zsock_t			*pub;
 	char 			 hash[256];
 	char			*dbpath;
 	zlist_t			*nextup[ARCH_HOST];
@@ -67,6 +68,7 @@ client_initialize (client_t *self)
 	 * present. This has the effect of a keepalive and prevents us from 
 	 * being marked obsolete just because we've had nothing to do.
 	 */
+	self->pub = NULL;
 	self->workers = bworker_group_new();
 	engine_set_expiry(self, 15000);
 	self->pkggraph = bgraph_new();
@@ -149,6 +151,13 @@ create_pkg_from_info (client_t *self)
 	int rc;
 	rc = bgraph_insert_pkg(self->pkggraph, bpkg_read(self->message));
 	assert(rc == 0); // only != 0 if top level graph is very broken.
+	if (self->pub) {
+		zstr_sendm(self->pub, "DEBUG");
+		zstr_sendf(self->pub, "added package to graph: %s/%s/%s",
+				pkgimport_msg_pkgname(self->message),
+				pkgimport_msg_version(self->message),
+				pkgimport_msg_arch(self->message));
+	}
 }
 
 //  ---------------------------------------------------------------------------
@@ -173,6 +182,11 @@ mark_pkg_for_deletion (client_t *self)
 	rc = pkgfiles_msg_send(msg, self->msgpipe);
 	if (rc != 0)
 		return; // TODO: Perhaps take action here.
+	if (self->pub) {
+		zstr_sendm(self->pub, "DEBUG");
+		zstr_sendf(self->pub, "Marked package for delition: %s",
+				pkgimport_msg_pkgname(self->message));
+	}
 	pkgfiles_msg_destroy(&msg);
 }
 
@@ -203,10 +217,16 @@ add_worker_to_list (client_t *self)
 
 	if (bworker_group_insert(self->workers, self->args->addr, self->args->check,
 				targetarch, hostarch, self->args->iscross,
-				self->args->cost) == UINT16_MAX)
-		return; // Just ignoring any unproblematic failure silently.
-	else // Success adding workers
-		return; // The state machine will take care of the rest
+				self->args->cost) == UINT16_MAX) {
+		if (self->pub) {
+			zstr_sendm(self->pub, "DEBUG");
+			zstr_sendf(self->pub, "Failed to add worker to grapher");
+		}
+	} else // Success adding workers
+		if (self->pub) {
+			zstr_sendm(self->pub, "DEBUG");
+			zstr_sendf(self->pub, "Added worker to grapher");
+		}
 }
 
 //  ---------------------------------------------------------------------------
@@ -219,7 +239,7 @@ pkgimport_grapher_ask_worker_to_help(client_t *self, struct bworker *wrkr, struc
 {
 	assert(pkg->arch == wrkr->arch);
 	pkggraph_msg_t *msg;
-	int rc;
+	int rc = ERR_CODE_OK;
 
 	rc = btranslate_prepare_socket(self->msgpipe, TRANSLATE_GRAPH);
 	if (rc != ERR_CODE_OK)
@@ -235,9 +255,23 @@ pkgimport_grapher_ask_worker_to_help(client_t *self, struct bworker *wrkr, struc
 	rc = pkggraph_msg_send(msg, self->msgpipe);
 	if (rc != 0)
 		rc = ERR_CODE_SADSOCK;
-	pkggraph_msg_destroy(&msg);
+	if (rc == ERR_CODE_OK && self->pub) {
+		zstr_sendm(self->pub, "NORMAL");
+		zstr_sendf(self->pub, "Asked worker to build %s/%s/%s",
+				pkggraph_msg_pkgname(msg),
+				pkggraph_msg_version(msg),
+				pkggraph_msg_arch(msg));
+	} else 	if (rc != ERR_CODE_OK && self->pub) {
+		zstr_sendm(self->pub, "ERROR");
+		zstr_sendf(self->pub, "Failed to ask worker to build %s/%s/%s",
+				pkggraph_msg_pkgname(msg),
+				pkggraph_msg_version(msg),
+				pkggraph_msg_arch(msg));
+	}
 
-	return ERR_CODE_OK;
+
+	pkggraph_msg_destroy(&msg);
+	return rc;
 }
 
 static enum ret_codes
@@ -258,6 +292,13 @@ pkgimport_grapher_ask_around_for_pkg(client_t *self, struct pkg *pkg)
 	rc = pkgfiles_msg_send(msg, self->msgpipe);
 	if (rc != 0)
 		rc = ERR_CODE_SADSOCK;
+	if (self->pub) {
+		zstr_sendm(self->pub, "DEBUG");
+		zstr_sendf(self->pub, "Asking filer for %s/%s/%s",
+				pkgfiles_msg_pkgname(msg),
+				pkgfiles_msg_version(msg),
+				pkgfiles_msg_arch(msg));
+	}
 	pkgfiles_msg_destroy(&msg);
 
 	return ERR_CODE_OK;
@@ -286,6 +327,10 @@ pkgimport_grapher_ask_files_for_missing_pkgs(client_t *self)
 				break;
 		}
 	}
+	if (self->pub) {
+		zstr_sendm(self->pub, "DEBUG");
+		zstr_sendf(self->pub, "Asked files to confirm packages");
+	}
 	return retVal;
 }
 
@@ -297,11 +342,24 @@ static void
 write_graph_to_db (client_t *self)
 {
 	assert(self->dbpath);
+	if (self->pub) {
+		zstr_sendm(self->pub, "DEBUG");
+		zstr_sendf(self->pub, "Writing all packages to db");
+	}
 	int rc = bdb_write_all(self->dbpath, self->pkggraph, self->hash);
 	if (rc != ERR_CODE_OK) {
-		perror("rc != ERR_CODE_OK for writing stuff");
+		perror("rc != ERR_CODE_OK for writing packages to database");
 		/* TODO: XXX: MUST HAVE a provision to work around this!
 		     2017-05-02*/
+		if (self->pub) {
+			zstr_sendm(self->pub, "DEBUG");
+			zstr_sendf(self->pub, "Failed to write packages to db");
+		}
+	} else {
+		if (self->pub) {
+			zstr_sendm(self->pub, "DEBUG");
+			zstr_sendf(self->pub, "Finished writing all packages to db");
+		}
 	}
 }
 
@@ -312,13 +370,20 @@ write_graph_to_db (client_t *self)
 static void
 resolve_graph (client_t *self)
 {
+	if (self->pub) {
+		zstr_sendm(self->pub, "TRACE");
+		zstr_sendf(self->pub, "Beginning grpah resolution");
+	}
 	int rc = bgraph_attempt_resolution(self->pkggraph);
 	if (rc != ERR_CODE_OK) {
-		; /* An action here may be well advised.
-		     Should not be going unstable though. We can be stable and
-		     unresolveable, just certain packages may be unworkable.
-		     Maybe a log notice to IRC about how this might need
-		     fixing.*/
+		if (self->pub) {
+			zstr_sendm(self->pub, "ERROR");
+			zstr_sendf(self->pub, "Failed grpah resolution");
+		}
+	}
+	if (self->pub) {
+		zstr_sendm(self->pub, "TRACE");
+		zstr_sendf(self->pub, "Ended grpah resolution");
 	}
 }
 
@@ -333,6 +398,10 @@ get_packages (client_t *self)
 		if (self->nextup[i] != NULL)
 			zlist_destroy(&(self->nextup[i]));
 		self->nextup[i] = bgraph_what_next_for_arch(self->pkggraph, i);
+	}
+	if (self->pub) {
+		zstr_sendm(self->pub, "TRACE");
+		zstr_sendf(self->pub, "Got packages");
 	}
 }
 
@@ -349,6 +418,10 @@ store_hash (client_t *self)
 	else
 		self->hash[0] = '\0';
 	self->hash[255] = '\0'; // Ensure a null termination.
+	if (self->pub) {
+		zstr_sendm(self->pub, "TRACE");
+		zstr_sendf(self->pub, "Saved git hash");
+	}
 }
 
 //  ---------------------------------------------------------------------------
@@ -360,6 +433,10 @@ read_all_from_db (client_t *self)
 {
 	assert(self->dbpath);
 	int rc;
+	if (self->pub) {
+		zstr_sendm(self->pub, "TRACE");
+		zstr_sendf(self->pub, "About to read pkgs from the db");
+	}
 	struct bdb_bound_params *params = bdb_params_init_ro(self->dbpath);
 	if (params->DO_NOT_USE_PARAMS)
 		self->hash[0] = '\0';
@@ -376,6 +453,10 @@ read_all_from_db (client_t *self)
 		}
 	}
 	bdb_params_destroy(&params);
+	if (self->pub) {
+		zstr_sendm(self->pub, "TRACE");
+		zstr_sendf(self->pub, "Finished reading packages from db");
+	}
 }
 
 //  ---------------------------------------------------------------------------

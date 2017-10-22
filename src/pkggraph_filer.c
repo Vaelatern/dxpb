@@ -37,6 +37,7 @@ typedef struct {
     client_args_t *args;        //  Arguments from methods
 
     //  Add specific properties for your application
+    zsock_t *pub;
     char *logdir;
     int logfd;
 } client_t;
@@ -50,6 +51,7 @@ typedef struct {
 static int
 client_initialize (client_t *self)
 {
+	self->pub = NULL;
 	self->logdir = NULL;
 	self->logfd = -1;
 	return 0;
@@ -157,6 +159,13 @@ write_log_to_file (client_t *self)
 		fprintf(stderr, "Obviously the author did not anticipate log chunks larger than SSIZE_MAX\n");
 		dprintf(destfd, "dxpb=> If you see this, please fix write_log_to_file.\n");
 		dprintf(destfd, "dxpb=> Obviously the author did not anticipate log chunks larger than SSIZE_MAX\n");
+		if (self->pub) {
+			zstr_sendm(self->pub, "DEBUG");
+			zstr_sendf(self->pub, "Log chunk exceeded SSIZE_MAX: %s/%s/%s",
+					pkggraph_msg_pkgname(self->message),
+					pkggraph_msg_version(self->message),
+					pkggraph_msg_arch(self->message));
+		}
 		goto close;
 	}
 
@@ -167,6 +176,21 @@ write_log_to_file (client_t *self)
 	if (zchunk_size(log) >= SSIZE_MAX || written < (ssize_t)zchunk_size(log)) {
 		perror("Couldn't write complete log");
 		dprintf(destfd, "dxpb=> COuldn't write complete log\n");
+		if (self->pub) {
+			zstr_sendm(self->pub, "DEBUG");
+			zstr_sendf(self->pub, "Could not write log: %s/%s/%s",
+					pkggraph_msg_pkgname(self->message),
+					pkggraph_msg_version(self->message),
+					pkggraph_msg_arch(self->message));
+		}
+	}
+
+	if (self->pub) {
+		zstr_sendm(self->pub, "TRACE");
+		zstr_sendf(self->pub, "Wrote log chunk for %s/%s/%s",
+				pkggraph_msg_pkgname(self->message),
+				pkggraph_msg_version(self->message),
+				pkggraph_msg_arch(self->message));
 	}
 
 close:
@@ -242,4 +266,11 @@ truncate_log (client_t *self)
 	close(destfd);
 	close(verdir);
 	close(pkgdir);
+	if (self->pub) {
+		zstr_sendm(self->pub, "TRACE");
+		zstr_sendf(self->pub, "Truncated log for %s/%s/%s",
+				pkggraph_msg_pkgname(self->message),
+				pkggraph_msg_version(self->message),
+				pkggraph_msg_arch(self->message));
+	}
 }

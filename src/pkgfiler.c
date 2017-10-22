@@ -125,6 +125,7 @@ struct _server_t {
 	zconfig_t *config;          //  Current loaded configuration
 
 	//  Add any properties you need here
+	zsock_t *pub;
 	struct hunt *curhunt;
 	client_t *grapher;
 	zhash_t *hunts;
@@ -170,6 +171,7 @@ get_max_inflight(client_t *self)
 static int
 server_initialize (server_t *self)
 {
+	self->pub = NULL;
 	self->available_fetch_slots = 50;
 	self->followups = zlist_new();
 	self->hunts = zhash_new();
@@ -281,6 +283,15 @@ check_for_pkg_locally (client_t *self)
 		engine_set_exception(self, pkg_here_event);
 	free(pkgfile);
 	pkgfile = NULL;
+
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "%s/%s/%s: looked for file and did%.*s find it",
+				pkgfiles_msg_pkgname(self->message),
+				pkgfiles_msg_version(self->message),
+				pkgfiles_msg_arch(self->message),
+				(!!(present))*3, "n't"); // 3 is strlen("n't")
+	}
 }
 
 
@@ -330,6 +341,13 @@ delete_package (client_t *self)
 	bfs_touch(delfilename);
 	free(delfilename);
 	delfilename = NULL;
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "Deleting %s/%s/%s",
+				pkgfiles_msg_pkgname(self->message),
+				pkgfiles_msg_version(self->message),
+				pkgfiles_msg_arch(self->message));
+	}
 }
 
 
@@ -397,6 +415,14 @@ write_file_chunk (client_t *self)
 	rc = zchunk_write(data, fetch->fp);
 	assert(rc == 0);
 	zchunk_destroy(&data);
+
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "DEBUG");
+		zstr_sendf(self->server->pub, "Wrote chunk for %s/%s/%s",
+				pkgfiles_msg_pkgname(self->message),
+				pkgfiles_msg_version(self->message),
+				pkgfiles_msg_arch(self->message));
+	}
 }
 
 
@@ -700,7 +726,7 @@ ask_for_more (client_t *self)
 
 	for (; get_max_inflight(self) > self->fetch_slots_inflight;
 			self->fetch_slots_inflight++, self->server->available_fetch_slots--) {
-
+		// noop
 	}
 
 }
@@ -731,6 +757,11 @@ parse_memos (client_t *self)
 	if (memo)
 		free(memo);
 	memo = NULL;
+
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "Parsed a memo");
+	}
 }
 
 

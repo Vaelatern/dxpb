@@ -36,6 +36,7 @@ struct _server_t {
 	zconfig_t *config;		  //  Current loaded configuration
 
 	//  Add any properties you need here
+	zsock_t *pub;
 	zlist_t *workers;
 	zlist_t *toread;
 	zlist_t *curjobs;
@@ -87,6 +88,7 @@ struct tmppkg {
 static int
 server_initialize (server_t *self)
 {
+	self->pub = NULL;
 	self->curhash = NULL;
 	self->knowngrapher = NULL;
 	self->workers = zlist_new();
@@ -244,6 +246,10 @@ assign_pending_work (client_t *self)
 				engine_set_next_event(self, ask_worker_to_read_event);
 			else
 				engine_send_event(curwrkr, ask_worker_to_read_event);
+			if (self->server->pub) {
+				zstr_sendm(self->server->pub, "TRACE");
+				zstr_sendf(self->server->pub, "asking to read %s", job);
+			}
 		}
 		curwrkr = zlist_next(wrkrs);
 	}
@@ -298,6 +304,17 @@ route_pkginfo (client_t *self)
 	zlist_append(self->server->tmppkgs, tmp);
 	if (self->server->knowngrapher)
 		engine_send_event(self->server->knowngrapher, process_pkgs_event);
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "DEBUG");
+		zstr_sendf(self->server->pub, "Read pkg as follows: "
+				"%s-%s-%s, cross: %d, broken: %d, "
+				"bootstrap: %d, restricted: %d, native_host: %s,"
+				"native_trgt: %s, cross_host: %s, cross_trgt: %s",
+				tmp->name, tmp->version, tmp->arch, tmp->can_cross,
+				tmp->broken, tmp->bootstrap, tmp->restricted,
+				tmp->native_host, tmp->native_trgt, tmp->cross_host,
+				tmp->cross_trgt);
+	}
 }
 
 //  ---------------------------------------------------------------------------
@@ -321,6 +338,11 @@ request_pkg_deletion (client_t *self)
 	zlist_append(self->server->tmppkgs, tmp);
 	if (self->server->knowngrapher)
 		engine_send_event(self->server->knowngrapher, process_pkgs_event);
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "DEBUG");
+		zstr_sendf(self->server->pub, "Want pkg deleted: %s",
+				tmp->name);
+	}
 }
 
 //  ---------------------------------------------------------------------------
@@ -337,6 +359,10 @@ get_new_pkgs_from_git (client_t *self)
 	bgit_proc_changed_pkgs(self->server->repopath, self->server->xbps_src,
 			zlist_append_wrapper, (void *)self->server->toread);
 	self->server->curhash = bgit_get_head_hash(self->server->repopath);
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "Updated pkgs from git");
+	}
 }
 
 //  ---------------------------------------------------------------------------
@@ -351,9 +377,17 @@ return_job_to_queue (client_t *self)
 		return;
 	}
 	char *job = self->curjob;
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "ERROR");
+		zstr_sendf(self->server->pub, "Pkg reader timed out on pkg: %s", job);
+	}
 	zlist_push(self->server->toread, job);
 	zlist_remove(self->server->curjobs, job);
 	self->curjob = NULL;
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "ERROR");
+		zstr_sendf(self->server->pub, "Pkg reader timed out");
+	}
 }
 
 //  ---------------------------------------------------------------------------
@@ -390,6 +424,10 @@ static void
 set_commithash (client_t *self)
 {
 	pkgimport_msg_set_commithash(self->message, self->server->curhash);
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "DEBUG");
+		zstr_sendf(self->server->pub, "Commit hash now: %s", self->server->curhash);
+	}
 }
 
 //  ---------------------------------------------------------------------------
@@ -420,6 +458,10 @@ ensure_git_consistency (client_t *self)
 		int rc = bgit_checkout_hash(self->server->repopath, hash);
 		if (rc == -2) {
 			perror("Client has bad hash on record");
+			if (self->server->pub) {
+				zstr_sendm(self->server->pub, "ERROR");
+				zstr_sendf(self->server->pub, "Bad hash on grapher record");
+			}
 		}
 	}
 }
