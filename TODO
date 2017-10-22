@@ -8,7 +8,6 @@ Todo (v0.1.1):
 	- Add libevhtp-based web servers to every long-running daemon (not dxpb-poke)
 	  that listens on port 13249 (base64 valud of "DPB" since DXPB was too
 	  big to be a port) and respondes like node_exporter from Prometheus.
-	- Build basic IRC bot functionality
 	- Fix -dbg packages being fetched over the wire. Special handling in
 	  filer? Maybe magic new pkgs under pkgimport? Probably cleanest via
 	  pkgimport, generating a "shimmy" pkg that only depends on the main
