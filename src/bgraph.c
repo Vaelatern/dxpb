@@ -295,10 +295,10 @@ bgraph_attempt_resolution(bgraph grph)
 	return retVal;
 }
 
-static int
+static enum ret_codes
 bgraph_pkg_ready(struct pkg *needle, bgraph hay)
 {
-	int rc = ERR_CODE_OK;
+	enum ret_codes rc = ERR_CODE_OK;
 	struct pkg *pin;
 	for (struct pkg_need *curneed = zlist_first(needle->needs);
 			curneed != NULL; curneed = zlist_next(needle->needs)) {
