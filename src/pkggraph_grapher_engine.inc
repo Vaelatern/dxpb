@@ -984,12 +984,14 @@ s_client_handle_msgpipe (zloop_t *loop, zsock_t *reader, void *argument)
         else
         if (streq (method, "WORKERCANHELP")) {
             uint16_t addr;
+            uint32_t check;
             char *pkgname;
             char *version;
             char *arch;
-            zsock_brecv (self->msgpipe, "2sss", &addr, &pkgname, &version, &arch);
+            zsock_brecv (self->msgpipe, "24sss", &addr, &check, &pkgname, &version, &arch);
             pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_WORKERCANHELP);
             pkggraph_msg_set_addr (self->message, addr);
+            pkggraph_msg_set_check (self->message, check);
             pkggraph_msg_set_pkgname (self->message, pkgname);
             pkggraph_msg_set_version (self->message, version);
             pkggraph_msg_set_arch (self->message, arch);
@@ -1187,12 +1189,12 @@ pkggraph_grapher_update_bootstrap (pkggraph_grapher_t *self)
 //  destroys when done sending it.
 
 int
-pkggraph_grapher_workercanhelp (pkggraph_grapher_t *self, uint16_t addr, const char *pkgname, const char *version, const char *arch)
+pkggraph_grapher_workercanhelp (pkggraph_grapher_t *self, uint16_t addr, uint32_t check, const char *pkgname, const char *version, const char *arch)
 {
     assert (self);
     //  Send message name as first, separate frame
     zstr_sendm (self->msgpipe, "WORKERCANHELP");
-    int rc = zsock_bsend (self->msgpipe, "2sss", addr, pkgname, version, arch);
+    int rc = zsock_bsend (self->msgpipe, "24sss", addr, check, pkgname, version, arch);
     return rc;
 }
 

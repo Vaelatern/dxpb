@@ -30,6 +30,7 @@ typedef struct {
     zsock_t *cmdpipe;           //  Command pipe to/from caller API
     zsock_t *msgpipe;           //  Message pipe to/from caller API
     zsock_t *dealer;            //  Socket to talk to server
+    zsock_t *provided_pipe;     //  Unused
     pkgimport_msg_t *message;   //  Message to/from server
     client_args_t *args;        //  Arguments from methods
 

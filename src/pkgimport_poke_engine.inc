@@ -66,6 +66,7 @@ typedef struct {
     client_t client;            //  Application-level client context
     zsock_t *cmdpipe;           //  Get/send commands from caller API
     zsock_t *msgpipe;           //  Get/send messages from caller API
+    zsock_t *provided_pipe;     //  Do whatever the caller defines
     zsock_t *dealer;            //  Socket to talk to server
     zloop_t *loop;              //  Listen to pipe and dealer
     pkgimport_msg_t *message;   //  Message received or sent
@@ -111,13 +112,14 @@ static void
 //  Create a new client connection
 
 static s_client_t *
-s_client_new (zsock_t *cmdpipe, zsock_t *msgpipe)
+s_client_new (zsock_t *cmdpipe, zsock_t *msgpipe, zsock_t *provided_pipe)
 {
     s_client_t *self = (s_client_t *) zmalloc (sizeof (s_client_t));
     if (self) {
         assert ((s_client_t *) &self->client == self);
         self->cmdpipe = cmdpipe;
         self->msgpipe = msgpipe;
+        self->provided_pipe = provided_pipe;
         self->state = start_state;
         self->event = NULL_event;
         snprintf (self->log_prefix, sizeof (self->log_prefix),
@@ -131,6 +133,7 @@ s_client_new (zsock_t *cmdpipe, zsock_t *msgpipe)
             //  Give application chance to initialize and set next event
             self->client.cmdpipe = self->cmdpipe;
             self->client.msgpipe = self->msgpipe;
+            self->client.provided_pipe = self->provided_pipe;
             self->client.dealer = self->dealer;
             self->client.message = self->message;
             self->client.args = &self->args;
@@ -693,10 +696,11 @@ s_client_handle_protocol (zloop_t *loop, zsock_t *reader, void *argument)
 //  incoming messages
 
 void
-pkgimport_poke (zsock_t *cmdpipe, void *msgpipe)
+pkgimport_poke (zsock_t *cmdpipe, void *piperays)
 {
     //  Initialize
-    s_client_t *self = s_client_new (cmdpipe, (zsock_t *) msgpipe);
+    zsock_t **pipes = piperays;
+    s_client_t *self = s_client_new (cmdpipe, pipes[0], pipes[1]);
     if (self) {
         zsock_signal (cmdpipe, 0);
 
@@ -732,12 +736,14 @@ struct _pkgimport_poke_t {
 pkgimport_poke_t *
 pkgimport_poke_new (void)
 {
+    zsock_t *provided_pipe = NULL;
     pkgimport_poke_t *self = (pkgimport_poke_t *) zmalloc (sizeof (pkgimport_poke_t));
     if (self) {
         zsock_t *backend;
         self->msgpipe = zsys_create_pipe (&backend);
+	zsock_t *piperays[] = {backend, provided_pipe};
         if (self->msgpipe)
-            self->actor = zactor_new (pkgimport_poke, backend);
+            self->actor = zactor_new (pkgimport_poke, piperays);
         if (!self->actor)
             pkgimport_poke_destroy (&self);
     }

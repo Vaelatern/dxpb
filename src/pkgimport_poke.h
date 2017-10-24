@@ -34,7 +34,7 @@ typedef struct _pkgimport_poke_t pkgimport_poke_t;
 //  Create a new pkgimport_poke, return the reference if successful, or NULL
 //  if construction failed due to lack of available memory.
 pkgimport_poke_t *
-    pkgimport_poke_new (void);
+pkgimport_poke_new (void);
 
 //  Destroy the pkgimport_poke and free all memory used by the object.
 void

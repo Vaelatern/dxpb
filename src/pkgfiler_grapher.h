@@ -34,7 +34,7 @@ typedef struct _pkgfiler_grapher_t pkgfiler_grapher_t;
 //  Create a new pkgfiler_grapher, return the reference if successful, or NULL
 //  if construction failed due to lack of available memory.
 pkgfiler_grapher_t *
-    pkgfiler_grapher_new (void);
+pkgfiler_grapher_new (void);
 
 //  Destroy the pkgfiler_grapher and free all memory used by the object.
 void
