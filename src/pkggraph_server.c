@@ -62,6 +62,7 @@ struct _server_t {
 
 	//  Add any properties you need here
 	zsock_t *pub;
+	char *pubpath;
 	struct bworkgroup *workers;
 	zlist_t *queued_logs;
 	zlist_t *memos_to_grapher;
@@ -103,6 +104,7 @@ server_initialize (server_t *self)
 	self->grapher = NULL;
 	self->storage = NULL;
 	self->pub = NULL;
+	self->pubpath = NULL;
 	return 0;
 }
 
@@ -112,6 +114,11 @@ static void
 server_terminate (server_t *self)
 {
 	//  Destroy properties here
+	if (self->pub)
+		zsock_destroy(&(self->pub));
+	if (self->pubpath)
+		free(self->pubpath);
+	self->pubpath = NULL;
 	bworker_group_destroy(&(self->workers));
 	zlist_destroy(&(self->memos_to_grapher));
 	zlist_destroy(&(self->queued_logs));
@@ -682,4 +689,18 @@ establish_subgroup (client_t *self)
 {
 	self->subgroup = bworker_subgroup_new(self->server->workers);
 	self->subgroup->owner = self;
+}
+
+
+//  ---------------------------------------------------------------------------
+//  ensure_all_configuration_is_complete
+//
+
+static void
+ensure_all_configuration_is_complete (client_t *self)
+{
+	if (!self->server->pubpath) {
+		self->server->pubpath = zconfig_get(self->server->config, "dxpb/pubpoint", NULL);
+		self->server->pub = zsock_new_pub(self->server->pubpath);
+	}
 }

@@ -36,7 +36,8 @@ typedef enum {
     invalid_event = 6,
     kthnksbye_event = 7,
     expired_event = 8,
-    set_logdir_event = 9
+    set_logdir_event = 9,
+    set_pubpath_event = 10
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -62,7 +63,8 @@ s_event_name [] = {
     "INVALID",
     "kthnksbye",
     "expired",
-    "set_logdir"
+    "set_logdir",
+    "set_pubpath"
 };
 
 
@@ -75,6 +77,7 @@ s_event_name [] = {
 struct _client_args_t {
     char *endpoint;
     char *dir;
+    char *pubpath;
 };
 
 typedef struct {
@@ -129,6 +132,8 @@ static void
     cease_all_operations (client_t *self);
 static void
     set_logdir_to_provided (client_t *self);
+static void
+    set_pub_to_provided (client_t *self);
 
 //  Create a new client connection
 
@@ -178,6 +183,7 @@ s_client_destroy (s_client_t **self_p)
         s_client_t *self = *self_p;
         zstr_free (&self->args.endpoint);
         zstr_free (&self->args.dir);
+        zstr_free (&self->args.pubpath);
         client_terminate (&self->client);
         pkggraph_msg_destroy (&self->message);
         zsock_destroy (&self->msgpipe);
@@ -474,6 +480,15 @@ s_client_execute (s_client_t *self, event_t event)
                         set_logdir_to_provided (&self->client);
                     }
                 }
+                else
+                if (self->event == set_pubpath_event) {
+                    if (!self->exception) {
+                        //  set pub to provided
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set pub to provided", self->log_prefix);
+                        set_pub_to_provided (&self->client);
+                    }
+                }
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
@@ -574,6 +589,15 @@ s_client_execute (s_client_t *self, event_t event)
                         set_logdir_to_provided (&self->client);
                     }
                 }
+                else
+                if (self->event == set_pubpath_event) {
+                    if (!self->exception) {
+                        //  set pub to provided
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set pub to provided", self->log_prefix);
+                        set_pub_to_provided (&self->client);
+                    }
+                }
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
@@ -662,6 +686,15 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ set logdir to provided", self->log_prefix);
                         set_logdir_to_provided (&self->client);
+                    }
+                }
+                else
+                if (self->event == set_pubpath_event) {
+                    if (!self->exception) {
+                        //  set pub to provided
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set pub to provided", self->log_prefix);
+                        set_pub_to_provided (&self->client);
                     }
                 }
                 else {
@@ -787,6 +820,15 @@ s_client_execute (s_client_t *self, event_t event)
                         set_logdir_to_provided (&self->client);
                     }
                 }
+                else
+                if (self->event == set_pubpath_event) {
+                    if (!self->exception) {
+                        //  set pub to provided
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set pub to provided", self->log_prefix);
+                        set_pub_to_provided (&self->client);
+                    }
+                }
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
@@ -886,6 +928,15 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ set logdir to provided", self->log_prefix);
                         set_logdir_to_provided (&self->client);
+                    }
+                }
+                else
+                if (self->event == set_pubpath_event) {
+                    if (!self->exception) {
+                        //  set pub to provided
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set pub to provided", self->log_prefix);
+                        set_pub_to_provided (&self->client);
                     }
                 }
                 else {
@@ -994,6 +1045,12 @@ s_client_handle_cmdpipe (zloop_t *loop, zsock_t *reader, void *argument)
         zstr_free (&self->args.dir);
         zsock_recv (self->cmdpipe, "s", &self->args.dir);
         s_client_execute (self, set_logdir_event);
+    }
+    else
+    if (streq (method, "SET PUBPATH")) {
+        zstr_free (&self->args.pubpath);
+        zsock_recv (self->cmdpipe, "s", &self->args.pubpath);
+        s_client_execute (self, set_pubpath_event);
     }
     //  Cleanup pipe if any argument frames are still waiting to be eaten
     if (zsock_rcvmore (self->cmdpipe)) {
@@ -1213,6 +1270,19 @@ pkggraph_filer_set_logdir (pkggraph_filer_t *self, const char *dir)
     assert (self);
 
     zsock_send (self->actor, "ss", "SET LOGDIR", dir);
+    return 0;
+}
+
+
+//  ---------------------------------------------------------------------------
+//  No explanation                                                                  
+
+int 
+pkggraph_filer_set_pubpath (pkggraph_filer_t *self, const char *pubpath)
+{
+    assert (self);
+
+    zsock_send (self->actor, "ss", "SET PUBPATH", pubpath);
     return 0;
 }
 

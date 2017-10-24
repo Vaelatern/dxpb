@@ -202,7 +202,7 @@ main_loop(pkgimport_grapher_t *importer, pkggraph_grapher_t *grapher,
 int
 run(int flags, const char *dbpath, const char *import_endpoint,
 		const char *graph_endpoint, const char *file_endpoint,
-		const char *ssldir)
+		const char *pubpoint, const char *ssldir)
 {
 	SSLDIR_UNUSED(ssldir);
 	assert((flags & ERR_FLAG) == 0);
@@ -224,6 +224,7 @@ run(int flags, const char *dbpath, const char *import_endpoint,
 	import_actor = pkgimport_grapher_actor(importer);
 	assert(import_actor);
 	zstr_sendx(import_actor, "SET DB PATH", dbpath, NULL);
+	zstr_sendx(import_actor, "SET PUBLISH ENDPOINT", pubpoint, NULL);
 	zstr_sendx(import_actor, "CONSTRUCT", import_endpoint, NULL);
 
 	/* Init Graph */
@@ -294,16 +295,18 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "vhLd:f:g:i:k:";
+	const char *optstring = "vhLd:f:g:i:I:k:";
  	char *default_dbpath = DEFAULT_DBPATH;
  	char *default_import_endpoint = DEFAULT_IMPORT_ENDPOINT;
  	char *default_file_endpoint = DEFAULT_FILE_ENDPOINT;
  	char *default_graph_endpoint = DEFAULT_GRAPH_ENDPOINT;
+	char *default_pubpoint = DEFAULT_DXPB_GRAPHER_PUBPOINT;
  	char *default_ssldir = DEFAULT_SSLDIR;
  	char *dbpath = NULL;
  	char *import_endpoint = NULL;
  	char *file_endpoint = NULL;
  	char *graph_endpoint = NULL;
+	char *pubpoint = NULL;
  	char *ssldir = NULL;
 
 	while ((c = getopt(argc, argv, optstring)) != -1) {
@@ -319,6 +322,9 @@ main(int argc, char * const *argv)
 			break;
 		case 'i':
 			import_endpoint = optarg;
+			break;
+		case 'I':
+			pubpoint = optarg;
 			break;
 		case 'k':
 			ssldir = optarg;
@@ -358,7 +364,9 @@ main(int argc, char * const *argv)
 		graph_endpoint = default_graph_endpoint;
  	if (!ssldir)
 		ssldir = default_ssldir;
+	if (!pubpoint)
+		pubpoint = default_pubpoint;
 
 	return run(flags, dbpath, import_endpoint, graph_endpoint,
-			file_endpoint, ssldir);
+			file_endpoint, pubpoint, ssldir);
 }

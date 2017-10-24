@@ -24,7 +24,7 @@ help(void)
 }
 
 void
-run(int flags, const char *endpoint, const char *ssldir)
+run(int flags, const char *endpoint, const char *ssldir, const char *pubpoint)
 {
 	assert((flags & ERR_FLAG) == 0);
 	zactor_t *actor;
@@ -34,6 +34,7 @@ run(int flags, const char *endpoint, const char *ssldir)
 		zstr_sendx(actor, "VERBOSE", NULL);
 
 	zstr_sendx(actor, "SET", "dxpb/ssldir", ssldir, NULL);
+	zstr_sendx(actor, "SET", "dxpb/pubpoint", pubpoint, NULL);
 	zstr_sendx(actor, "BIND", endpoint, NULL);
 
 	zpoller_t *polling = zpoller_new(actor);
@@ -56,10 +57,12 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "vhLg:k:";
+	const char *optstring = "vhLg:G:k:";
 	char *default_endpoint = DEFAULT_GRAPH_ENDPOINT;
 	char *default_ssldir = DEFAULT_SSLDIR;
+	char *default_pubpoint = DEFAULT_DXPB_FRONTEND_PUBPOINT;
 	char *endpoint = NULL;
+	char *pubpoint = NULL;
 	char *ssldir = NULL;
 
 	while ((c = getopt(argc, argv, optstring)) != -1) {
@@ -72,6 +75,9 @@ main(int argc, char * const *argv)
 			return 0;
 		case 'g':
 			endpoint = optarg;
+			break;
+		case 'G':
+			pubpoint = optarg;
 			break;
 		case 'k':
 			ssldir = optarg;
@@ -98,9 +104,11 @@ main(int argc, char * const *argv)
 
 	if (!endpoint)
 		endpoint = default_endpoint;
+	if (!pubpoint)
+		pubpoint = default_pubpoint;
 	if (!ssldir)
 		ssldir = default_ssldir;
 
-	run(flags, endpoint, ssldir);
+	run(flags, endpoint, ssldir, pubpoint);
 	return 0;
 }

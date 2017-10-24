@@ -11,6 +11,9 @@
 	be able to properly interact with the import agent.
 
 	<state name = "start" inherit = "defaults">
+		<event name = "set publish endpoint">
+			<action name = "set publish endpoint as supplied" />
+		</event>
 		<event name = "set db path">
 			<action name = "set db path as supplied" />
 		</event>
@@ -208,5 +211,9 @@
 
 	<method name = "set db path">
 		<field name = "dbpath" type = "string" />
+	</method>
+
+	<method name = "set publish endpoint">
+		<field name = "pubpoint" type = "string" />
 	</method>
 </class>

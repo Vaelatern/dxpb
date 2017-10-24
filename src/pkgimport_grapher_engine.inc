@@ -29,27 +29,28 @@ typedef enum {
 
 typedef enum {
     NULL_event = 0,
-    set_db_path_event = 1,
-    construct_event = 2,
-    roger_event = 3,
-    connect_error_event = 4,
-    iforgotu_event = 5,
-    no_hash_found_event = 6,
-    confirm_hash_event = 7,
-    expired_event = 8,
-    worker_available_event = 9,
-    invalid_event = 10,
-    kthnksbye_event = 11,
-    stable_event = 12,
-    unstable_event = 13,
-    pkginfo_event = 14,
-    pkgdel_event = 15,
-    worker_gone_event = 16,
-    pkg_now_completed_event = 17,
-    pkg_not_here_event = 18,
-    pkg_here_event = 19,
-    pkg_failed_to_build_event = 20,
-    worker_not_appropiate_event = 21
+    set_publish_endpoint_event = 1,
+    set_db_path_event = 2,
+    construct_event = 3,
+    roger_event = 4,
+    connect_error_event = 5,
+    iforgotu_event = 6,
+    no_hash_found_event = 7,
+    confirm_hash_event = 8,
+    expired_event = 9,
+    worker_available_event = 10,
+    invalid_event = 11,
+    kthnksbye_event = 12,
+    stable_event = 13,
+    unstable_event = 14,
+    pkginfo_event = 15,
+    pkgdel_event = 16,
+    worker_gone_event = 17,
+    pkg_now_completed_event = 18,
+    pkg_not_here_event = 19,
+    pkg_here_event = 20,
+    pkg_failed_to_build_event = 21,
+    worker_not_appropiate_event = 22
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -68,6 +69,7 @@ s_state_name [] = {
 static char *
 s_event_name [] = {
     "(NONE)",
+    "set_publish_endpoint",
     "set_db_path",
     "construct",
     "ROGER",
@@ -110,6 +112,7 @@ struct _client_args_t {
     uint8_t iscross;
     uint16_t cost;
     char *dbpath;
+    char *pubpoint;
 };
 
 typedef struct {
@@ -152,6 +155,8 @@ static int
     s_client_handle_expiry (zloop_t *loop, int timer_id, void *argument);
 static void
     s_satisfy_pedantic_compilers (void);
+static void
+    set_publish_endpoint_as_supplied (client_t *self);
 static void
     set_db_path_as_supplied (client_t *self);
 static void
@@ -260,6 +265,7 @@ s_client_destroy (s_client_t **self_p)
         zstr_free (&self->args.hostarch);
         zstr_free (&self->args.targetarch);
         zstr_free (&self->args.dbpath);
+        zstr_free (&self->args.pubpoint);
         client_terminate (&self->client);
         pkgimport_msg_destroy (&self->message);
         zsock_destroy (&self->msgpipe);
@@ -469,6 +475,15 @@ s_client_execute (s_client_t *self, event_t event)
         }
         switch (self->state) {
             case start_state:
+                if (self->event == set_publish_endpoint_event) {
+                    if (!self->exception) {
+                        //  set publish endpoint as supplied
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set publish endpoint as supplied", self->log_prefix);
+                        set_publish_endpoint_as_supplied (&self->client);
+                    }
+                }
+                else
                 if (self->event == set_db_path_event) {
                     if (!self->exception) {
                         //  set db path as supplied
@@ -1936,6 +1951,12 @@ s_client_handle_cmdpipe (zloop_t *loop, zsock_t *reader, void *argument)
         zsock_recv (self->cmdpipe, "s", &self->args.dbpath);
         s_client_execute (self, set_db_path_event);
     }
+    else
+    if (streq (method, "SET PUBLISH ENDPOINT")) {
+        zstr_free (&self->args.pubpoint);
+        zsock_recv (self->cmdpipe, "s", &self->args.pubpoint);
+        s_client_execute (self, set_publish_endpoint_event);
+    }
     //  Cleanup pipe if any argument frames are still waiting to be eaten
     if (zsock_rcvmore (self->cmdpipe)) {
         zsys_error ("%s: trailing API command frames (%s)",
@@ -2245,6 +2266,19 @@ pkgimport_grapher_set_db_path (pkgimport_grapher_t *self, const char *dbpath)
     assert (self);
 
     zsock_send (self->actor, "ss", "SET DB PATH", dbpath);
+    return 0;
+}
+
+
+//  ---------------------------------------------------------------------------
+//  No explanation                                                                  
+
+int 
+pkgimport_grapher_set_publish_endpoint (pkgimport_grapher_t *self, const char *pubpoint)
+{
+    assert (self);
+
+    zsock_send (self->actor, "ss", "SET PUBLISH ENDPOINT", pubpoint);
     return 0;
 }
 

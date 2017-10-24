@@ -60,6 +60,9 @@
 		<event name = "set logdir">
 			<action name = "set logdir to provided" />
 		</event>
+		<event name = "set pubpath">
+			<action name = "set pub to provided" />
+		</event>
 	</state>
 
 	<method name = "construct">
@@ -69,5 +72,9 @@
 
 	<method name = "set logdir">
 		<field name = "dir" type = "string" />
+	</method>
+
+	<method name = "set pubpath">
+		<field name = "pubpath" type = "string" />
 	</method>
 </class>

@@ -11,7 +11,9 @@ Arguments:
                 being saved to the repository dir (hostdir).
 		Must have read/write access.
   -g <endpoint>	ZeroMQ endpoint to connect to the package grapher
+  -G <endpoint>	ZeroMQ endpoint for publishing logging-agent logs (such as for the IRC bot)
   -f <endpoint>	ZeroMQ endpoint for binding the hostdir agent
+  -F <endpoint>	ZeroMQ endpoint to publish hostdir agent logs (such as for the IRC bot)
   -k <dir>	Directory with owner-only read/write for storing curve keys
                 If not specified, no encryption will be performed, warnings
 		will be printed, and the entire setup will be unfit for
@@ -23,4 +25,6 @@ The following flags have defaults.
   -s: /var/lib/dxpb/staging/
   -r: /var/lib/dxpb/pkgs/
   -g: tcp://127.0.0.1:5195
+  -G: /var/run/dxpb/log-dxpb-hostdir-master-graph.sock
   -f: tcp://127.0.0.1:5196
+  -F: /var/run/dxpb/log-dxpb-hostdir-master-files.sock

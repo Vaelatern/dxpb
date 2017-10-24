@@ -169,6 +169,8 @@ static int
 static int
     s_client_handle_ticket (zloop_t *loop, int timer_id, void *argument);
 static void
+    ensure_all_configuration_is_complete (client_t *self);
+static void
     confirm_no_grapher (client_t *self);
 static void
     register_grapher (client_t *self);
@@ -550,6 +552,12 @@ s_client_execute (s_client_t *self, event_t event)
                         pkggraph_msg_print (self->server->message);
                         pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
                         pkggraph_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception) {
+                        //  ensure all configuration is complete
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ ensure all configuration is complete", self->log_prefix);
+                        ensure_all_configuration_is_complete (&self->client);
                     }
                     if (!self->exception)
                         self->state = determine_role_state;

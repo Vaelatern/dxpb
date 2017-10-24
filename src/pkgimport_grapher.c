@@ -82,6 +82,8 @@ client_initialize (client_t *self)
 static void
 client_terminate (client_t *self)
 {
+	if (self->pub)
+		zsock_destroy(&(self->pub));
 	bworker_group_destroy(&(self->workers));
 	if (self->dbpath)
 		free(self->dbpath);
@@ -727,4 +729,17 @@ set_db_path_as_supplied (client_t *self)
 {
 	self->dbpath = strdup(self->args->dbpath);
 	assert(self->dbpath);
+}
+
+
+//  ---------------------------------------------------------------------------
+//  set_publish_endpoint_as_supplied
+//
+
+static void
+set_publish_endpoint_as_supplied (client_t *self)
+{
+	if (self->pub)
+		zsock_destroy(&(self->pub));
+	self->pub = zsock_new_pub(self->args->pubpoint);
 }

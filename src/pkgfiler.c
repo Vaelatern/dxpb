@@ -126,6 +126,7 @@ struct _server_t {
 
 	//  Add any properties you need here
 	zsock_t *pub;
+	char *pubpath;
 	struct hunt *curhunt;
 	client_t *grapher;
 	zhash_t *hunts;
@@ -172,6 +173,7 @@ static int
 server_initialize (server_t *self)
 {
 	self->pub = NULL;
+	self->pubpath = NULL;
 	self->available_fetch_slots = 50;
 	self->followups = zlist_new();
 	self->hunts = zhash_new();
@@ -187,6 +189,11 @@ server_initialize (server_t *self)
 static void
 server_terminate (server_t *self)
 {
+	if (self->pub)
+		zsock_destroy(&(self->pub));
+	if (self->pubpath)
+		free(self->pubpath);
+	self->pubpath = NULL;
 	zhash_destroy(&(self->hunts));
 	zlist_destroy(&(self->followups));
 	zhash_destroy(&(self->peering));
@@ -779,5 +786,9 @@ ensure_configuration_is_set (client_t *self)
 	if (!self->server->stagingdir || !self->server->repodir) {
 		fprintf(stderr, "Caller neglected to set both staging and repo directory paths\n");
 		exit(ERR_CODE_BAD);
+	}
+	if (!self->server->pubpath) {
+		self->server->pubpath = zconfig_get(self->server->config, "dxpb/pubpoint", NULL);
+		self->server->pub = zsock_new_pub(self->server->pubpath);
 	}
 }

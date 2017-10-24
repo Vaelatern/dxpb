@@ -8,7 +8,9 @@ Arguments:
 		be printed, and the entire setup will be unfit for operation
 		over an insecure network.
   -g <endpoint>	ZeroMQ endpoint to bind the graph master
+  -G <endpoint>	ZeroMQ endpoint to publish log data (such as for the IRC bot)
 
 The following flags have defaults.
   -k: /etc/dxpb/curve/
   -g: tcp://127.0.0.1:5195
+  -G: /var/run/dxpb/log-dxpb-frontend.sock

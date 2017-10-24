@@ -15,6 +15,9 @@
 		<event name = "HELLO" next = "determine role">
 			<action name = "send" message = "ROGER" />
 		</event>
+		<after>
+			<action name = "ensure all configuration is complete" />
+		</after>
 	</state>
 
 	<state name = "determine role">

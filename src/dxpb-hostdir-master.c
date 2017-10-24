@@ -28,7 +28,8 @@ help(void)
 enum ret_codes
 run(int flags, const char *ssldir, const char *sdir, const char *rdir,
 		const char *ldir, const char *file_endpoint,
-		const char *graph_endpoint)
+		const char *graph_endpoint, const char *file_pubpoint,
+		const char *graph_pubpoint)
 {
 	SSLDIR_UNUSED(ssldir);
 	assert((flags & ERR_FLAG) == 0);
@@ -49,9 +50,11 @@ run(int flags, const char *ssldir, const char *sdir, const char *rdir,
 
 	zstr_sendx(file_actor, "SET", "dxpb/stagingdir", sdir, NULL);
 	zstr_sendx(file_actor, "SET", "dxpb/repodir", rdir, NULL);
+	zstr_sendx(file_actor, "SET", "dxpb/pubpoint", file_pubpoint, NULL);
 	zstr_sendx(file_actor, "BIND", file_endpoint, NULL);
 
 	zstr_sendx(log_actor, "SET LOGDIR", ldir, NULL);
+	zstr_sendx(log_actor, "SET PUBPOINT", graph_pubpoint, NULL);
 	zstr_sendx(log_actor, "CONSTRUCT", graph_endpoint, NULL);
 
 	zpoller_t *polling = zpoller_new(file_actor);
@@ -87,15 +90,19 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "Lhvk:s:r:l:f:g:";
+	const char *optstring = "Lhvk:s:r:l:f:F:g:G:";
 	char *default_stagingdir = DEFAULT_STAGINGDIR;
 	char *default_repodir = DEFAULT_REPODIR;
 	char *default_logdir = DEFAULT_LOGDIR;
 	char *default_file_endpoint = DEFAULT_FILE_ENDPOINT;
 	char *default_graph_endpoint = DEFAULT_GRAPH_ENDPOINT;
 	char *default_ssldir = DEFAULT_SSLDIR;
-	char *stagingdir, *repodir, *logdir, *file_endpoint, *graph_endpoint, *ssldir;
-	stagingdir = repodir = logdir = file_endpoint = graph_endpoint = ssldir = NULL;
+	char *default_graph_pubpoint = DEFAULT_DXPB_HOSTDIR_MASTER_GRAPHER_PUBPOINT;
+	char *default_file_pubpoint = DEFAULT_DXPB_HOSTDIR_MASTER_FILE_PUBPOINT;
+	char *stagingdir, *repodir, *logdir, *file_endpoint, *graph_endpoint,
+	     *ssldir, *graph_pubpoint, *file_pubpoint;
+	stagingdir = repodir = logdir = file_pubpoint = graph_pubpoint = NULL;
+	file_endpoint = graph_endpoint = ssldir = NULL;
 
 	while ((c = getopt(argc, argv, optstring)) != -1) {
 		switch(c) {
@@ -110,6 +117,12 @@ main(int argc, char * const *argv)
 			break;
 		case 'f':
 			file_endpoint = optarg;
+			break;
+		case 'G':
+			graph_pubpoint = optarg;
+			break;
+		case 'F':
+			file_pubpoint = optarg;
 			break;
 		case 'k':
 			ssldir = optarg;
@@ -153,6 +166,10 @@ main(int argc, char * const *argv)
 		file_endpoint = default_file_endpoint;
 	if (!graph_endpoint)
 		graph_endpoint = default_graph_endpoint;
+	if (!file_pubpoint)
+		file_pubpoint = default_file_pubpoint;
+	if (!graph_pubpoint)
+		graph_pubpoint = default_graph_pubpoint;
 
-	return run(flags, ssldir, stagingdir, repodir, logdir, file_endpoint, graph_endpoint);
+	return run(flags, ssldir, stagingdir, repodir, logdir, file_endpoint, graph_endpoint, file_pubpoint, graph_pubpoint);
 }

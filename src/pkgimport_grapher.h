@@ -95,6 +95,10 @@ int
 int 
     pkgimport_grapher_set_db_path (pkgimport_grapher_t *self, const char *dbpath);
 
+//  No explanation                                                                  
+int 
+    pkgimport_grapher_set_publish_endpoint (pkgimport_grapher_t *self, const char *pubpoint);
+
 //  Enable verbose tracing (animation) of state machine activity.
 void
     pkgimport_grapher_set_verbose (pkgimport_grapher_t *self, bool verbose);

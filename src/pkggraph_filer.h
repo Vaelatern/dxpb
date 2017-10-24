@@ -67,6 +67,10 @@ int
 int 
     pkggraph_filer_set_logdir (pkggraph_filer_t *self, const char *dir);
 
+//  No explanation                                                                  
+int 
+    pkggraph_filer_set_pubpath (pkggraph_filer_t *self, const char *pubpath);
+
 //  Enable verbose tracing (animation) of state machine activity.
 void
     pkggraph_filer_set_verbose (pkggraph_filer_t *self, bool verbose);

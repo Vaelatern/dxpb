@@ -274,3 +274,16 @@ truncate_log (client_t *self)
 				pkggraph_msg_arch(self->message));
 	}
 }
+
+
+//  ---------------------------------------------------------------------------
+//  set_pub_to_provided
+//
+
+static void
+set_pub_to_provided (client_t *self)
+{
+	if (self->pub)
+		zsock_destroy(&(self->pub));
+	self->pub = zsock_new_pub(self->args->pubpath);
+}

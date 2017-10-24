@@ -37,6 +37,7 @@ struct _server_t {
 
 	//  Add any properties you need here
 	zsock_t *pub;
+	char *pubpath;
 	zlist_t *workers;
 	zlist_t *toread;
 	zlist_t *curjobs;
@@ -89,6 +90,7 @@ static int
 server_initialize (server_t *self)
 {
 	self->pub = NULL;
+	self->pubpath = NULL;
 	self->curhash = NULL;
 	self->knowngrapher = NULL;
 	self->workers = zlist_new();
@@ -109,6 +111,11 @@ server_initialize (server_t *self)
 static void
 server_terminate (server_t *self)
 {
+	if (self->pub)
+		zsock_destroy(&(self->pub));
+	if (self->pubpath)
+		free(self->pubpath);
+	self->pubpath = NULL;
 	zlist_destroy(&(self->workers));
 	zlist_destroy(&(self->toread));
 	zlist_destroy(&(self->curjobs));
@@ -514,6 +521,10 @@ ensure_all_configuration_is_complete (client_t *self)
 		self->server->xbps_src = zconfig_get(self->server->config, "dxpb/xbps_src", NULL);
 	if (!self->server->repopath)
 		self->server->repopath = zconfig_get(self->server->config, "dxpb/repopath", NULL);
+	if (!self->server->pubpath) {
+		self->server->pubpath = zconfig_get(self->server->config, "dxpb/pubpoint", NULL);
+		self->server->pub = zsock_new_pub(self->server->pubpath);
+	}
 	if (!self->server->xbps_src || !self->server->repopath) {
 		fprintf(stderr, "Caller neglected to set both xbps_src and repopath!\n");
 		exit(ERR_CODE_BAD);

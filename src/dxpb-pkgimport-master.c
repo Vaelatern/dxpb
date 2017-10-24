@@ -24,7 +24,8 @@ help(void)
 }
 
 void
-run(int flags, const char *endpoint, const char *repopath, const char *xbps_src)
+run(int flags, const char *endpoint, const char *pubpoint,
+		const char *repopath, const char *xbps_src)
 {
 	assert((flags & ERR_FLAG) == 0);
 	zactor_t *actor;
@@ -35,6 +36,7 @@ run(int flags, const char *endpoint, const char *repopath, const char *xbps_src)
 
 	zstr_sendx(actor, "SET", "dxpb/repopath", repopath, NULL);
 	zstr_sendx(actor, "SET", "dxpb/xbps_src", xbps_src, NULL);
+	zstr_sendx(actor, "SET", "dxpb/pubpoint", pubpoint, NULL);
 	zstr_sendx(actor, "BIND", endpoint, NULL);
 
 	zpoller_t *polling = zpoller_new(actor);
@@ -57,10 +59,12 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "vhLr:i:x:";
+	const char *optstring = "vhLr:i:I:x:";
 	char *default_endpoint = DEFAULT_IMPORT_ENDPOINT;
+	char *default_pubpoint = DEFAULT_DXPB_PKGIMPORT_MASTER_PUBPOINT;
 	char *default_repopath = DEFAULT_REPOPATH;
 	char *default_xbps_src = DEFAULT_XBPS_SRC;
+	char *pubpoint = NULL;
 	char *endpoint = NULL;
 	char *repopath = NULL;
 	char *xbps_src = NULL;
@@ -73,6 +77,9 @@ main(int argc, char * const *argv)
 		case 'h':
 			help();
 			return 0;
+		case 'I':
+			pubpoint = optarg;
+			break;
 		case 'i':
 			endpoint = optarg;
 			break;
@@ -104,11 +111,13 @@ main(int argc, char * const *argv)
 
 	if (!endpoint)
 		endpoint = default_endpoint;
+	if (!pubpoint)
+		pubpoint = default_pubpoint;
 	if (!repopath)
 		repopath = default_repopath;
 	if (!xbps_src)
 		xbps_src = default_xbps_src;
 
-	run(flags, endpoint, repopath, xbps_src);
+	run(flags, endpoint, pubpoint, repopath, xbps_src);
 	return 0;
 }
