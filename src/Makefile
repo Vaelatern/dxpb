@@ -196,6 +196,38 @@ mostlyclean:
 clean: mostlyclean
 	rm -f $(BINARIES)
 
+#############################
+#### Installation Targets ###
+#############################
+
+install-default-dirs:
+	mkdir -p $(DESTDIR)/etc/dxpb/curve/
+	touch $(DESTDIR)/etc/dxpb/curve/.empty
+	mkdir -p $(DESTDIR)/var/lib/dxpb/staging/
+	touch $(DESTDIR)/var/lib/dxpb/staging/.empty
+	mkdir -p $(DESTDIR)/var/lib/dxpb/logs/
+	touch $(DESTDIR)/var/lib/dxpb/logs/.empty
+	mkdir -p $(DESTDIR)/var/lib/dxpb/pkgs/
+	touch $(DESTDIR)/var/lib/dxpb/pkgs/.empty
+	mkdir -p $(DESTDIR)/var/run/dxpb/
+	touch $(DESTDIR)/var/run/dxpb/.empty
+	mkdir -p $(DESTDIR)/var/cache/dxpb/
+	touch $(DESTDIR)/var/cache/dxpb/.empty
+
+install-license:
+	mkdir -p $(DESTDIR)/usr/share/licenses/dxpb/
+	cp ../COPYING $(DESTDIR)/usr/share/licenses/dxpb/
+
+install-doc:
+	mkdir -p $(DESTDIR)/usr/share/doc/dxpb/
+	cp -r ../doc $(DESTDIR)/usr/share/doc/dxpb/
+
+install-bin: $(BINARIES)
+	mkdir -p $(DESTDIR)/usr/bin/
+	mv $(BINARIES) $(DESTDIR)/usr/bin/
+
+install: install-default-dirs install-bin install-license
+
 
 ##################################
 #             EOF                #
