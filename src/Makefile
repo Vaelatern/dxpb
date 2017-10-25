@@ -25,8 +25,8 @@ PREFIX ?= /usr/local
 GSL_BIN ?= gsl
 
 LOCAL_CFLAGS = -std=c11 -I../include/
-CFLAGS = -g -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Werror -O3 -fstack-protector-strong -D_FORTIFY_SOURCE=2
-LDFLAGS = -fPIC -fPIE
+CFLAGS ?= -g -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Werror -O3 -fstack-protector-strong -D_FORTIFY_SOURCE=2
+LDFLAGS ?= -fPIC -fPIE
 LDLIBS += -lzmq -lczmq
 
 BINARIES = \
