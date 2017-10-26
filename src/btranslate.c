@@ -30,7 +30,7 @@ zframe_t *
 btranslate_prepare_frame(enum translate_types type)
 {
 	zframe_t *retFrame = NULL;
-	if (type >= 0 && type < TRANSLATE_NUM_MAX) {
+	if (type < TRANSLATE_NUM_MAX) {
 		retFrame = zframe_new(&type, sizeof(enum translate_types));
 		zframe_set_more(retFrame, 1);
 	}

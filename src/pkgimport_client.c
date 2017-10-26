@@ -127,7 +127,7 @@ cease_all_operations (client_t *self)
 	assert(self);
 	if (self->pkgname)
 		free(self->pkgname);
-	zsock_disconnect(self->dealer, self->args->endpoint);
+	zsock_disconnect(self->dealer, "%s", self->args->endpoint);
 	engine_set_connected(self, false);
 }
 

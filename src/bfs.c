@@ -97,7 +97,7 @@ bfs_file_exists(const char *path)
 /* Recursive because we expect very few nested subdirs
  * Useful for finding a package in any subrepo under hostdir*/
 int
-bfs_find_file_in_subdir(const char *rootdir, const const char *filename, char **subdir)
+bfs_find_file_in_subdir(const char *rootdir, const char *filename, char **subdir)
 {
 	assert(rootdir);
 	assert(filename);
