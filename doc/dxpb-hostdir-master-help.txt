@@ -25,6 +25,6 @@ The following flags have defaults.
   -s: /var/lib/dxpb/staging/
   -r: /var/lib/dxpb/pkgs/
   -g: tcp://127.0.0.1:5195
-  -G: /var/run/dxpb/log-dxpb-hostdir-master-graph.sock
+  -G: ipc:///var/run/dxpb/log-dxpb-hostdir-master-graph.sock
   -f: tcp://127.0.0.1:5196
-  -F: /var/run/dxpb/log-dxpb-hostdir-master-files.sock
+  -F: ipc:///var/run/dxpb/log-dxpb-hostdir-master-files.sock
