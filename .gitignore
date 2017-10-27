@@ -1,5 +1,6 @@
 **/*.o
 **/dxpb-*
+!runsv/dxpb*
 !**/dxpb-*.c
 !**/dxpb-common.h
 !**/*.txt

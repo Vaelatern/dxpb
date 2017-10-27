@@ -1,0 +1,8 @@
+#!/bin/sh
+
+[ -f ./conf ] && . ./conf
+
+: ${USER:=_dxpb_import}
+: ${GROUP:=_dxpb:_dxpb_import}
+
+exec chpst -u $USER:$GROUP dxpb-pkgimport-agent
