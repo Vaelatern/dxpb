@@ -1,0 +1,8 @@
+#!/bin/sh
+
+[ -f ./conf ] && . ./conf
+
+: ${USER:=_dxpb_files}
+: ${GROUP:=__dxpb:_dxpb_files:_dxpb_graph:_dxpb_ssl}
+
+exec chpst -u $USER:$GROUP dxpb-hostdir-master

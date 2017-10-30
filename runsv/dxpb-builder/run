@@ -1,0 +1,27 @@
+#!/bin/sh
+
+[ -f ./conf ] && . ./conf
+
+: ${USER:=_dxpb_build}
+: ${GROUP:=__dxpb:_dxpb_build:_dxpb_ssl}
+
+needwrkdir=0
+args=""
+[ -z "$HOSTDIR" -o -z "$MASTERDIR" -o -z "XBPS_SRC" ] && needwrkdir=1
+[ -z "$WRKDIR" -a "$needwrkdir" -eq 1 ] && echo "Will not start - need configured directories" && exit 1
+
+[ -n "$SSLDIR" ] && args="$args -k '$SSLDIR'"
+[ -n "$HOSTDIR" ] && args="$args -H '$HOSTDIR'"
+[ -n "$MASTERDIR" ] && args="$args -m '$MASTERDIR'"
+[ -n "$XBPS_SRC" ] && args="$args -x '$XBPS_SRC'"
+[ -n "$ENDPOINT" ] && args="$args -g '$ENDPOINT'"
+
+if [ -n "ARGV0" -a -n "$SSLDIR" ]; then
+	[ -f "${SSLDIR}/${ARGV0}.key" ] || exit 1;
+elif
+	[ -f "/etc/dxpb/curve/${ARGV0}.key" ] || exit 1;
+fi
+
+cd "$WRKDIR"
+
+exec chpst -b "$ARGV0" -u $USER:$GROUP dxpb-builder $args

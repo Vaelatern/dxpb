@@ -1,0 +1,8 @@
+#!/bin/sh
+
+[ -f ./conf ] && . ./conf
+
+: ${USER:=_dxpb_frontend}
+: ${GROUP:=_dxpb_frontend:_dxpb:_dxpb_graph:_dxpb_ssl}
+
+exec chpst -u $USER:$GROUP dxpb-frontend
