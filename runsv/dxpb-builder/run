@@ -17,11 +17,13 @@ args=""
 [ -n "$ENDPOINT" ] && args="$args -g '$ENDPOINT'"
 
 if [ -n "ARGV0" -a -n "$SSLDIR" ]; then
-	[ -f "${SSLDIR}/${ARGV0}.key" ] || exit 1;
-elif
-	[ -f "/etc/dxpb/curve/${ARGV0}.key" ] || exit 1;
+	[ -f "${SSLDIR}/${ARGV0}.key" ] || exit 2;
+elif [ -n "ARGV0" ]; then
+	[ -f "/etc/dxpb/curve/${ARGV0}.key" ] || exit 2;
 fi
 
 cd "$WRKDIR"
 
-exec chpst -b "$ARGV0" -u $USER:$GROUP dxpb-builder $args
+[ -n "ARGV0" ] && ARGV0="-b '$ARGV0'"
+
+exec chpst $ARGV0 -u $USER:$GROUP dxpb-builder $args
