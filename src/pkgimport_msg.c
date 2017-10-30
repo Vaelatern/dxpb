@@ -10,7 +10,7 @@
     for commits are:
 
      * The XML model used for this code generation: pkgimport_msg.xml, or
-     * The code generation script that built this file: zproto_codec_c
+     * The code generation script that built this file: ../exec/zproto_codec_c
     ************************************************************************
     =========================================================================
 */
@@ -252,27 +252,35 @@ pkgimport_msg_dup (pkgimport_msg_t *other)
     pkgimport_msg_set_version (copy, pkgimport_msg_version (other));
     pkgimport_msg_set_arch (copy, pkgimport_msg_arch (other));
     {
-        const char *str = pkgimport_msg_nativehostneeds (other);
+        const char *str = pkgimport_msg_nativehostneeds(other);
         if (str) {
-            pkgimport_msg_set_nativehostneeds (copy, strdup (str));
+	     char *tofree = strdup(str);
+            pkgimport_msg_set_nativehostneeds(copy, tofree);
+	     free(tofree);
         }
     }
     {
-        const char *str = pkgimport_msg_nativetargetneeds (other);
+        const char *str = pkgimport_msg_nativetargetneeds(other);
         if (str) {
-            pkgimport_msg_set_nativetargetneeds (copy, strdup (str));
+	     char *tofree = strdup(str);
+            pkgimport_msg_set_nativetargetneeds(copy, tofree);
+	     free(tofree);
         }
     }
     {
-        const char *str = pkgimport_msg_crosshostneeds (other);
+        const char *str = pkgimport_msg_crosshostneeds(other);
         if (str) {
-            pkgimport_msg_set_crosshostneeds (copy, strdup (str));
+	     char *tofree = strdup(str);
+            pkgimport_msg_set_crosshostneeds(copy, tofree);
+	     free(tofree);
         }
     }
     {
-        const char *str = pkgimport_msg_crosstargetneeds (other);
+        const char *str = pkgimport_msg_crosstargetneeds(other);
         if (str) {
-            pkgimport_msg_set_crosstargetneeds (copy, strdup (str));
+	     char *tofree = strdup(str);
+            pkgimport_msg_set_crosstargetneeds(copy, tofree);
+	     free(tofree);
         }
     }
     pkgimport_msg_set_cancross (copy, pkgimport_msg_cancross (other));

@@ -280,11 +280,12 @@ static enum ret_codes
 pkgimport_grapher_ask_around_for_pkg(client_t *self, struct pkg *pkg)
 {
 	pkgfiles_msg_t *msg;
+	enum ret_codes ret;
 	int rc;
 
-	rc = btranslate_prepare_socket(self->msgpipe, TRANSLATE_FILES);
-	if (rc != ERR_CODE_OK)
-		return rc;
+	ret = btranslate_prepare_socket(self->msgpipe, TRANSLATE_FILES);
+	if (ret != ERR_CODE_OK)
+		return ret;
 
 	msg = pkgfiles_msg_new();
 	pkgfiles_msg_set_id(msg, PKGFILES_MSG_ISPKGHERE);
@@ -293,7 +294,7 @@ pkgimport_grapher_ask_around_for_pkg(client_t *self, struct pkg *pkg)
 	pkgfiles_msg_set_arch(msg, pkg_archs_str[pkg->arch]);
 	rc = pkgfiles_msg_send(msg, self->msgpipe);
 	if (rc != 0)
-		rc = ERR_CODE_SADSOCK;
+		ret = ERR_CODE_SADSOCK;
 	if (self->pub) {
 		zstr_sendm(self->pub, "DEBUG");
 		zstr_sendf(self->pub, "Asking filer for %s/%s/%s",
@@ -303,7 +304,7 @@ pkgimport_grapher_ask_around_for_pkg(client_t *self, struct pkg *pkg)
 	}
 	pkgfiles_msg_destroy(&msg);
 
-	return ERR_CODE_OK;
+	return ret;
 
 }
 

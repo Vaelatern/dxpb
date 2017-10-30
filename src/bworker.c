@@ -232,13 +232,15 @@ bworker_subgroup_assign_slot(struct bworkgroup *grp, struct bworksubgroup *sub)
 	uint16_t newlen = grp->num_subs + 1;
 	uint16_t alloced = grp->num_subs_alloced;
 
-	if (newlen >= grp->num_subs_alloced) {
+	if (newlen >= alloced) {
 		alloced = (UINT16_MAX / 2.0) <= newlen ? UINT16_MAX : newlen * 2;
 		void *tmp;
 		if ((tmp = realloc(grp->subs, alloced * sizeof(struct bworksubgroup *))) == NULL)
 			return 0; // Safe because grp->subs hasn't been changed.
-		else
+		else {
 			grp->subs = tmp;
+			grp->num_subs_alloced = alloced;
+		}
 	}
 
 	grp->subs[grp->num_subs++] = sub;
@@ -283,6 +285,12 @@ bworker_subgroup_free(struct bworksubgroup **sacrifice)
 	*sacrifice = NULL;
 }
 
+/*
+ * Use multiple return to simplify execution. First try to reinit
+ * a pre-existing memory structure which has fallen into disuse, first for the
+ * subgroup, then for all subgroups. Then, if all else fails, make a new worker
+ * structure and use that
+ */
 uint16_t
 bworker_subgroup_insert(struct bworksubgroup *grp, uint16_t addr,
 		uint32_t check, enum pkg_archs arch, enum pkg_archs hostarch,
@@ -291,17 +299,24 @@ bworker_subgroup_insert(struct bworksubgroup *grp, uint16_t addr,
 	assert(grp->grp->direct_use);
 	struct bworkgroup *topgrp = grp->grp;
 	struct bworker *wrkr = NULL;
-	uint16_t *i, j;
+	uint16_t *i = NULL, j = 0;
 	for (i = zlist_first(grp->addrs); i; i = zlist_next(grp->addrs))
-		if (topgrp->workers[*i] == NULL)
+		if (topgrp->workers[*i] == NULL) {
 			wrkr = topgrp->workers[*i];
+			break;
+		} else
+			j = *i;
 
-	if (wrkr) {
+	if (i) {
 		bworker_reinit(wrkr, addr, check, arch, hostarch, iscross, cost);
 		return *i;
 	}
 
-	for (j = *i; j < topgrp->num_workers; j++) {
+	// Attempt 1 over
+
+	// Don't read any of the links again, j is already set to latest
+	// "failed" *i value
+	for (; j < topgrp->num_workers; j++) {
 		if (topgrp->owners[j] == NULL) { // time to adopt it
 			topgrp->owners[j] = grp;
 			if (topgrp->workers[j] == NULL)
@@ -313,6 +328,8 @@ bworker_subgroup_insert(struct bworksubgroup *grp, uint16_t addr,
 			return j;
 		}
 	}
+
+	// Attempt 2 over
 
 	bworker_ensure_can_add_worker(topgrp);
 
@@ -407,7 +424,7 @@ bworker_grp_pkg_matches(struct bworkgroup *grp, struct pkg *pkg)
 					retVal->workers == NULL) {
 				retVal->alloced = 2*(1+retVal->num);
 				retVal->workers = realloc(retVal->workers,
-						sizeof(struct bworker)*
+						sizeof(struct bworker *)*
 						retVal->alloced);
 			}
 			if (retVal->workers == NULL)

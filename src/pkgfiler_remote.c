@@ -77,8 +77,8 @@ client_terminate (client_t *self)
 	for (struct filefetch *fp = zhash_first(self->open_fds); fp;
 			fp = zhash_next(self->open_fds)) {
 		close(fp->fd);
-		free(fp);
 		fp->fd = 0;
+		free(fp);
 	}
 	zhash_destroy(&(self->open_fds));
 	if (self->hostdir)

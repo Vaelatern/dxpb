@@ -6,6 +6,7 @@
  */
 #define _POSIX_C_SOURCE 200809L
 
+#include <assert.h>
 #include <stdio.h>
 #include <errno.h>
 #include <stdint.h>
@@ -19,9 +20,10 @@ bstring_add(char *str, const char* add, uint32_t *str_alloc_size, uint32_t *len)
 {
 	if (add == NULL)
 		return str;
+	assert((!!str_alloc_size) == (!!len));
 	uint32_t addlen, newlen, alloced, truelen;
 	truelen = (len == NULL ? (str == NULL ? 0 : strlen(str)) : *len);
-	alloced = (str_alloc_size == NULL ? truelen + 1 : *str_alloc_size);
+	alloced = (str_alloc_size == NULL ? (str == NULL ? 0 : truelen + 1) : *str_alloc_size);
 	addlen = strlen(add);
 	newlen = truelen + addlen;
 	errno = 0;
@@ -32,7 +34,8 @@ bstring_add(char *str, const char* add, uint32_t *str_alloc_size, uint32_t *len)
 			exit(ERR_CODE_NOMEM);
 		}
 	}
-	strncpy(str + truelen, add, addlen + 1);
+	if (add)
+		strncpy(str + truelen, add, addlen + 1);
 	if (len != NULL)
 		*len = newlen;
 	if (str_alloc_size != NULL)

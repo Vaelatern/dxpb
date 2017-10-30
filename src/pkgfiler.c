@@ -77,6 +77,9 @@ new_hunt(client_t *asker, const char *pkgname, const char *version, const char *
 	assert(hunt->pkgname);
 	assert(hunt->version);
 	assert(hunt->arch);
+	assert(hunt->responded);
+	assert(hunt->pkg_here);
+	assert(hunt->resp_pending);
 	return hunt;
 }
 
@@ -402,15 +405,18 @@ write_file_chunk (client_t *self)
 				pkgfiles_msg_pkgname(self->message),
 				pkgfiles_msg_version(self->message),
 				pkgfiles_msg_arch(self->message));
-		char *subpath = strdup(pkgfiles_msg_subpath(self->message));
-		assert(subpath);
+		// We don't need the below variable, since we already saved it,
+		// but it would be nice to decide TODO: if we need to ensure
+		// the subpaths line up with what we want, to detect bad peers.
+		// const char *subpath = pkgfiles_msg_subpath(self->message);
 		uint32_t parA, parB;
 		char *filepath = bstring_add(NULL, self->server->stagingdir,
 				&parA, &parB);
 		if (filepath[parB] != '/')
 			filepath = bstring_add(filepath, "/", &parA, &parB);
-		if (fetch->subpath)
+		if (fetch->subpath) {
 			filepath = bstring_add(filepath, fetch->subpath, &parA, &parB);
+		}
 		if (filepath[parB] != '/')
 			filepath = bstring_add(filepath, "/", &parA, &parB);
 		filepath = bstring_add(filepath, pkgfile, &parA, &parB);
@@ -482,8 +488,10 @@ mark_pkg_at_remote_location (client_t *self)
 {
 	char *key = pkgmsg_to_str(self->message);
 	struct hunt *hunt = zhash_lookup(self->server->hunts, key);
-	if (!hunt)
+	if (!hunt) {
 		engine_set_exception(self, invalid_event);
+		return;
+	}
 	zlist_append(hunt->pkg_here, self);
 	zlist_append(hunt->responded, self);
 	zlist_remove(hunt->resp_pending, self);
@@ -499,15 +507,17 @@ establish_peer_agreement (client_t *self)
 {
 	char *key = pkgmsg_to_str(self->message);
 	struct hunt *hunt = zhash_lookup(self->server->hunts, key);
-	if (!hunt)
+	if (!hunt) {
 		engine_set_exception(self, invalid_event);
+		goto end;
+	}
 
 	struct filefetch *peer = malloc(sizeof(struct filefetch));
 	peer->provider = self;
 	peer->asker = hunt->asker;
-	peer->pkgname = strdup(peer->pkgname);
-	peer->version = strdup(peer->version);
-	peer->arch = strdup(peer->arch);
+	peer->pkgname = strdup(hunt->pkgname);
+	peer->version = strdup(hunt->version);
+	peer->arch = strdup(hunt->arch);
 	assert(peer->pkgname);
 	assert(peer->version);
 	assert(peer->arch);
@@ -517,6 +527,7 @@ establish_peer_agreement (client_t *self)
 	self->curfetch = peer;
 	self->numfetchs++;
 
+end:
 	free(key);
 	key = NULL;
 }
@@ -572,10 +583,15 @@ mark_pkg_not_at_remote_location (client_t *self)
 {
 	char *key = pkgmsg_to_str(self->message);
 	struct hunt *hunt = zhash_lookup(self->server->hunts, key);
-	if (!hunt)
+	if (!hunt) {
 		engine_set_exception(self, invalid_event);
+		goto end;
+	}
+	assert(hunt->responded);
+	assert(hunt->resp_pending);
 	zlist_append(hunt->responded, self);
 	zlist_remove(hunt->resp_pending, self);
+end:
 	free(key);
 	key = NULL;
 }

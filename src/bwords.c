@@ -52,17 +52,15 @@ bwords_new(void)
 void
 bwords_destroy(bwords *victim, char also_inside)
 {
-	if (!victim)
-		return;
-	if (!(*victim))
-		return;
-	if (!((*victim)->words))
+	if (!victim || !(*victim) || !((*victim)->words))
 		return;
 	if (also_inside)
 		for (int i = 0; (*victim)->words[i] != NULL; i++)
-			free((void *)((*victim)->words[i]));
+			free((char *)((*victim)->words[i]));
+	assert((*victim)->words);
 	free((*victim)->words);
 	(*victim)->words = NULL;
+	assert(*victim);
 	free(*victim);
 	*victim = NULL;
 }
@@ -91,20 +89,17 @@ bwords_append_word(bwords words, const char *word, char zero_copy)
 	if (tmp != NULL)
 		words->num_words++;
 	/* Now we do reallocation to get the correct size */
-	if (tmp == NULL) { /* Special case to find max size */
+	if (tmp == NULL) { /* Special case to shrink size to max we are using */
 		words->num_alloc = words->num_words + 1;
-		words->words = realloc(words->words, words->num_alloc*sizeof(char **));
+		words->words = realloc(words->words,
+					words->num_alloc * sizeof(char *));
 		if (words->words == NULL) {
 			perror("WTF. Shrinking list of strings fails? WTF?");
 			exit(ERR_CODE_BADDOBBY);
 		}
 	} else if (words->num_words + 1 > words->num_alloc) {
-		if (words->num_alloc == 0)
-			words->num_alloc = 1;
-		while (words->num_words + 1 > words->num_alloc) {
-			words->num_alloc *= 2;
-		}
-		words->words = realloc(words->words, words->num_alloc*sizeof(char **));
+		words->num_alloc = (1 + ((words->num_words + 1) * 2));
+		words->words = realloc(words->words, words->num_alloc*sizeof(char *));
 		if (words == NULL) {
 			perror("Out of memory for list of strings");
 			exit(ERR_CODE_NOMEM);
@@ -207,8 +202,7 @@ bwords_deduplicate(bwords input)
 	while (words[num_el] != NULL)
 		num_el++;
 	input->words = realloc(words, (num_el+1) * sizeof(char *));
-	input->words[num_el] = NULL;
-	input->words = words;
+	assert(input->words);
 	input->num_words = num_el;
 	input->num_alloc = num_el+1;
 	return input;

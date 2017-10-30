@@ -66,7 +66,9 @@ bgit_ff(git_repository *repo)
 	rc = git_remote_lookup(&remote, repo, "dxpb-remote");
 	assert(rc == 0);
 	rc = git_remote_get_fetch_refspecs(refspecs, remote);
+	assert(rc == 0); // According to reading the code, not according to docs!
 	rc = git_remote_fetch(remote, refspecs, NULL, NULL);
+	git_strarray_free(refspecs);
 	assert(rc == 0);
 
 	/* Figure out what the new tree is */
@@ -95,7 +97,6 @@ bgit_ff(git_repository *repo)
 	git_reference_free(lastref);
 	git_reference_free(newref);
 	git_tree_free(newtree);
-	git_strarray_free(refspecs);
 	git_remote_free(remote);
 	git_libgit2_shutdown();
 }
@@ -173,6 +174,7 @@ bgit_ff_get_changed_pkgs(const char *repopath)
 
 	/* And for every difference, take actions */
 	rc = git_diff_tree_to_tree(&diff, repo, old_cmp_root, new_cmp_root, NULL);
+	assert(rc == 0); // According to reading the code, not according to docs!
 	rc = git_diff_foreach(diff, bgit_cb_extract_pkgnames, NULL, NULL, NULL, &ptr_to_words);
 	assert(rc == 0);
 
@@ -239,6 +241,7 @@ bgit_get_head_hash(const char *repopath)
 	int rc = git_repository_open(&repo, repopath);
 	assert(rc == 0);
 	rc = git_reference_name_to_id(&oid, repo, "HEAD");
+	assert(rc == 0);
 	git_oid_tostr(retVal, GIT_OID_HEXSZ+1, &oid);
 	assert(retVal[0] != '\0');
 	assert(retVal[GIT_OID_HEXSZ] == '\0');
