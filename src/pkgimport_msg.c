@@ -254,33 +254,25 @@ pkgimport_msg_dup (pkgimport_msg_t *other)
     {
         const char *str = pkgimport_msg_nativehostneeds(other);
         if (str) {
-	     char *tofree = strdup(str);
-            pkgimport_msg_set_nativehostneeds(copy, tofree);
-	     free(tofree);
+            pkgimport_msg_set_nativehostneeds(copy, str);
         }
     }
     {
         const char *str = pkgimport_msg_nativetargetneeds(other);
         if (str) {
-	     char *tofree = strdup(str);
-            pkgimport_msg_set_nativetargetneeds(copy, tofree);
-	     free(tofree);
+            pkgimport_msg_set_nativetargetneeds(copy, str);
         }
     }
     {
         const char *str = pkgimport_msg_crosshostneeds(other);
         if (str) {
-	     char *tofree = strdup(str);
-            pkgimport_msg_set_crosshostneeds(copy, tofree);
-	     free(tofree);
+            pkgimport_msg_set_crosshostneeds(copy, str);
         }
     }
     {
         const char *str = pkgimport_msg_crosstargetneeds(other);
         if (str) {
-	     char *tofree = strdup(str);
-            pkgimport_msg_set_crosstargetneeds(copy, tofree);
-	     free(tofree);
+            pkgimport_msg_set_crosstargetneeds(copy, str);
         }
     }
     pkgimport_msg_set_cancross (copy, pkgimport_msg_cancross (other));
