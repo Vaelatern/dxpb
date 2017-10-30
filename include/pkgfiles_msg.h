@@ -10,7 +10,7 @@
     for commits are:
 
      * The XML model used for this code generation: pkgfiles_msg.xml, or
-     * The code generation script that built this file: zproto_codec_c
+     * The code generation script that built this file: ../exec/zproto_codec_c
     ************************************************************************
     =========================================================================
 */

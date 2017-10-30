@@ -2,7 +2,7 @@
 	name = "pkgfiles_msg"
 	signature = "0"
 	title = "DXPB File Location and Management Protocol"
-	script = "zproto_codec_c"
+	script = "../exec/zproto_codec_c"
 	package_dir = "../include"
 	source_dir = "."
 	>

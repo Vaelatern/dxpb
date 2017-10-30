@@ -2,7 +2,7 @@
 	name = "pkggraph_msg"
 	signature = "1"
 	title = "Package Graph Potocol"
-	script = "zproto_codec_c"
+	script = "../exec/zproto_codec_c"
 	package_dir = "../include"
 	source_dir = "."
 	>
