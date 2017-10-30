@@ -5,7 +5,7 @@
 # Rules that we don't get because of .POSIX: at the top #
 #########################################################
 
-CC = cc
+CC = clang
 LINK.o = $(CC) $(LDFLAGS) $(TARGET_ARCH)
 COMPILE.c = $(CC) $(LOCAL_CFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
 
@@ -21,11 +21,12 @@ COMPILE.c = $(CC) $(LOCAL_CFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
 ####################################################################
 
 PREFIX ?= /usr/local
+BINDIR = $(PREFIX)/bin/
 
 GSL_BIN ?= gsl
 
 LOCAL_CFLAGS = -std=c11 -I../include/
-CFLAGS ?= -g -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Werror -O3 -fstack-protector-strong -D_FORTIFY_SOURCE=2
+CFLAGS += -g -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Werror -O3 -fstack-protector-strong -D_FORTIFY_SOURCE=2
 LDFLAGS ?= -fPIC -fPIE
 LDLIBS += -lzmq -lczmq
 
@@ -127,7 +128,7 @@ check_bxbps: check_bxbps.o bwords.o bstring.o bfs.o
 	./$@
 
 valgrind_check_%: check_%
-	valgrind ./$^
+	valgrind -q --leak-check=full ./$^
 
 testdb: LDLIBS += -lsqlite3 -larchive -lxbps
 testdb: pkgimport_msg.o bxsrc.o bxbps.o bstring.o bwords.o bgraph.o bxpkg.o bdb.o
@@ -223,8 +224,8 @@ install-doc:
 	cp -r ../doc $(DESTDIR)/usr/share/doc/dxpb/
 
 install-bin: $(BINARIES)
-	mkdir -p $(DESTDIR)/usr/bin/
-	mv $(BINARIES) $(DESTDIR)/usr/bin/
+	mkdir -p $(DESTDIR)$(BINDIR)
+	mv $(BINARIES) $(DESTDIR)$(BINDIR)
 
 install: install-default-dirs install-bin install-license
 

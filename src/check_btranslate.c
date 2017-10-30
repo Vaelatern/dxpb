@@ -76,10 +76,10 @@ START_TEST(test_send_msg)
 	ck_assert_ptr_nonnull(sender);
 	ck_assert_ptr_nonnull(recver);
 
-	rc = zsock_bind(sender, endpoint);
+	rc = zsock_bind(sender, "%s", endpoint);
 	ck_assert_int_eq(rc, 0);
 	ck_assert_str_eq(zsock_endpoint(sender), endpoint);
-	rc = zsock_connect(recver, endpoint);
+	rc = zsock_connect(recver, "%s", endpoint);
 	ck_assert_int_eq(rc, 0);
 
 	for (int i = 0; i < 2; i++) {
@@ -92,12 +92,14 @@ START_TEST(test_send_msg)
 		msg = pkgimport_msg_new();
 		pkgimport_msg_set_id(msg, PKGIMPORT_MSG_HELLO);
 		pkgimport_msg_send(msg, sender);
+		pkgimport_msg_destroy(&msg);
 	}
 
 	for (int i = 0; i < 2; i++) {
 		pkgimport_msg_t *msg = pkgimport_msg_new();
 		frame = zframe_recv(recver);
 		ttype = btranslate_type_of_msg(frame);
+		zframe_destroy(&frame);
 		ck_assert_int_eq(ttype, TRANSLATE_IMPORT);
 		rc = pkgimport_msg_recv(msg, recver);
 		ck_assert_int_eq(rc, 0);
@@ -118,12 +120,14 @@ START_TEST(test_send_msg)
 		msg = pkggraph_msg_new();
 		pkggraph_msg_set_id(msg, PKGGRAPH_MSG_HELLO);
 		pkggraph_msg_send(msg, sender);
+		pkggraph_msg_destroy(&msg);
 	}
 
 	for (int i = 0; i < 2; i++) {
 		pkggraph_msg_t *msg = pkggraph_msg_new();
 		frame = zframe_recv(recver);
 		ttype = btranslate_type_of_msg(frame);
+		zframe_destroy(&frame);
 		ck_assert_int_eq(ttype, TRANSLATE_GRAPH);
 		rc = pkggraph_msg_recv(msg, recver);
 		ck_assert_int_eq(rc, 0);
@@ -142,12 +146,14 @@ START_TEST(test_send_msg)
 		msg = pkgfiles_msg_new();
 		pkgfiles_msg_set_id(msg, PKGFILES_MSG_HELLO);
 		pkgfiles_msg_send(msg, sender);
+		pkgfiles_msg_destroy(&msg);
 	}
 
 	for (int i = 0; i < 2; i++) {
 		pkgfiles_msg_t *msg = pkgfiles_msg_new();
 		frame = zframe_recv(recver);
 		ttype = btranslate_type_of_msg(frame);
+		zframe_destroy(&frame);
 		ck_assert_int_eq(ttype, TRANSLATE_FILES);
 		rc = pkgfiles_msg_recv(msg, recver);
 		ck_assert_int_eq(rc, 0);
@@ -172,10 +178,10 @@ START_TEST(test_send_msg_easy)
 	ck_assert_ptr_nonnull(sender);
 	ck_assert_ptr_nonnull(recver);
 
-	rc = zsock_bind(sender, endpoint);
+	rc = zsock_bind(sender, "%s", endpoint);
 	ck_assert_int_eq(rc, 0);
 	ck_assert_str_eq(zsock_endpoint(sender), endpoint);
-	rc = zsock_connect(recver, endpoint);
+	rc = zsock_connect(recver, "%s", endpoint);
 	ck_assert_int_eq(rc, 0);
 
 	for (int i = 0; i < 2; i++) {
@@ -185,12 +191,14 @@ START_TEST(test_send_msg_easy)
 		msg = pkgimport_msg_new();
 		pkgimport_msg_set_id(msg, PKGIMPORT_MSG_HELLO);
 		pkgimport_msg_send(msg, sender);
+		pkgimport_msg_destroy(&msg);
 	}
 
 	for (int i = 0; i < 2; i++) {
 		pkgimport_msg_t *msg = pkgimport_msg_new();
 		frame = zframe_recv(recver);
 		ttype = btranslate_type_of_msg(frame);
+		zframe_destroy(&frame);
 		ck_assert_int_eq(ttype, TRANSLATE_IMPORT);
 		rc = pkgimport_msg_recv(msg, recver);
 		ck_assert_int_eq(rc, 0);
@@ -202,24 +210,26 @@ START_TEST(test_send_msg_easy)
 	}
 
 	for (int i = 0; i < 2; i++) {
-		pkggraph_msg_t *msg;
+		pkggraph_msg_t *msg = pkggraph_msg_new();
 		rc = btranslate_prepare_socket(sender, TRANSLATE_GRAPH);
 		ck_assert_int_eq(rc, ERR_CODE_OK);
-		msg = pkggraph_msg_new();
 		pkggraph_msg_set_id(msg, PKGGRAPH_MSG_HELLO);
 		pkggraph_msg_send(msg, sender);
+		pkggraph_msg_destroy(&msg);
 	}
 
 	for (int i = 0; i < 2; i++) {
 		pkggraph_msg_t *msg = pkggraph_msg_new();
 		frame = zframe_recv(recver);
 		ttype = btranslate_type_of_msg(frame);
+		zframe_destroy(&frame);
 		ck_assert_int_eq(ttype, TRANSLATE_GRAPH);
 		rc = pkggraph_msg_recv(msg, recver);
 		ck_assert_int_eq(rc, 0);
 		ck_assert_int_eq(pkggraph_msg_id(msg), PKGGRAPH_MSG_HELLO);
 		pkggraph_msg_destroy(&msg);
 		zsock_flush(recver);
+		pkggraph_msg_destroy(&msg);
 	}
 
 	for (int i = 0; i < 2; i++) {
@@ -229,12 +239,14 @@ START_TEST(test_send_msg_easy)
 		msg = pkgfiles_msg_new();
 		pkgfiles_msg_set_id(msg, PKGFILES_MSG_HELLO);
 		pkgfiles_msg_send(msg, sender);
+		pkgfiles_msg_destroy(&msg);
 	}
 
 	for (int i = 0; i < 2; i++) {
 		pkgfiles_msg_t *msg = pkgfiles_msg_new();
 		frame = zframe_recv(recver);
 		ttype = btranslate_type_of_msg(frame);
+		zframe_destroy(&frame);
 		ck_assert_int_eq(ttype, TRANSLATE_FILES);
 		rc = pkgfiles_msg_recv(msg, recver);
 		ck_assert_int_eq(rc, 0);
