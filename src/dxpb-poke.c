@@ -41,7 +41,7 @@ run(int flags, const char *endpoint)
 		return ERR_CODE_ZMQ;
 	}
 
-	zpoller_t *polling = zpoller_new(pkgimport_poke_actor(client));
+	zpoller_t *polling = zpoller_new(pkgimport_poke_actor(client), NULL);
 	assert(polling);
 	zactor_t *pollret;
 	char *str;

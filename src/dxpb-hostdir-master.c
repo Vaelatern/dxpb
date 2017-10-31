@@ -35,7 +35,6 @@ run(int flags, const char *ssldir, const char *sdir, const char *rdir,
 	assert((flags & ERR_FLAG) == 0);
 	zactor_t *file_actor, *log_actor;
 	pkggraph_filer_t *log_client;
-	int rc;
 	enum ret_codes retVal = ERR_CODE_OK;
 
 	file_actor = zactor_new(pkgfiler, "pkgfiler");
@@ -57,10 +56,8 @@ run(int flags, const char *ssldir, const char *sdir, const char *rdir,
 	zstr_sendx(log_actor, "SET PUBPOINT", graph_pubpoint, NULL);
 	zstr_sendx(log_actor, "CONSTRUCT", graph_endpoint, NULL);
 
-	zpoller_t *polling = zpoller_new(file_actor);
+	zpoller_t *polling = zpoller_new(file_actor, log_actor, NULL);
 	assert(polling);
-	rc = zpoller_add(polling, log_actor);
-	assert(rc == 0);
 
 	char *tmp = zstr_recv(log_actor);
 	if (!strcmp(tmp, "FAILURE"))

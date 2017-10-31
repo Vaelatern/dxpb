@@ -40,7 +40,7 @@ run(int flags, const char *endpoint, const char *hostdir, const char *ssldir)
 	zstr_sendx(actor, "SET HOSTDIR", hostdir, NULL);
 	zstr_sendx(actor, "CONSTRUCT", endpoint, NULL);
 
-	zpoller_t *polling = zpoller_new(actor);
+	zpoller_t *polling = zpoller_new(actor, NULL);
 	assert(polling);
 	zactor_t *rc = zpoller_wait(polling, -1);
 	char *tmp = zstr_recv(rc);

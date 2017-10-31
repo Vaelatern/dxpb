@@ -37,7 +37,7 @@ run(int flags, const char *endpoint, const char *ssldir, const char *pubpoint)
 	zstr_sendx(actor, "SET", "dxpb/pubpoint", pubpoint, NULL);
 	zstr_sendx(actor, "BIND", endpoint, NULL);
 
-	zpoller_t *polling = zpoller_new(actor);
+	zpoller_t *polling = zpoller_new(actor, NULL);
 	assert(polling);
 	zactor_t *rc;
 	while ((rc = zpoller_wait(polling, -1)) != NULL) {
