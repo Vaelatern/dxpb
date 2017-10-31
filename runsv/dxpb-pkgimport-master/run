@@ -1,8 +1,18 @@
 #!/bin/sh
 
+unset USER
+unset GROUP
+
 [ -f ./conf ] && . ./conf
 
 : ${USER:=_dxpb_import}
 : ${GROUP:=_dxpb:_dxpb_import}
 
-exec chpst -u $USER:$GROUP dxpb-pkgimport-master
+[ -z "$WRKDIR" -a -z "$REPODIR" ] && echo "Will not start - need a hostdir to own" && exit 1
+
+args=""
+[ -n "$REPODIR" ] && args="${args} -r '$REPODIR'"
+
+[ -n "$WRKDIR] && cd "$WRKDIR"
+
+exec chpst -u $USER:$GROUP dxpb-pkgimport-master $args

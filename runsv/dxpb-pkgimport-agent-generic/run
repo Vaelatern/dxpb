@@ -1,8 +1,18 @@
 #!/bin/sh
 
+unset USER
+unset GROUP
+
 [ -f ./conf ] && . ./conf
 
 : ${USER:=_dxpb_import}
 : ${GROUP:=_dxpb:_dxpb_import}
 
-exec chpst -u $USER:$GROUP dxpb-pkgimport-agent
+[ -z "$WRKDIR" -a -z "$XBPSSRC" ] && echo "Will not start - need a path for xbps-src" && exit 1
+
+args=""
+[ -n "$XBPSSRC" ] && args="${args} -x '$XBPSSRC'"
+
+[ -n "$WRKDIR] && cd "$WRKDIR"
+
+exec chpst -u $USER:$GROUP dxpb-pkgimport-agent $args
