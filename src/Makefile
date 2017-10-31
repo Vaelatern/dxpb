@@ -22,6 +22,8 @@ COMPILE.c = $(CC) $(LOCAL_CFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
 
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin/
+DOCDIR = $(PREFIX)/share/doc/dxpb/
+SVDIR = /etc/sv/
 
 GSL_BIN ?= gsl
 
@@ -220,12 +222,16 @@ install-license:
 	cp ../COPYING $(DESTDIR)/usr/share/licenses/dxpb/
 
 install-doc:
-	mkdir -p $(DESTDIR)/usr/share/doc/dxpb/
-	cp -r ../doc $(DESTDIR)/usr/share/doc/dxpb/
+	mkdir -p $(DESTDIR)$(DOCDIR)
+	cp -r ../doc $(DESTDIR)$(DOCDIR)
 
 install-bin: $(BINARIES)
 	mkdir -p $(DESTDIR)$(BINDIR)
 	mv $(BINARIES) $(DESTDIR)$(BINDIR)
+
+install-runit-scripts: install-bin
+	mkdir -p $(DESTDIR)$(SVDIR)
+	cp -r ../runsv/* $(DESTDIR)$(SVDIR)
 
 install: install-default-dirs install-bin install-license
 
