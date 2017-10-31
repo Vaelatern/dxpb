@@ -13,6 +13,6 @@ unset GROUP
 args=""
 [ -n "$XBPSSRC" ] && args="${args} -x '$XBPSSRC'"
 
-[ -n "$WRKDIR] && cd "$WRKDIR"
+[ -n "$WRKDIR" ] && cd "$WRKDIR"
 
 exec chpst -u $USER:$GROUP dxpb-pkgimport-agent $args

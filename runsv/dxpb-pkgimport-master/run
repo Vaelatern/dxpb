@@ -13,6 +13,6 @@ unset GROUP
 args=""
 [ -n "$REPODIR" ] && args="${args} -r '$REPODIR'"
 
-[ -n "$WRKDIR] && cd "$WRKDIR"
+[ -n "$WRKDIR" ] && cd "$WRKDIR"
 
 exec chpst -u $USER:$GROUP dxpb-pkgimport-master $args
