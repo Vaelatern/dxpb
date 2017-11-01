@@ -2,6 +2,7 @@
 
 unset USER
 unset GROUP
+unset HOME
 
 [ -f ./conf ] && . ./conf
 

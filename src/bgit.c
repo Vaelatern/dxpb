@@ -227,6 +227,7 @@ bgit_proc_changed_pkgs(const char *repopath, const char *xbps_src, int (*cb)(voi
 char *
 bgit_get_head_hash(const char *repopath)
 {
+	assert(repopath);
 	assert(GIT_OID_HEXSZ > 0);
 	char *retVal;
 	git_oid oid;
@@ -237,9 +238,15 @@ bgit_get_head_hash(const char *repopath)
 		exit(ERR_CODE_NOMEM);
 	}
 
-	git_libgit2_init();
-	int rc = git_repository_open(&repo, repopath);
-	assert(rc == 0);
+	int rc = git_libgit2_init();
+	assert(rc > 0);
+	rc = git_repository_open(&repo, repopath);
+	if (rc != 0) {
+		perror("Couldn't open repo");
+		const git_error *err = giterr_last();
+		fprintf(stderr, "Git error: %s\n", err->message);
+		exit(ERR_CODE_BAD);
+	}
 	rc = git_reference_name_to_id(&oid, repo, "HEAD");
 	assert(rc == 0);
 	git_oid_tostr(retVal, GIT_OID_HEXSZ+1, &oid);

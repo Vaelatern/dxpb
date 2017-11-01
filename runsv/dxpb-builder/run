@@ -1,5 +1,9 @@
 #!/bin/sh
 
+unset USER
+unset GROUP
+unset HOME
+
 [ -f ./conf ] && . ./conf
 
 : ${USER:=_dxpb_build}
