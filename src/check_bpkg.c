@@ -24,7 +24,7 @@ START_TEST(test_bpkg_create_allowed_archs)
 	for (enum pkg_archs h = ARCH_NOARCH+1; h < ARCH_HOST; h++) {
 		ck_assert_int_eq(relRay[h], 1);
 	}
-	bwords_destroy(&curTest, 0);
+	bwords_destroy(&curTest, 1);
 
 	// Confirm it works on any given architecture
 	for (enum pkg_archs i = ARCH_NOARCH+1; i < ARCH_HOST; i++) {
@@ -37,7 +37,7 @@ START_TEST(test_bpkg_create_allowed_archs)
 			else
 				ck_assert_int_eq(relRay[h], 0);
 		}
-		bwords_destroy(&curTest, 0);
+		bwords_destroy(&curTest, 1);
 	}
 	// Confirm it works on any two combined architectures
 	for (enum pkg_archs i = ARCH_NOARCH+1; i < ARCH_HOST; i++) {
@@ -54,7 +54,7 @@ START_TEST(test_bpkg_create_allowed_archs)
 				else
 					ck_assert_int_eq(relRay[h], 0);
 			}
-			bwords_destroy(&curTest, 0);
+			bwords_destroy(&curTest, 1);
 		}
 	}
 }

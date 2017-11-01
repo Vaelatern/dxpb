@@ -123,7 +123,7 @@ START_TEST(test_bwords_merge_words)
 	ck_assert_str_eq(third->words[1], "World");
 	ck_assert_str_eq(third->words[2], "What");
 	ck_assert_ptr_null(third->words[3]);
-	bwords_destroy(&first, 0);
+	bwords_destroy(&first, 1);
 	first = bwords_append_word(first, "Hello", 0);
 	first = bwords_append_word(first, "World", 0);
 	ck_assert_str_eq(first->words[0], "Hello");
@@ -145,7 +145,7 @@ START_TEST(test_bwords_merge_words)
 	ck_assert_str_eq(first->words[3], "Is");
 	ck_assert_str_eq(first->words[4], "Up");
 	ck_assert_ptr_null(first->words[5]);
-	bwords_destroy(&first, 0);
+	bwords_destroy(&first, 1);
 }
 END_TEST
 
@@ -183,7 +183,7 @@ START_TEST(test_bwords_to_units)
 	tmp = bwords_to_units(words);
 	ck_assert_str_eq(tmp, "");
 	free(tmp);
-	free(words);
+	bwords_destroy(&words, 1);
 }
 END_TEST
 
@@ -256,7 +256,7 @@ START_TEST(test_bwords_from_units)
 	words = bwords_from_units(tmp5);
 	ck_assert_ptr_nonnull(words->words);
 	ck_assert_ptr_null(words->words[0]);
-	bwords_destroy(&words, 0);
+	bwords_destroy(&words, 1);
 }
 END_TEST
 

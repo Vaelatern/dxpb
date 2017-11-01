@@ -52,6 +52,8 @@ START_TEST(test_bxbps_get_pkgname)
 	ck_assert_str_eq(tmp, "python3.4-service_directory");
 	free(tmp);
 
+	zhash_destroy(&alls);
+
 	return;
 }
 END_TEST
