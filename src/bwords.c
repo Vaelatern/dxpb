@@ -75,9 +75,9 @@ bwords_append_word(bwords words, const char *word, char zero_copy)
 	/* In this section, we obtain a tmp variable for the word to add
 	 * Allocations included, this should not be complicated and simply
 	 * give us a pointer to a known good string. */
-	if (word == NULL || word[0] == '\0') { /* Special case to pair with normalizing array */
-		tmp = NULL;
-	} else if (!zero_copy) {
+	if (word == NULL || word[0] == '\0')
+		return words;
+	else if (!zero_copy) {
 		if ((tmp = strdup(word)) == NULL) {
 			perror("Could not allocate memory");
 			exit(ERR_CODE_NOMEM);
@@ -86,18 +86,10 @@ bwords_append_word(bwords words, const char *word, char zero_copy)
 		tmp = word;
 	}
 
-	if (tmp != NULL)
-		words->num_words++;
+	words->num_words++;
+
 	/* Now we do reallocation to get the correct size */
-	if (tmp == NULL) { /* Special case to shrink size to max we are using */
-		words->num_alloc = words->num_words + 1;
-		words->words = realloc(words->words,
-					words->num_alloc * sizeof(char *));
-		if (words->words == NULL) {
-			perror("WTF. Shrinking list of strings fails? WTF?");
-			exit(ERR_CODE_BADDOBBY);
-		}
-	} else if (words->num_words + 1 > words->num_alloc) {
+	if (words->num_words + 1 > words->num_alloc) {
 		words->num_alloc = (1 + ((words->num_words + 1) * 2));
 		words->words = realloc(words->words, words->num_alloc*sizeof(char *));
 		if (words == NULL) {
@@ -105,12 +97,12 @@ bwords_append_word(bwords words, const char *word, char zero_copy)
 			exit(ERR_CODE_NOMEM);
 		}
 	}
-	/* If this is the sort of thing where we do writing, we do writing */
-	if (tmp != NULL) {
-		words->words[words->num_words - 1] = tmp;
-	}
-	/* Either way, by convention we have a NULL at the end */
+
+	/* We do writing */
+	words->words[words->num_words - 1] = tmp;
+	/* By convention we have a NULL at the end */
 	words->words[words->num_words] = NULL;
+
 	/* And return */
 	return words;
 }
