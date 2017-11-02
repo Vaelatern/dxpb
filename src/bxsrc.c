@@ -89,7 +89,7 @@ bxsrc_request_to_string(int fd)
 		 * trigger this but people can be mean.
 		 */
 		for (uint8_t i = 0; i < inread-1; i++) /* -1 so don't catch \0 at end */
-			if (inbuf[i] & ~31) // inbuf[i] < 32 optimization
+			if (inbuf[i] < 32)
 				inbuf[i] = ' ';
 
 		if (inread > 0)
@@ -301,7 +301,7 @@ bxsrc_ask(int fd, char *query)
 	assert(fd && query[0]);
 	size_t query_len = strlen(query);
 	size_t rc = 0;
-	char *new_query = malloc((query_len+2) * sizeof(char));
+	char *new_query = malloc((query_len + 2) * sizeof(char));
 	if (!new_query) {
 		perror("Couldn't allocate query string");
 		exit(ERR_CODE_NOMEM);
