@@ -7,7 +7,7 @@ unset HOME
 [ -f ./conf ] && . ./conf
 
 : ${USER:=_dxpb_build}
-: ${GROUP:=__dxpb:_dxpb_build:_dxpb_ssl}
+: ${GROUP:=_dxpb:_dxpb_build:_dxpb_ssl}
 
 needwrkdir=0
 args=""
