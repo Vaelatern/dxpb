@@ -203,20 +203,6 @@ clean: mostlyclean
 #### Installation Targets ###
 #############################
 
-install-default-dirs:
-	mkdir -p $(DESTDIR)/etc/dxpb/curve/
-	touch $(DESTDIR)/etc/dxpb/curve/.empty
-	mkdir -p $(DESTDIR)/var/lib/dxpb/staging/
-	touch $(DESTDIR)/var/lib/dxpb/staging/.empty
-	mkdir -p $(DESTDIR)/var/lib/dxpb/logs/
-	touch $(DESTDIR)/var/lib/dxpb/logs/.empty
-	mkdir -p $(DESTDIR)/var/lib/dxpb/pkgs/
-	touch $(DESTDIR)/var/lib/dxpb/pkgs/.empty
-	mkdir -p $(DESTDIR)/var/run/dxpb/
-	touch $(DESTDIR)/var/run/dxpb/.empty
-	mkdir -p $(DESTDIR)/var/cache/dxpb/
-	touch $(DESTDIR)/var/cache/dxpb/.empty
-
 install-license:
 	mkdir -p $(DESTDIR)/usr/share/licenses/dxpb/
 	cp ../COPYING $(DESTDIR)/usr/share/licenses/dxpb/
@@ -233,7 +219,7 @@ install-runit-scripts: install-bin
 	mkdir -p $(DESTDIR)$(SVDIR)
 	cp -r ../runsv/* $(DESTDIR)$(SVDIR)
 
-install: install-default-dirs install-bin install-license install-runit-scripts
+install: install-bin install-license install-runit-scripts
 
 
 ##################################
