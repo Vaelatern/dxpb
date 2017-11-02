@@ -223,7 +223,7 @@ bpkg_init_template(const char *xbps_src, const char *name)
 	/* Get version_revision */
 	tmp = bxsrc_q_to_words(fds, "version");
 	if (!tmp || !(tmp->words) || !(tmp->words[0]) || tmp->words[1]) {
-		fprintf(stderr, "Unable to get version from template!");
+		fprintf(stderr, "Unable to get version from template in package read!");
 		exit(ERR_CODE_BADPKG);
 	}
 	version = strdup(tmp->words[0]);
