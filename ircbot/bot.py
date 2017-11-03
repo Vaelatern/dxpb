@@ -86,8 +86,8 @@ def start(config):
 
 
 def parseargs(argv):
-    if "-h" in argv or len(argv) < 5 or "--" not in argv or argv.index("--") < 3 or argv.index("--") >= (len(argv) - 1):
-        print("Usage: {} <nick> <chan>@<server[:port]>[+<loglevel>] -- <endpoint>".format(argv[0]))
+    if "-h" in argv or len(argv) < 5 or ".." not in argv or argv.index("..") < 3 or argv.index("..") >= (len(argv) - 1):
+        print("Usage: {} <nick> <chan>@<server[:port]>[+<loglevel>] .. <endpoint>".format(argv[0]))
         print("\t <chan> is either #channel or nick")
         print("\t <port> is numeric, and defaults to 6667")
         print("\t <endpoint> is a zeromq socket endpoint to which we SUBSCRIBE")
@@ -100,9 +100,9 @@ def parseargs(argv):
     nick = argv[1]
     servers = []
     endpoints = []
-    for index in range(argv.index("--") + 1, len(argv)):
+    for index in range(argv.index("..") + 1, len(argv)):
         endpoints.append(argv[index])
-    for index in range(2, argv.index("--")):
+    for index in range(2, argv.index("..")):
         conn = {"nick": nick}
         tmp = argv[index].split("@")
         conn["chan"] = tmp[0]
