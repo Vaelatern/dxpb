@@ -12,6 +12,6 @@ args=""
 [ -n "$HOSTDIR" ] && args="$args -H '$HOSTDIR'"
 [ -n "$ENDPOINT" ] && args="$args -f '$ENDPOINT'"
 
-cd "$WRKDIR"
+[ -n "$WRKDIR" ] && cd "$WRKDIR"
 
 exec chpst -u $USER:$GROUP dxpb-hostdir-remote $args

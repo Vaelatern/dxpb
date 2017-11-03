@@ -26,7 +26,7 @@ elif [ -n "ARGV0" ]; then
 	[ -f "/etc/dxpb/curve/${ARGV0}.key" ] || exit 2;
 fi
 
-cd "$WRKDIR"
+[ -n "$WRKDIR" ] && cd "$WRKDIR"
 
 [ -n "ARGV0" ] && ARGV0="-b '$ARGV0'"
 
