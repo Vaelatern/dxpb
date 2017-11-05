@@ -47,10 +47,10 @@ func tellchans(server *ircServer, wg sync.WaitGroup) {
 	wg.Done()
 }
 
-func initIRC(servers []*ircServer, done chan<- int) ([]*ircServer, []chan<- *ircMsg) {
+func initIRC(servers []*ircServer, wg sync.WaitGroup) ([]*ircServer, []chan<- *ircMsg) {
 	var pipe chan *ircMsg
+	var pubpipe chan *ircMsg
 	var retPipes []chan<- *ircMsg
-	var wg sync.WaitGroup
 	wg.Add(len(servers))
 	for _, server := range servers {
 		server.irc = irc.IRC(server.nick, "Lobotomy")
@@ -64,14 +64,20 @@ func initIRC(servers []*ircServer, done chan<- int) ([]*ircServer, []chan<- *irc
 			log.Printf("Bot attached to channel %s\n", curchan.name)
 		}
 		pipe = make(chan *ircMsg, 64)
+		pubpipe = make(chan *ircMsg, 64)
 		server.pipe = pipe
-		retPipes = append(retPipes, pipe)
+		retPipes = append(retPipes, pubpipe)
+		go func(inpipe <-chan *ircMsg, outpipe chan<- *ircMsg) {
+			for msg := range inpipe {
+				select {
+				case outpipe <- msg:
+				default:
+				}
+			}
+		}(pubpipe, pipe)
 		go tellchans(server, wg)
 	}
-	go func() {
-		wg.Wait()
-		done <- 1
-	}()
+	wg.Done()
 	return servers, retPipes
 }
 
@@ -96,7 +102,7 @@ func prepMsgTxt(prefix byte, in [][]byte) []string {
 	return ret
 }
 
-func sockToPipes(sock *goczmq.Channeler, pipes []chan<- *ircMsg, loglevel int) {
+func sockToPipes(sock *goczmq.Channeler, pipes []chan<- *ircMsg, loglevel int, wg sync.WaitGroup) {
 	defer sock.Destroy()
 	for {
 		msg := <-sock.RecvChan
@@ -111,19 +117,19 @@ func sockToPipes(sock *goczmq.Channeler, pipes []chan<- *ircMsg, loglevel int) {
 			out.txt = strings.Join(prepMsgTxt(msg[0][0], msg[1:]), ": ")
 		}
 		for _, pipe := range pipes {
-			select {
-			case pipe <- out:
-			default:
-			}
+			pipe <- out
 		}
 	}
 	log.Printf("Done reading socks for loglevel %d\n", loglevel)
+	wg.Done()
 }
 
-func startSocks(socks map[string]*goczmq.Channeler, pipes []chan<- *ircMsg) {
+func startSocks(socks map[string]*goczmq.Channeler, pipes []chan<- *ircMsg, wg sync.WaitGroup) {
+	wg.Add(len(types))
 	for loglevel, mode := range types {
-		go sockToPipes(socks[mode], pipes, loglevel)
+		go sockToPipes(socks[mode], pipes, loglevel, wg)
 	}
+	wg.Done()
 }
 
 func defaultServers() []*ircServer {
@@ -133,19 +139,15 @@ func defaultServers() []*ircServer {
 	srvr.nick = "dxpb"
 	srvr.connstr = "irc.freenode.net:6697"
 	chn = new(ircChan)
-	chn.name = "Vaelatern"
-	chn.loglevel = 5
-	srvr.chans = append(srvr.chans, chn)
-	chn = new(ircChan)
 	chn.name = "#dxpb"
-	chn.loglevel = 5
+	chn.loglevel = 2
 	srvr.chans = append(srvr.chans, chn)
 	retVal = append(retVal, srvr)
 	return retVal
 }
 
 func main() {
-	ch := make(chan int)
+	var wg sync.WaitGroup
 	log.Println("Preparing default servers")
 	var servers []*ircServer = defaultServers()
 	endpoints := []string{"ipc:///var/run/dxpb/log-dxpb-frontend.sock",
@@ -154,11 +156,11 @@ func main() {
 		"ipc:///var/run/dxpb/log-dxpb-hostdir-master-files.sock",
 		"ipc:///var/run/dxpb/log-pkgimport-master.sock"}
 	log.Println("Preparing IRC")
-	servers, pipes := initIRC(servers, ch)
+	wg.Add(1)
+	servers, pipes := initIRC(servers, wg)
 	log.Println("Preparing 0mq")
 	socks := init0mq(endpoints)
 	log.Println("Starting socket work")
-	startSocks(socks, pipes)
-	<-ch
-	<-ch
+	startSocks(socks, pipes, wg)
+	wg.Wait()
 }
