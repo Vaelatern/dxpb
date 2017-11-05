@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/thoj/go-ircevent"
@@ -29,11 +30,10 @@ type ircServer struct {
 
 var types []string = []string{"ERROR", "NORMAL", "DEBUG", "VERBOSE", "TRACE"}
 
-func tellchans(server *ircServer, quitchan chan<- string) {
-	for {
-		var msg *ircMsg
-		msg, ok := <-server.pipe
-		if !ok {
+func tellchans(server *ircServer, wg sync.WaitGroup) {
+	go server.irc.Loop()
+	for msg := range server.pipe {
+		if msg == nil {
 			break
 		}
 		for _, channel := range server.chans {
@@ -44,14 +44,14 @@ func tellchans(server *ircServer, quitchan chan<- string) {
 		}
 	}
 	server.irc.Disconnect()
-	quitchan <- server.connstr
+	wg.Done()
 }
 
 func initIRC(servers []*ircServer, done chan<- int) ([]*ircServer, []chan<- *ircMsg) {
-	var count int = 0
 	var pipe chan *ircMsg
 	var retPipes []chan<- *ircMsg
-	qchan := make(chan string)
+	var wg sync.WaitGroup
+	wg.Add(len(servers))
 	for _, server := range servers {
 		server.irc = irc.IRC(server.nick, "Lobotomy")
 		server.irc.UseTLS = true
@@ -63,18 +63,13 @@ func initIRC(servers []*ircServer, done chan<- int) ([]*ircServer, []chan<- *irc
 			}
 			log.Printf("Bot attached to channel %s\n", curchan.name)
 		}
-		pipe = make(chan *ircMsg)
+		pipe = make(chan *ircMsg, 64)
 		server.pipe = pipe
 		retPipes = append(retPipes, pipe)
-		go server.irc.Loop()
-		go tellchans(server, qchan)
-		count++
+		go tellchans(server, wg)
 	}
 	go func() {
-		for count > 0 {
-			<-qchan
-			count--
-		}
+		wg.Wait()
 		done <- 1
 	}()
 	return servers, retPipes
@@ -116,7 +111,10 @@ func sockToPipes(sock *goczmq.Channeler, pipes []chan<- *ircMsg, loglevel int) {
 			out.txt = strings.Join(prepMsgTxt(msg[0][0], msg[1:]), ": ")
 		}
 		for _, pipe := range pipes {
-			pipe <- out
+			select {
+			case pipe <- out:
+			default:
+			}
 		}
 	}
 	log.Printf("Done reading socks for loglevel %d\n", loglevel)
