@@ -53,7 +53,7 @@ run(int flags, const char *ssldir, const char *sdir, const char *rdir,
 	zstr_sendx(file_actor, "BIND", file_endpoint, NULL);
 
 	zstr_sendx(log_actor, "SET LOGDIR", ldir, NULL);
-	zstr_sendx(log_actor, "SET PUBPOINT", graph_pubpoint, NULL);
+	zstr_sendx(log_actor, "SET PUB TO PROVIDED", graph_pubpoint, NULL);
 	zstr_sendx(log_actor, "CONSTRUCT", graph_endpoint, NULL);
 
 	zpoller_t *polling = zpoller_new(file_actor, log_actor, NULL);
