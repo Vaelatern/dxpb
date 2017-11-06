@@ -30,6 +30,7 @@ type IrcServer struct {
 	Connstr string `yaml:"connstr"`
 	Chans   []*Chan `yaml:"chans,flow"`
 	pipe    <-chan *ircMsg
+	Wait2Join float32
 }
 
 type conf struct {
@@ -89,6 +90,9 @@ func initIRC(servers []*IrcServer, wg sync.WaitGroup) ([]*IrcServer, []chan<- *i
 		server.irc = irc.IRC(server.Nick, "Lobotomy")
 		server.irc.UseTLS = server.SSL
 		server.irc.Connect(server.Connstr)
+		if server.Wait2Join > 0 {
+			time.Sleep(time.Duration(server.Wait2Join) * time.Second)
+		}
 		for _, curchan := range server.Chans {
 			server.irc.Join(curchan.Name)
 			if curchan.Loglevel > 2 {
