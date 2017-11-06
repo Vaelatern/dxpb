@@ -13,4 +13,4 @@ Arguments:
 The following flags have defaults.
   -k: /etc/dxpb/curve/
   -g: tcp://127.0.0.1:5195
-  -G: /var/run/dxpb/log-dxpb-frontend.sock
+  -G: ipc:///var/run/dxpb/log-dxpb-frontend.sock
