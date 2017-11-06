@@ -9,3 +9,5 @@ check_*
 !*.inc
 .container
 src/gmon.out
+ircbot/go/bot
+ircbot/go/conf.yaml
