@@ -5,41 +5,74 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"io/ioutil"
 
+	"gopkg.in/yaml.v2"
 	"github.com/thoj/go-ircevent"
 	"github.com/zeromq/goczmq"
 )
 
-type ircChan struct {
-	name     string
-	loglevel int
+type Chan struct {
+	Name     string `yaml:"name"`
+	Loglevel int `yaml:"loglevel"`
+	CanFlood bool
 }
 
 type ircMsg struct {
 	txt      string
-	loglevel int
+	Loglevel int
 }
 
-type ircServer struct {
+type IrcServer struct {
 	irc     *irc.Connection
-	nick    string
-	connstr string
-	chans   []*ircChan
+	Nick    string	`yaml:"nick"`
+	SSL     bool	`yaml:"ssl"`
+	Connstr string `yaml:"connstr"`
+	Chans   []*Chan `yaml:"chans,flow"`
 	pipe    <-chan *ircMsg
 }
 
+type conf struct {
+	Irc []*IrcServer `yaml:"irc,flow"`
+	Endpoints []string `yaml:"endpoints,flow"`
+}
+
+/* Example config file: conf.yaml:
+irc:
+  - connstr: irc.freenode.net:6697
+    ssl: True
+    nick: dxpb
+    chans:
+      - name: '#dxpb'
+        canflood: False
+        loglevel: 5
+      - name: '#xbps'
+        canflood: False
+        loglevel: 2
+endpoints:
+  - ipc:///var/run/dxpb/log-dxpb-frontend.sock
+  - ipc:///var/run/dxpb/log-dxpb-grapher.sock
+  - ipc:///var/run/dxpb/log-dxpb-hostdir-master-files.sock
+  - ipc:///var/run/dxpb/log-dxpb-hostdir-master-graph.sock
+  - ipc:///var/run/dxpb/log-pkgimport-master.sock
+*/
+
 var types []string = []string{"ERROR", "NORMAL", "DEBUG", "VERBOSE", "TRACE"}
 
-func tellchans(server *ircServer, wg sync.WaitGroup) {
+func tellchans(server *IrcServer, wg sync.WaitGroup) {
 	go server.irc.Loop()
 	for msg := range server.pipe {
 		if msg == nil {
 			break
 		}
-		for _, channel := range server.chans {
-			if channel.loglevel >= msg.loglevel {
-				server.irc.Notice(channel.name, msg.txt)
-				time.Sleep(2 * time.Second)
+		for _, channel := range server.Chans {
+			if channel.Loglevel >= msg.Loglevel {
+				server.irc.Notice(channel.Name, msg.txt)
+				switch channel.CanFlood {
+				case false:
+					time.Sleep(2 * time.Second)
+				default:
+				}
 			}
 		}
 	}
@@ -47,21 +80,21 @@ func tellchans(server *ircServer, wg sync.WaitGroup) {
 	wg.Done()
 }
 
-func initIRC(servers []*ircServer, wg sync.WaitGroup) ([]*ircServer, []chan<- *ircMsg) {
+func initIRC(servers []*IrcServer, wg sync.WaitGroup) ([]*IrcServer, []chan<- *ircMsg) {
 	var pipe chan *ircMsg
 	var pubpipe chan *ircMsg
 	var retPipes []chan<- *ircMsg
 	wg.Add(len(servers))
 	for _, server := range servers {
-		server.irc = irc.IRC(server.nick, "Lobotomy")
-		server.irc.UseTLS = true
-		server.irc.Connect(server.connstr)
-		for _, curchan := range server.chans {
-			server.irc.Join(curchan.name)
-			if curchan.loglevel > 2 {
-				server.irc.Notice(curchan.name, "Bot ready")
+		server.irc = irc.IRC(server.Nick, "Lobotomy")
+		server.irc.UseTLS = server.SSL
+		server.irc.Connect(server.Connstr)
+		for _, curchan := range server.Chans {
+			server.irc.Join(curchan.Name)
+			if curchan.Loglevel > 2 {
+				server.irc.Notice(curchan.Name, "Bot ready")
 			}
-			log.Printf("Bot attached to channel %s\n", curchan.name)
+			log.Printf("Bot attached to channel %s\n", curchan.Name)
 		}
 		pipe = make(chan *ircMsg, 64)
 		pubpipe = make(chan *ircMsg, 64)
@@ -86,7 +119,6 @@ func init0mq(endpoints []string) map[string]*goczmq.Channeler {
 	endpointstr := strings.Join(endpoints, ",")
 	log.Printf("Connecting to endpoints: %s\n", endpointstr)
 	for _, mode := range types {
-		log.Printf("Adding subscriber for mode: %s\n", mode)
 		sock := goczmq.NewSubChanneler(endpointstr, mode)
 		socks[mode] = sock
 	}
@@ -107,7 +139,7 @@ func sockToPipes(sock *goczmq.Channeler, pipes []chan<- *ircMsg, loglevel int, w
 	for {
 		msg := <-sock.RecvChan
 		out := new(ircMsg)
-		out.loglevel = loglevel
+		out.Loglevel = loglevel
 		switch len(msg) {
 		case 0:
 			out.txt = "Got channel error"
@@ -132,35 +164,29 @@ func startSocks(socks map[string]*goczmq.Channeler, pipes []chan<- *ircMsg, wg s
 	wg.Done()
 }
 
-func defaultServers() []*ircServer {
-	var retVal []*ircServer
-	var chn *ircChan = new(ircChan)
-	var srvr *ircServer = new(ircServer)
-	srvr.nick = "dxpb"
-	srvr.connstr = "irc.freenode.net:6697"
-	chn = new(ircChan)
-	chn.name = "#dxpb"
-	chn.loglevel = 2
-	srvr.chans = append(srvr.chans, chn)
-	retVal = append(retVal, srvr)
-	return retVal
+func (config *conf) read(filename string) *conf {
+	confFile, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Printf("confFile.Get err   #%v ", err)
+	}
+
+	err = yaml.UnmarshalStrict(confFile, &config)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+	return config
 }
 
 func main() {
+	config := conf{}
+	config.read("./conf.yaml")
+
 	var wg sync.WaitGroup
-	log.Println("Preparing default servers")
-	var servers []*ircServer = defaultServers()
-	endpoints := []string{"ipc:///var/run/dxpb/log-dxpb-frontend.sock",
-		"ipc:///var/run/dxpb/log-dxpb-grapher.sock",
-		"ipc:///var/run/dxpb/log-dxpb-hostdir-master-graph.sock",
-		"ipc:///var/run/dxpb/log-dxpb-hostdir-master-files.sock",
-		"ipc:///var/run/dxpb/log-pkgimport-master.sock"}
-	log.Println("Preparing IRC")
+	var pipes []chan<- *ircMsg
 	wg.Add(1)
-	servers, pipes := initIRC(servers, wg)
-	log.Println("Preparing 0mq")
-	socks := init0mq(endpoints)
-	log.Println("Starting socket work")
+	config.Irc, pipes = initIRC(config.Irc, wg)
+	socks := init0mq(config.Endpoints)
+	log.Println("Starting logger")
 	startSocks(socks, pipes, wg)
 	wg.Wait()
 }
