@@ -82,37 +82,37 @@ func tellchans(server *IrcServer, wg sync.WaitGroup) {
 }
 
 func initIRC(servers []*IrcServer, wg sync.WaitGroup) ([]*IrcServer, []chan<- *ircMsg) {
-	var pipe chan *ircMsg
-	var pubpipe chan *ircMsg
 	var retPipes []chan<- *ircMsg
 	wg.Add(len(servers))
 	for _, server := range servers {
-		server.irc = irc.IRC(server.Nick, "Lobotomy")
-		server.irc.UseTLS = server.SSL
-		server.irc.Connect(server.Connstr)
-		if server.Wait2Join > 0 {
-			time.Sleep(time.Duration(server.Wait2Join) * time.Second)
-		}
-		for _, curchan := range server.Chans {
-			server.irc.Join(curchan.Name)
-			if curchan.Loglevel > 2 {
-				server.irc.Notice(curchan.Name, "Bot ready")
+		pubpipe := make(chan *ircMsg, 64)
+		go func (server *IrcServer, pubpipe chan *ircMsg) {
+			server.irc = irc.IRC(server.Nick, "Lobotomy")
+			server.irc.UseTLS = server.SSL
+			server.irc.Connect(server.Connstr)
+			if server.Wait2Join > 0 {
+				time.Sleep(time.Duration(server.Wait2Join) * time.Second)
 			}
-			log.Printf("Bot attached to channel %s\n", curchan.Name)
-		}
-		pipe = make(chan *ircMsg, 64)
-		pubpipe = make(chan *ircMsg, 64)
-		server.pipe = pipe
-		retPipes = append(retPipes, pubpipe)
-		go func(inpipe <-chan *ircMsg, outpipe chan<- *ircMsg) {
-			for msg := range inpipe {
-				select {
-				case outpipe <- msg:
-				default:
+			for _, curchan := range server.Chans {
+				server.irc.Join(curchan.Name)
+				if curchan.Loglevel > 2 {
+					server.irc.Notice(curchan.Name, "Bot ready")
 				}
+				log.Printf("Bot attached to channel %s\n", curchan.Name)
 			}
-		}(pubpipe, pipe)
-		go tellchans(server, wg)
+			pipe := make(chan *ircMsg, 64)
+			server.pipe = pipe
+			go func(inpipe <-chan *ircMsg, outpipe chan<- *ircMsg) {
+				for msg := range inpipe {
+					select {
+					case outpipe <- msg:
+					default:
+					}
+				}
+			}(pubpipe, pipe)
+			go tellchans(server, wg)
+		}(server, pubpipe)
+		retPipes = append(retPipes, pubpipe)
 	}
 	wg.Done()
 	return servers, retPipes
