@@ -32,17 +32,18 @@ typedef enum {
 
 typedef enum {
     NULL_event = 0,
-    construct_event = 1,
-    connect_error_event = 2,
-    roger_event = 3,
-    bootstrap_done_event = 4,
-    update_bootstrap_event = 5,
-    needpkg_event = 6,
-    expired_event = 7,
-    job_ended_event = 8,
-    invalid_event = 9,
-    kthnksbye_event = 10,
-    set_repopath_event = 11
+    set_build_params_event = 1,
+    construct_event = 2,
+    connect_error_event = 3,
+    roger_event = 4,
+    bootstrap_done_event = 5,
+    update_bootstrap_event = 6,
+    needpkg_event = 7,
+    expired_event = 8,
+    job_ended_event = 9,
+    invalid_event = 10,
+    kthnksbye_event = 11,
+    set_repopath_event = 12
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -64,6 +65,7 @@ s_state_name [] = {
 static char *
 s_event_name [] = {
     "(NONE)",
+    "set_build_params",
     "construct",
     "connect_error",
     "ROGER",
@@ -87,6 +89,10 @@ s_event_name [] = {
 struct _client_args_t {
     char *endpoint;
     char *repopath;
+    char *hostarch;
+    char *targetarch;
+    uint8_t iscross;
+    uint16_t cost;
 };
 
 typedef struct {
@@ -130,9 +136,13 @@ static int
 static void
     s_satisfy_pedantic_compilers (void);
 static void
+    set_build_params (client_t *self);
+static void
     connect_to_server (client_t *self);
 static void
     complain_about_connection_error (client_t *self);
+static void
+    prepare_icanhelp (client_t *self);
 static void
     set_timeout_high (client_t *self);
 static void
@@ -202,6 +212,8 @@ s_client_destroy (s_client_t **self_p)
         s_client_t *self = *self_p;
         zstr_free (&self->args.endpoint);
         zstr_free (&self->args.repopath);
+        zstr_free (&self->args.hostarch);
+        zstr_free (&self->args.targetarch);
         client_terminate (&self->client);
         pkggraph_msg_destroy (&self->message);
         zsock_destroy (&self->msgpipe);
@@ -402,6 +414,15 @@ s_client_execute (s_client_t *self, event_t event)
         }
         switch (self->state) {
             case start_state:
+                if (self->event == set_build_params_event) {
+                    if (!self->exception) {
+                        //  set build params
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set build params", self->log_prefix);
+                        set_build_params (&self->client);
+                    }
+                }
+                else
                 if (self->event == construct_event) {
                     if (!self->exception) {
                         //  connect to server
@@ -734,6 +755,12 @@ s_client_execute (s_client_t *self, event_t event)
 
             case preparing_state:
                 if (self->event == bootstrap_done_event) {
+                    if (!self->exception) {
+                        //  prepare icanhelp
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ prepare icanhelp", self->log_prefix);
+                        prepare_icanhelp (&self->client);
+                    }
                     if (!self->exception) {
                         //  send ICANHELP
                         if (self->verbose)
@@ -1452,6 +1479,13 @@ s_client_handle_cmdpipe (zloop_t *loop, zsock_t *reader, void *argument)
         zsock_recv (self->cmdpipe, "s", &self->args.repopath);
         s_client_execute (self, set_repopath_event);
     }
+    else
+    if (streq (method, "SET BUILD PARAMS")) {
+        zstr_free (&self->args.hostarch);
+        zstr_free (&self->args.targetarch);
+        zsock_recv (self->cmdpipe, "ss12", &self->args.hostarch, &self->args.targetarch, &self->args.iscross, &self->args.cost);
+        s_client_execute (self, set_build_params_event);
+    }
     //  Cleanup pipe if any argument frames are still waiting to be eaten
     if (zsock_rcvmore (self->cmdpipe)) {
         zsys_error ("%s: trailing API command frames (%s)",
@@ -1572,6 +1606,7 @@ struct _pkggraph_worker_t {
     zactor_t *actor;            //  Client actor
     zsock_t *msgpipe;           //  Pipe for async message flow
     bool connected;             //  Client currently connected or not
+    uint32_t ok;                //  Returned by actor reply
 };
 
 
@@ -1648,6 +1683,61 @@ pkggraph_worker_msgpipe (pkggraph_worker_t *self)
 
 
 //  ---------------------------------------------------------------------------
+//  Return true if client is currently connected, else false. Note that the
+//  client will automatically re-connect if the server dies and restarts after
+//  a successful first connection.
+
+bool
+pkggraph_worker_connected (pkggraph_worker_t *self)
+{
+    assert (self);
+    int connected;
+    zsock_send (self->actor, "s", "$CONNECTED");
+    zsock_recv (self->actor, "i", &connected);
+    return connected == 1;
+}
+
+
+//  ---------------------------------------------------------------------------
+//  Get valid reply from actor; discard replies that does not match. Current
+//  implementation filters on first frame of message. Blocks until a valid
+//  reply is received, and properties can be loaded from it. Returns 0 if
+//  matched, -1 if interrupted.
+
+static int
+s_accept_reply (pkggraph_worker_t *self, ...)
+{
+    assert (self);
+    while (!zsys_interrupted) {
+        char *reply = zstr_recv (self->actor);
+        if (!reply)
+            break;              //  Interrupted
+
+        va_list args;
+        va_start (args, self);
+        char *filter = va_arg (args, char *);
+        while (filter) {
+            if (streq (reply, filter)) {
+                if (streq (reply, "STATUS")) {
+                    zsock_recv (self->actor, "4", &self->ok);
+                }
+                break;
+            }
+            filter = va_arg (args, char *);
+        }
+        va_end (args);
+        //  If anything was remaining on pipe, flush it
+        zsock_flush (self->actor);
+        zstr_free (&reply);
+        if (filter) {
+            return 0;           //  We matched one of the filters
+        }
+    }
+    return -1;          //  Interrupted
+}
+
+
+//  ---------------------------------------------------------------------------
 //  Used to connect to the server.                                                  
 
 int 
@@ -1670,6 +1760,33 @@ pkggraph_worker_set_repopath (pkggraph_worker_t *self, const char *repopath)
 
     zsock_send (self->actor, "ss", "SET REPOPATH", repopath);
     return 0;
+}
+
+
+//  ---------------------------------------------------------------------------
+//  No explanation                                                                  
+//  Returns >= 0 if successful, -1 if interrupted.
+
+uint32_t 
+pkggraph_worker_set_build_params (pkggraph_worker_t *self, const char *hostarch, const char *targetarch, uint8_t iscross, uint16_t cost)
+{
+    assert (self);
+
+    zsock_send (self->actor, "sss12", "SET BUILD PARAMS", hostarch, targetarch, iscross, cost);
+    if (s_accept_reply (self, "STATUS", NULL))
+        return -1;              //  Interrupted or timed-out
+    return self->ok;
+}
+
+
+//  ---------------------------------------------------------------------------
+//  Return last received ok
+
+uint32_t 
+pkggraph_worker_ok (pkggraph_worker_t *self)
+{
+    assert (self);
+    return self->ok;
 }
 
 

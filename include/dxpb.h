@@ -38,5 +38,6 @@ enum fsm_state {
 	FSM_STATE_C,
 	FSM_STATE_D,
 	FSM_STATE_E,
-	FSM_STATE_F
+	FSM_STATE_F,
+	FSM_STATE_G
 };

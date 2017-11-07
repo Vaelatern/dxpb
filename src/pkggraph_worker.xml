@@ -10,6 +10,9 @@
 	<provided_pipe />
 
 	<state name = "start" inherit = "defaults">
+		<event name = "set build params">
+			<action name = "set build params" />
+		</event>
 		<event name = "construct" next = "negotiate">
 			<action name = "connect to server" />
 			<action name = "send" message = "HELLO" />
@@ -35,8 +38,9 @@
 			</action>
 		</before>
 		<event name = "bootstrap done" next = "ready">
+			<action name = "prepare icanhelp" />
 			<action name = "send" message = "ICANHELP">
-				ICANHELP if coming from a different state
+				ICANHELP if coming from any different state
 			</action>
 		</event>
 	</state>
@@ -113,4 +117,16 @@
 	<method name = "set repopath">
 		<field name = "repopath" type = "string" />
 	</method>
+
+	<method name = "set build params" return = "ok">
+		<field name = "hostarch" type = "string" />
+		<field name = "targetarch" type = "string" />
+		<field name = "iscross" type = "number" size = "1" />
+		<field name = "cost" type = "number" size = "2" />
+		<accept reply = "STATUS" />
+	</method>
+
+	<reply name = "STATUS">
+		<field name = "ok" type = "number" />
+	</reply>
 </class>

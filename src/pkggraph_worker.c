@@ -22,6 +22,8 @@
 #include "bbuilder.h"
 #include "bworker_end_status.h"
 #include "bgit.h"
+#include "bwords.h"
+#include "bxpkg.h"
 #include "dxpb.h"
 
 //  Forward reference to method arguments structure
@@ -43,6 +45,10 @@ typedef struct {
 	//  Add specific properties for your application
 	int bootstrap_wanted;
 	char *repopath;
+	enum pkg_archs hostarch;
+	enum pkg_archs targetarch;
+	uint8_t iscross;
+	uint16_t cost;
 } client_t;
 
 //  Include the generated client engine
@@ -56,6 +62,10 @@ client_initialize (client_t *self)
 {
 	self->bootstrap_wanted = 0;
 	self->repopath = NULL;
+	self->hostarch = ARCH_NUM_MAX;
+	self->targetarch = ARCH_NUM_MAX;
+	self->iscross = 0;
+	self->cost = 100;
 	return 0;
 }
 
@@ -305,4 +315,40 @@ set_repopath_to_provided (client_t *self)
 	assert(self);
 	self->repopath = strdup(self->args->repopath);
 	assert(self->repopath);
+}
+
+
+//  ---------------------------------------------------------------------------
+//  prepare_icanhelp
+//
+
+static void
+prepare_icanhelp (client_t *self)
+{
+	assert(self->hostarch < ARCH_HOST);
+	assert(self->targetarch < ARCH_HOST);
+	pkggraph_msg_set_hostarch(self->message, pkg_archs_str[self->hostarch]);
+	pkggraph_msg_set_targetarch(self->message, pkg_archs_str[self->targetarch]);
+	pkggraph_msg_set_iscross(self->message, self->iscross);
+	pkggraph_msg_set_cost(self->message, self->cost);
+	pkggraph_msg_set_addr(self->message, 0);
+	pkggraph_msg_set_check(self->message, 0);
+}
+
+
+//  ---------------------------------------------------------------------------
+//  set_build_params
+//
+
+static void
+set_build_params (client_t *self)
+{
+	self->hostarch = bpkg_enum_lookup(self->args->hostarch);
+	self->targetarch = bpkg_enum_lookup(self->args->targetarch);
+	self->iscross = self->args->iscross;
+	self->cost = self->args->cost;
+	if (self->hostarch == ARCH_NUM_MAX || self->targetarch == ARCH_NUM_MAX)
+		zsock_send(self->cmdpipe, "si", "STATUS", 0, NULL);
+	else
+		zsock_send(self->cmdpipe, "si", "STATUS", 1, NULL);
 }

@@ -17,6 +17,9 @@ digraph "pkggraph_worker" {
  "start set repopath" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set repopath</font></td></tr><tr><td align="left" port="r3">set repopath to provided</td></tr></table>>];
  "start" -> "start set repopath";
  "start set repopath" -> "start";
+ "start set build params" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set build params</font></td></tr><tr><td align="left" port="r3">set build params</td></tr></table>>];
+ "start" -> "start set build params";
+ "start set build params" -> "start";
  "start construct" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">construct</font></td></tr><tr><td align="left" port="r3">connect to server</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "start" -> "start construct";
  "start construct" -> "negotiate";
@@ -80,7 +83,7 @@ digraph "pkggraph_worker" {
  "preparing set repopath" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set repopath</font></td></tr><tr><td align="left" port="r3">set repopath to provided</td></tr></table>>];
  "preparing" -> "preparing set repopath";
  "preparing set repopath" -> "preparing";
- "preparing bootstrap done" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">bootstrap done</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "preparing bootstrap done" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">bootstrap done</font></td></tr><tr><td align="left" port="r3">prepare icanhelp</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "preparing" -> "preparing bootstrap done";
  "preparing bootstrap done" -> "ready";
 

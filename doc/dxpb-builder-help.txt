@@ -12,6 +12,8 @@ Arguments:
   -H <dir>	Hostdir builder can use
   -m <dir>	Masterdir builder can use
   -x <path>	Path to xbps-src executable
+  -W <spec>	Spec following hostarch:targetarch:cost:iscross with :iscross
+		being true if present. host:target:cost for non-cross setups.
 
 The following flags have defaults.
   -H: ./hostdir
@@ -19,6 +21,9 @@ The following flags have defaults.
   -k: /etc/dxpb/curve/
   -m: ./masterdir
   -x: ./xbps-src
+
+The following flag is required:
+  -W
 
 It is important to note that, if -k is valid, the client key used by this
 process will be whatever argument 0 is to the process, appended with ".key".

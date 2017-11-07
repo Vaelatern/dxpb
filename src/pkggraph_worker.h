@@ -67,6 +67,15 @@ int
 int 
     pkggraph_worker_set_repopath (pkggraph_worker_t *self, const char *repopath);
 
+//  No explanation                                                                  
+//  Returns >= 0 if successful, -1 if interrupted.
+uint32_t 
+    pkggraph_worker_set_build_params (pkggraph_worker_t *self, const char *hostarch, const char *targetarch, uint8_t iscross, uint16_t cost);
+
+//  Return last received ok
+uint32_t 
+    pkggraph_worker_ok (pkggraph_worker_t *self);
+
 //  Enable verbose tracing (animation) of state machine activity.
 void
     pkggraph_worker_set_verbose (pkggraph_worker_t *self, bool verbose);

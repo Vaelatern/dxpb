@@ -7,6 +7,8 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <getopt.h>
+#include <string.h>
+#include <stdlib.h>
 #include <czmq.h>
 #include "dxpb.h"
 #include "bfs.h"
@@ -17,6 +19,73 @@
 #define ERR_FLAG 2
 
 #include "dxpb-common.h"
+
+struct workerspec {
+	char *hostarch;
+	char *targetarch;
+	uint8_t iscross;
+	uint16_t cost;
+};
+
+struct workerspec *
+parse_workerspec(const char *argv)
+{
+	struct workerspec *retVal = malloc(sizeof(struct workerspec));
+	char *newargv = strdup(argv);
+	if (!retVal || !newargv) {
+		perror("Couldn't allocate a struct, or perhaps clone a string");
+		exit(ERR_CODE_NOMEM);
+	}
+	// TODO: Replace with a better config, like:
+	// host x86_64 target x86_64 cost 100
+	// host x86_64 target armv7hf cross cost 100
+	// host x86_64 target armv7hf cost 100 cross
+	// I'll need to learn a little yacc for this. That's ok.
+	//
+	// format: host:target:cost:iscross
+	// x86_64:x86_64:100
+	// x86_64:armv7hf-musl:100:yes
+	char *strtok_val = NULL;
+	char *atom = NULL;
+	enum fsm_state read_state = FSM_STATE_A;
+	atom = strtok_r(newargv, ":", &strtok_val);
+	while (atom != NULL) {
+		switch(read_state) {
+		case FSM_STATE_A:
+			retVal->hostarch = atom;
+			read_state = FSM_STATE_B;
+			break;
+		case FSM_STATE_B:
+			retVal->targetarch = atom;
+			read_state = FSM_STATE_C;
+			break;
+		case FSM_STATE_C:
+			errno = 0;
+			retVal->cost = strtol(atom, NULL, 10);
+			retVal->iscross = 0;
+			if (errno != 0)
+				read_state = FSM_STATE_G;
+			else
+				read_state = FSM_STATE_D;
+			break;
+		case FSM_STATE_D: // Exists?
+			retVal->iscross = 1;
+			read_state = FSM_STATE_F;
+			break;
+		default:
+			read_state = FSM_STATE_G;
+			break;
+		}
+		atom = strtok_r(NULL, ":", &strtok_val);
+	}
+	if (read_state == FSM_STATE_G) {
+		free(retVal);
+		free(newargv);
+		newargv = NULL;
+		retVal = NULL;
+	}
+	return retVal;
+}
 
 void
 help(void)
@@ -63,7 +132,8 @@ spawn_child(char *endpoint, char *masterdir, char *hostdir, char *xbps_src)
 }
 
 int
-run(int flags, char *masterdir, char *hostdir,  char *ssldir, char *endpoint, char *xbps_src)
+run(int flags, char *masterdir, char *hostdir,  char *ssldir, char *endpoint,
+		char *xbps_src, struct workerspec *wrkr)
 {
 	SSLDIR_UNUSED(ssldir);
 	assert((flags & ERR_FLAG) == 0);
@@ -81,6 +151,11 @@ run(int flags, char *masterdir, char *hostdir,  char *ssldir, char *endpoint, ch
 	assert(client);
 	actor = pkggraph_worker_actor(client);
 	assert(actor);
+	if (!pkggraph_worker_set_build_params(client, wrkr->hostarch, wrkr->targetarch, wrkr->iscross, wrkr->cost)) {
+		fprintf(stderr, "Invalid arguments for hostarch and/or targetarch\n");
+		retVal = ERR_CODE_BAD;
+		goto end;
+	}
 	zstr_sendx(actor, "CONSTRUCT", endpoint, NULL);
 
 	zpoller_t *polling = zpoller_new(actor, NULL);
@@ -99,6 +174,7 @@ run(int flags, char *masterdir, char *hostdir,  char *ssldir, char *endpoint, ch
 		zsock_flush(rc);
 	}
 
+end:
 	zstr_sendx(actor, "$TERM", NULL);
 
 	zpoller_destroy(&polling);
@@ -111,6 +187,7 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
+	struct workerspec *wrkr = NULL;
 	char *default_masterdir = DEFAULT_MASTERDIR;
 	char *default_hostdir = DEFAULT_HOSTDIR;
 	char *default_ssldir = DEFAULT_SSLDIR;
@@ -121,7 +198,7 @@ main(int argc, char * const *argv)
 	char *ssldir = NULL;
 	char *endpoint = NULL;
 	char *xbps_src = NULL;
-	const char *optstring = "hvLg:k:H:m:";
+	const char *optstring = "hvLg:k:H:m:W:";
 
 	while ((c = getopt(argc, argv, optstring)) != -1) {
 		switch(c) {
@@ -145,6 +222,13 @@ main(int argc, char * const *argv)
 			break;
 		case 'm':
 			masterdir = optarg;
+			break;
+		case 'W':
+			wrkr = parse_workerspec(optarg);
+			if (!wrkr) {
+				fprintf(stderr, "Something wrong with spec\n");
+				exit(ERR_CODE_BAD);
+			}
 			break;
 		case 'v':
 			flags |= VERBOSE_FLAG;
@@ -175,6 +259,7 @@ main(int argc, char * const *argv)
 		endpoint = default_endpoint;
 	if (!xbps_src)
 		xbps_src = default_xbps_src;
+	assert(wrkr);
 
-	return run(flags, masterdir, hostdir, ssldir, endpoint, xbps_src);
+	return run(flags, masterdir, hostdir, ssldir, endpoint, xbps_src, wrkr);
 }
