@@ -1,20 +1,24 @@
+/*
+* Simple IRC bot to listen for messages on dxpb's published log sockets and
+* forward them to IRC
+ */
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"strings"
 	"sync"
 	"time"
-	"io/ioutil"
 
-	"gopkg.in/yaml.v2"
 	"github.com/thoj/go-ircevent"
 	"github.com/zeromq/goczmq"
+	"gopkg.in/yaml.v2"
 )
 
 type Chan struct {
 	Name     string `yaml:"name"`
-	Loglevel int `yaml:"loglevel"`
+	Loglevel int    `yaml:"loglevel"`
 	CanFlood bool
 }
 
@@ -24,24 +28,25 @@ type ircMsg struct {
 }
 
 type IrcServer struct {
-	irc     *irc.Connection
-	Nick    string	`yaml:"nick"`
-	SSL     bool	`yaml:"ssl"`
-	Connstr string `yaml:"connstr"`
-	Chans   []*Chan `yaml:"chans,flow"`
-	pipe    <-chan *ircMsg
+	irc       *irc.Connection
+	Nick      string  `yaml:"nick"`
+	SSL       bool    `yaml:"ssl"`
+	Connstr   string  `yaml:"connstr"`
+	Chans     []*Chan `yaml:"chans,flow"`
+	pipe      <-chan *ircMsg
 	Wait2Join float32
 }
 
 type conf struct {
-	Irc []*IrcServer `yaml:"irc,flow"`
-	Endpoints []string `yaml:"endpoints,flow"`
+	Irc       []*IrcServer `yaml:"irc,flow"`
+	Endpoints []string     `yaml:"endpoints,flow"`
 }
 
 /* Example config file: conf.yaml:
 irc:
   - connstr: irc.freenode.net:6697
     ssl: True
+    wait2join: 1.5
     nick: dxpb
     chans:
       - name: '#dxpb'
@@ -86,7 +91,7 @@ func initIRC(servers []*IrcServer, wg sync.WaitGroup) ([]*IrcServer, []chan<- *i
 	wg.Add(len(servers))
 	for _, server := range servers {
 		pubpipe := make(chan *ircMsg, 64)
-		go func (server *IrcServer, pubpipe chan *ircMsg) {
+		go func(server *IrcServer, pubpipe chan *ircMsg) {
 			server.irc = irc.IRC(server.Nick, "Lobotomy")
 			server.irc.UseTLS = server.SSL
 			server.irc.Connect(server.Connstr)
