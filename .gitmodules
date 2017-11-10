@@ -1,0 +1,9 @@
+[submodule "ircbot/go/src/github.com/thoj/go-ircevent"]
+	path = ircbot/go/src/github.com/thoj/go-ircevent
+	url = https://github.com/thoj/go-ircevent
+[submodule "ircbot/go/src/github.com/zeromq/goczmq"]
+	path = ircbot/go/src/github.com/zeromq/goczmq
+	url = https://github.com/zeromq/goczmq
+[submodule "ircbot/go/src/gopkg.in/yaml.v2"]
+	path = ircbot/go/src/gopkg.in/yaml.v2
+	url = https://gopkg.in/yaml.v2
