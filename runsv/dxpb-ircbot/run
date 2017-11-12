@@ -1,0 +1,15 @@
+#!/bin/sh
+
+unset USER
+unset GROUP
+unset HOME
+
+[ -f ./conf ] && . ./conf
+
+: ${USER:=_dxpb_watcher}
+: ${GROUP:=_dxpb}
+: ${WRKDIR:=/etc/dxpb/}
+
+cd "$WRKDIR"
+
+exec chpst -u $USER:$GROUP dxpb-ircbot
