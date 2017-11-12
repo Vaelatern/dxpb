@@ -188,7 +188,7 @@ func (config *conf) read(filename string) *conf {
 
 func main() {
 	config := conf{}
-	config.read("./conf.yaml")
+	config.read("./conf.yml")
 
 	var wg sync.WaitGroup
 	var pipes []chan<- *ircMsg

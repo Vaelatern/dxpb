@@ -1,0 +1,21 @@
+irc:
+  - connstr: example.com:6667
+    nick: notdxpb
+    wait2join: 2
+    chans:
+      - name: "#example.com"
+        canflood: True
+        loglevel: 5
+  - connstr: irc.freenode.net:6697
+    ssl: True
+    nick: dxpb
+    chans:
+      - name: "#example.com"
+        canflood: False
+        loglevel: 2
+endpoints:
+  - ipc:///var/run/dxpb/log-dxpb-frontend.sock
+  - ipc:///var/run/dxpb/log-dxpb-grapher.sock
+  - ipc:///var/run/dxpb/log-dxpb-hostdir-master-files.sock
+  - ipc:///var/run/dxpb/log-dxpb-hostdir-master-graph.sock
+  - ipc:///var/run/dxpb/log-pkgimport-master.sock
