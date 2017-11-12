@@ -1,0 +1,255 @@
+package goczmq
+
+import (
+	"fmt"
+	"testing"
+)
+
+func TestProxy(t *testing.T) {
+	// Create and configure our proxy
+	proxy := NewProxy()
+	defer proxy.Destroy()
+
+	var err error
+
+	if testing.Verbose() {
+		err = proxy.Verbose()
+		if err != nil {
+			t.Error(err)
+		}
+	}
+
+	err = proxy.SetFrontend(Pull, "inproc://frontend")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = proxy.SetBackend(Push, "inproc://backend")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = proxy.SetCapture("inproc://capture")
+	if err != nil {
+		t.Error(err)
+	}
+
+	// connect application sockets to proxy
+	faucet := NewSock(Push)
+	err = faucet.Connect("inproc://frontend")
+	if err != nil {
+		t.Error(err)
+	}
+	defer faucet.Destroy()
+
+	sink := NewSock(Pull)
+	err = sink.Connect("inproc://backend")
+	if err != nil {
+		t.Error(err)
+	}
+	defer sink.Destroy()
+
+	tap := NewSock(Pull)
+	_, err = tap.Bind("inproc://capture")
+	if err != nil {
+		t.Error(err)
+	}
+	defer tap.Destroy()
+
+	// send some messages and check they arrived
+	faucet.SendFrame([]byte("Hello"), FlagNone)
+	faucet.SendFrame([]byte("World"), FlagNone)
+
+	// check the tap
+	b, f, err := tap.RecvFrame()
+	if err != nil {
+		t.Error(err)
+	}
+
+	if want, have := false, f == FlagMore; want != have {
+		t.Errorf("want %#v, have %#v", want, have)
+	}
+
+	if want, have := "Hello", string(b); want != have {
+		t.Errorf("want %#v, have %#v", want, have)
+	}
+
+	b, f, err = tap.RecvFrame()
+	if err != nil {
+		t.Error(err)
+	}
+
+	if want, have := false, f == FlagMore; want != have {
+		t.Errorf("want %#v, have %#v", want, have)
+	}
+
+	if want, have := "World", string(b); want != have {
+		t.Errorf("want %#v, have %#v", want, have)
+	}
+
+	b, f, err = sink.RecvFrame()
+	if err != nil {
+		t.Error(err)
+	}
+
+	if want, have := false, f == FlagMore; want != have {
+		t.Errorf("want %#v, have %#v", want, have)
+	}
+
+	if want, have := "Hello", string(b); want != have {
+		t.Errorf("want %#v, have %#v", want, have)
+	}
+
+	b, f, err = sink.RecvFrame()
+	if err != nil {
+		t.Error(err)
+	}
+
+	if f == FlagMore {
+		t.Error("FlagMore set and should not be")
+	}
+
+	if want, have := false, f == FlagMore; want != have {
+		t.Errorf("want %#v, have %#v", want, have)
+	}
+
+	err = proxy.Pause()
+	if err != nil {
+		t.Error(err)
+	}
+
+	faucet.SendFrame([]byte("Belated Hello"), FlagNone)
+
+	if want, have := false, sink.Pollin(); want != have {
+		t.Errorf("want %#v, have %#v", want, have)
+	}
+
+	if want, have := false, tap.Pollin(); want != have {
+		t.Errorf("want %#v, have %#v", want, have)
+	}
+
+	err = proxy.Resume()
+	if err != nil {
+		t.Error(err)
+	}
+
+	b, f, err = sink.RecvFrame()
+	if err != nil {
+		t.Error(err)
+	}
+
+	if want, have := false, f == FlagMore; want != have {
+		t.Errorf("want %#v, have %#v", want, have)
+	}
+
+	if want, have := "Belated Hello", string(b); want != have {
+		t.Errorf("want %#v, have %#v", want, have)
+	}
+
+	b, f, err = tap.RecvFrame()
+	if err != nil {
+		t.Error(err)
+	}
+
+	if want, have := false, f == FlagMore; want != have {
+		t.Errorf("want %#v, have %#v", want, have)
+	}
+
+	if want, have := "Belated Hello", string(b); want != have {
+		t.Errorf("want %#v, have %#v", want, have)
+	}
+
+	proxy.Destroy()
+}
+
+func ExampleProxy() {
+	proxy := NewProxy()
+	defer proxy.Destroy()
+
+	// set front end address and socket type
+	err := proxy.SetFrontend(Pull, "inproc://frontend")
+	if err != nil {
+		panic(err)
+	}
+
+	// set back end address and socket type
+	err = proxy.SetBackend(Push, "inproc://backend")
+	if err != nil {
+		panic(err)
+	}
+
+	// set address for "tee"ing proxy traffic to
+	err = proxy.SetCapture("inproc://capture")
+	if err != nil {
+		panic(err)
+	}
+
+	// we can pause the proxy
+	err = proxy.Pause()
+	if err != nil {
+		panic(err)
+	}
+
+	// and we can resume it
+	err = proxy.Resume()
+	if err != nil {
+		panic(err)
+	}
+
+	proxy.Destroy()
+}
+
+func benchmarkProxySendFrame(size int, b *testing.B) {
+	proxy := NewProxy()
+	defer proxy.Destroy()
+
+	err := proxy.SetFrontend(Pull, fmt.Sprintf("inproc://benchProxyFront%d", size))
+	if err != nil {
+		panic(err)
+	}
+
+	err = proxy.SetBackend(Push, fmt.Sprintf("inproc://benchProxyBack%d", size))
+	if err != nil {
+		panic(err)
+	}
+
+	pullSock := NewSock(Pull)
+	defer pullSock.Destroy()
+
+	err = pullSock.Connect(fmt.Sprintf("inproc://benchProxyBack%d", size))
+	if err != nil {
+		panic(err)
+	}
+
+	go func() {
+		pushSock := NewSock(Push)
+		defer pushSock.Destroy()
+		err := pushSock.Connect(fmt.Sprintf("inproc://benchProxyFront%d", size))
+		if err != nil {
+			panic(err)
+		}
+
+		payload := make([]byte, size)
+		for i := 0; i < b.N; i++ {
+			err = pushSock.SendFrame(payload, FlagNone)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}()
+
+	for i := 0; i < b.N; i++ {
+		msg, _, err := pullSock.RecvFrame()
+		if err != nil {
+			panic(err)
+		}
+		if len(msg) != size {
+			panic("msg too small")
+		}
+		b.SetBytes(int64(size))
+	}
+}
+
+func BenchmarkProxySendFrame1k(b *testing.B)  { benchmarkProxySendFrame(1024, b) }
+func BenchmarkProxySendFrame4k(b *testing.B)  { benchmarkProxySendFrame(4096, b) }
+func BenchmarkProxySendFrame16k(b *testing.B) { benchmarkProxySendFrame(16384, b) }
