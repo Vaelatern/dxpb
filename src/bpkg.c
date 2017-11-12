@@ -325,7 +325,7 @@ bpkg_read_begin(const char *xbps_src, const char *name)
 void
 bpkg_read_step(const char *xbps_src, struct pkg_importer *info)
 {
-	if (info->to_send != NULL || info->archnow == ARCH_NUM_MAX) {
+	if (info->to_send != NULL || info->archnow > ARCH_HOST) {
 		bpkg_destroy(info->to_send);
 		info->to_send = NULL;
 	}
