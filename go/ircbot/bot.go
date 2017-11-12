@@ -72,7 +72,7 @@ func tellchans(server *IrcServer, wg sync.WaitGroup) {
 			break
 		}
 		for _, channel := range server.Chans {
-			if channel.Loglevel >= msg.Loglevel {
+			if channel.Loglevel > msg.Loglevel {
 				server.irc.Notice(channel.Name, msg.txt)
 				switch channel.CanFlood {
 				case false:
