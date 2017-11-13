@@ -42,27 +42,6 @@ type conf struct {
 	Endpoints []string     `yaml:"endpoints,flow"`
 }
 
-/* Example config file: conf.yaml:
-irc:
-  - connstr: irc.freenode.net:6697
-    ssl: True
-    wait2join: 1.5
-    nick: dxpb
-    chans:
-      - name: '#dxpb'
-        canflood: False
-        loglevel: 5
-      - name: '#xbps'
-        canflood: False
-        loglevel: 2
-endpoints:
-  - ipc:///var/run/dxpb/log-dxpb-frontend.sock
-  - ipc:///var/run/dxpb/log-dxpb-grapher.sock
-  - ipc:///var/run/dxpb/log-dxpb-hostdir-master-files.sock
-  - ipc:///var/run/dxpb/log-dxpb-hostdir-master-graph.sock
-  - ipc:///var/run/dxpb/log-pkgimport-master.sock
-*/
-
 var types []string = []string{"ERROR", "NORMAL", "DEBUG", "VERBOSE", "TRACE"}
 
 func tellchans(server *IrcServer, wg sync.WaitGroup) {
