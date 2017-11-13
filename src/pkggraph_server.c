@@ -218,6 +218,10 @@ static void
 register_grapher (client_t *self)
 {
 	self->server->grapher = self;
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "Adding grapher");
+	}
 }
 
 //  ---------------------------------------------------------------------------
@@ -228,6 +232,10 @@ static void
 register_worker (client_t *self)
 {
 	self->worker = 1;
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "Adding worker");
+	}
 }
 
 //  ---------------------------------------------------------------------------
@@ -249,6 +257,10 @@ static void
 register_storage (client_t *self)
 {
 	self->server->storage = self;
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "Adding storage");
+	}
 }
 
 
@@ -702,5 +714,33 @@ ensure_all_configuration_is_complete (client_t *self)
 	if (!self->server->pubpath) {
 		self->server->pubpath = zconfig_get(self->server->config, "dxpb/pubpoint", NULL);
 		self->server->pub = zsock_new_pub(self->server->pubpath);
+	}
+}
+
+
+//  ---------------------------------------------------------------------------
+//  remove_self_as_worker
+//
+
+static void
+remove_self_as_worker (client_t *self)
+{
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "Removing a worker");
+	}
+}
+
+
+//  ---------------------------------------------------------------------------
+//  remove_self_as_storage
+//
+
+static void
+remove_self_as_storage (client_t *self)
+{
+	if (self->server->pub) {
+		zstr_sendm(self->server->pub, "TRACE");
+		zstr_sendf(self->server->pub, "Removing storage");
 	}
 }

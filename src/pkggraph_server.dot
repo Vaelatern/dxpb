@@ -68,14 +68,11 @@ digraph "pkggraph_server" {
  "i am a worker loghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">loghere</font></td></tr><tr><td align="left" port="r3">route log</td></tr></table>>];
  "i am a worker" -> "i am a worker loghere";
  "i am a worker loghere" -> "i am a worker";
- "i am a worker *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">remove all workers</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "i am a worker *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">remove all workers</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">remove self as worker</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
  "i am a worker" -> "i am a worker *";
  "i am a worker *" -> "i am a worker";
 
  "i am storage" [shape = "doublecircle"];
- "i am storage *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
- "i am storage" -> "i am storage *";
- "i am storage *" -> "i am storage";
  "i am storage ping" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ping</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "i am storage" -> "i am storage ping";
  "i am storage ping" -> "i am storage";
@@ -94,9 +91,9 @@ digraph "pkggraph_server" {
  "i am storage send loghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">send loghere</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">post process sending log chunk</td></tr></table>>];
  "i am storage" -> "i am storage send loghere";
  "i am storage send loghere" -> "i am storage";
- "i am storage invalid" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr><tr><td align="left" port="r3">remove self as grapher</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
- "i am storage" -> "i am storage invalid";
- "i am storage invalid" -> "i am storage";
+ "i am storage *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">remove self as storage</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "i am storage" -> "i am storage *";
+ "i am storage *" -> "i am storage";
 
  "unreachable" [shape = "doublecircle"];
  "unreachable killmenow" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">killmenow</font></td></tr></table>>];

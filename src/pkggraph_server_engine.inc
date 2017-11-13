@@ -211,9 +211,13 @@ static void
 static void
     route_log (client_t *self);
 static void
+    remove_self_as_worker (client_t *self);
+static void
     grab_a_log_chunk (client_t *self);
 static void
     post_process_sending_log_chunk (client_t *self);
+static void
+    remove_self_as_storage (client_t *self);
 
 //  ---------------------------------------------------------------------------
 //  These methods are an internal API for actions
@@ -955,6 +959,12 @@ s_client_execute (s_client_t *self, event_t event)
                         pkggraph_msg_send (self->server->message, self->server->router);
                     }
                     if (!self->exception) {
+                        //  remove self as worker
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ remove self as worker", self->log_prefix);
+                        remove_self_as_worker (&self->client);
+                    }
+                    if (!self->exception) {
                         //  terminate
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ terminate", self->log_prefix);
@@ -1013,21 +1023,6 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
-                if (self->event == invalid_event) {
-                    if (!self->exception) {
-                        //  remove self as grapher
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ remove self as grapher", self->log_prefix);
-                        remove_self_as_grapher (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
-                    }
-                }
-                else
                 if (self->event == ping_event) {
                     if (!self->exception) {
                         //  send ROGER
@@ -1050,15 +1045,10 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  remove self as storage
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
-                                self->log_prefix);
-                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_INVALID);
-                        zsys_debug ("%s: Send message to client", self->log_prefix);
-                        pkggraph_msg_print (self->server->message);
-                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
-                        pkggraph_msg_send (self->server->message, self->server->router);
+                            zsys_debug ("%s:         $ remove self as storage", self->log_prefix);
+                        remove_self_as_storage (&self->client);
                     }
                     if (!self->exception) {
                         //  terminate
