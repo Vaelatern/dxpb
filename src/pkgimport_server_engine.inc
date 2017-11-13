@@ -960,6 +960,8 @@ s_client_execute (s_client_t *self, event_t event)
                         pkgimport_msg_set_routing_id (self->server->message, self->routing_id);
                         pkgimport_msg_send (self->server->message, self->server->router);
                     }
+                    if (!self->exception)
+                        self->state = worker_worked_state;
                 }
                 else
                 if (self->event == didread_event) {

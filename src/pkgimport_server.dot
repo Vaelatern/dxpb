@@ -84,7 +84,7 @@ digraph "pkgimport_server" {
  "worker working pkginfo" -> "worker working";
  "worker working pkgdel" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkgdel</font></td></tr><tr><td align="left" port="r3">request pkg deletion</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "worker working" -> "worker working pkgdel";
- "worker working pkgdel" -> "worker working";
+ "worker working pkgdel" -> "worker worked";
  "worker working didread" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">didread</font></td></tr><tr><td align="left" port="r3">pkg read finished</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "worker working" -> "worker working didread";
  "worker working didread" -> "worker worked";
