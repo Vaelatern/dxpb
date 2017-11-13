@@ -38,6 +38,9 @@
 		<event name = "ROGER" next = "ready">
 			<action name = "tell msgpipe we are connected" />
 		</event>
+		<after>
+			<action name = "set expiry" />
+		</after>
 	</state>
 
 	<state name = "ready" inherit = "defaults">

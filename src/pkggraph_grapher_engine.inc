@@ -123,6 +123,8 @@ static void
 static void
     tell_msgpipe_we_are_connected (client_t *self);
 static void
+    set_expiry (client_t *self);
+static void
     send_message_verbatim_down_the_msgpipe (client_t *self);
 static void
     cease_all_operations (client_t *self);
@@ -592,11 +594,23 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ tell msgpipe we are connected", self->log_prefix);
                         tell_msgpipe_we_are_connected (&self->client);
                     }
+                    if (!self->exception) {
+                        //  set expiry
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set expiry", self->log_prefix);
+                        set_expiry (&self->client);
+                    }
                     if (!self->exception)
                         self->state = ready_state;
                 }
                 else
                 if (self->event == invalid_event) {
+                    if (!self->exception) {
+                        //  set expiry
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set expiry", self->log_prefix);
+                        set_expiry (&self->client);
+                    }
                     if (!self->exception)
                         self->state = die_state;
                     if (!self->exception) {
@@ -614,6 +628,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == kthnksbye_event) {
+                    if (!self->exception) {
+                        //  set expiry
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set expiry", self->log_prefix);
+                        set_expiry (&self->client);
+                    }
                     if (!self->exception)
                         self->state = die_state;
                     if (!self->exception) {
@@ -653,6 +673,12 @@ s_client_execute (s_client_t *self, event_t event)
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception) {
+                        //  set expiry
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set expiry", self->log_prefix);
+                        set_expiry (&self->client);
                     }
                     if (!self->exception)
                         self->state = die_state;

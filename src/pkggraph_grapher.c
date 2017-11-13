@@ -138,3 +138,14 @@ send_message_verbatim_down_the_msgpipe (client_t *self)
 	rc = pkggraph_msg_send(self->message, self->msgpipe);
 	assert(rc == 0);
 }
+
+
+//  ---------------------------------------------------------------------------
+//  set_expiry
+//
+
+static void
+set_expiry (client_t *self)
+{
+	engine_set_expiry(self, 10000);
+}
