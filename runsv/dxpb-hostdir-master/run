@@ -2,7 +2,7 @@
 
 [ -f ./conf ] && . ./conf
 
-: ${USER:=_dxpb_files}
+: ${USER:=_dxpb_filer}
 : ${GROUP:=_dxpb:_dxpb_files:_dxpb_graph:_dxpb_ssl}
 
 exec chpst -u $USER:$GROUP dxpb-hostdir-master
