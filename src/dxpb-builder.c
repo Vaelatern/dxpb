@@ -70,15 +70,15 @@ parse_workerspec(const char *argv)
 			break;
 		case FSM_STATE_D: // Exists?
 			retVal->iscross = 1;
-			read_state = FSM_STATE_F;
+			read_state = FSM_STATE_E;
 			break;
 		default:
-			read_state = FSM_STATE_G;
+			read_state = FSM_STATE_F;
 			break;
 		}
 		atom = strtok_r(NULL, ":", &strtok_val);
 	}
-	if (read_state == FSM_STATE_G) {
+	if (read_state != FSM_STATE_D && read_state != FSM_STATE_E) {
 		free(retVal);
 		free(newargv);
 		newargv = NULL;
@@ -227,6 +227,7 @@ main(int argc, char * const *argv)
 			wrkr = parse_workerspec(optarg);
 			if (!wrkr) {
 				fprintf(stderr, "Something wrong with spec\n");
+				fprintf(stderr, "\tHostarch:Targetarch:Cost[:CrossBuild]\n");
 				exit(ERR_CODE_BAD);
 			}
 			break;
@@ -259,6 +260,8 @@ main(int argc, char * const *argv)
 		endpoint = default_endpoint;
 	if (!xbps_src)
 		xbps_src = default_xbps_src;
+	if (!wrkr)
+		fprintf(stderr, "Need a worker specification (-W)\n");
 	assert(wrkr);
 
 	return run(flags, masterdir, hostdir, ssldir, endpoint, xbps_src, wrkr);
