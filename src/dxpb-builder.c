@@ -152,7 +152,7 @@ run(int flags, char *masterdir, char *hostdir,  char *ssldir, char *endpoint,
 	actor = pkggraph_worker_actor(client);
 	assert(actor);
 	if (!pkggraph_worker_set_build_params(client, wrkr->hostarch, wrkr->targetarch, wrkr->iscross, wrkr->cost)) {
-		fprintf(stderr, "Invalid arguments for hostarch and/or targetarch\n");
+		fprintf(stderr, "Invalid arguments for hostarch %s and/or targetarch %s\n", wrkr->hostarch, wrkr->targetarch);
 		retVal = ERR_CODE_BAD;
 		goto end;
 	}
