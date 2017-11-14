@@ -11,3 +11,5 @@ check_*
 src/gmon.out
 **/conf.yml
 !**/conf.yml.example
+go/ircbot/bin/
+go/ircbot/pkg
