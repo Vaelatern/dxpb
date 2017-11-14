@@ -20,8 +20,8 @@ char *pkg_archs_str[] = {
 	"armv7l-musl",
 	"i686",
 	"i686-musl",
-	"x86-64",
-	"x86-64-musl",
+	"x86_64",
+	"x86_64-musl",
 	"HOST",
 	"TARGET",
 	NULL
