@@ -15,7 +15,7 @@
 #include <czmq.h>
 #include "dxpb-common.h"
 
-#define VERSION "alpha-0.1.0"
+#define VERSION "0.0.1"
 
 void
 prologue(const char *argv0)
