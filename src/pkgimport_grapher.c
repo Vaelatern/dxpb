@@ -154,7 +154,7 @@ create_pkg_from_info (client_t *self)
 	rc = bgraph_insert_pkg(self->pkggraph, bpkg_read(self->message));
 	assert(rc == 0); // only != 0 if top level graph is very broken.
 	if (self->pub) {
-		zstr_sendm(self->pub, "DEBUG");
+		zstr_sendm(self->pub, "TRACE");
 		zstr_sendf(self->pub, "added package to graph: %s/%s/%s",
 				pkgimport_msg_pkgname(self->message),
 				pkgimport_msg_version(self->message),
@@ -296,7 +296,7 @@ pkgimport_grapher_ask_around_for_pkg(client_t *self, struct pkg *pkg)
 	if (rc != 0)
 		ret = ERR_CODE_SADSOCK;
 	if (self->pub) {
-		zstr_sendm(self->pub, "DEBUG");
+		zstr_sendm(self->pub, "TRACE");
 		zstr_sendf(self->pub, "Asking filer for %s/%s/%s",
 				pkgfiles_msg_pkgname(msg),
 				pkgfiles_msg_version(msg),
@@ -331,7 +331,7 @@ pkgimport_grapher_ask_files_for_missing_pkgs(client_t *self)
 		}
 	}
 	if (self->pub) {
-		zstr_sendm(self->pub, "DEBUG");
+		zstr_sendm(self->pub, "TRACE");
 		zstr_sendf(self->pub, "Asked files to confirm packages");
 	}
 	return retVal;
