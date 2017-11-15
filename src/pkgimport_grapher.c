@@ -179,8 +179,6 @@ mark_pkg_for_deletion (client_t *self)
 	msg = pkgfiles_msg_new();
 	pkgfiles_msg_set_id(msg, PKGFILES_MSG_PKGDEL);
 	pkgfiles_msg_set_pkgname(msg, pkgimport_msg_pkgname(self->message));
-	pkgfiles_msg_set_version(msg, NULL);
-	pkgfiles_msg_set_arch(msg, NULL);
 	rc = pkgfiles_msg_send(msg, self->msgpipe);
 	if (rc != 0)
 		return; // TODO: Perhaps take action here.

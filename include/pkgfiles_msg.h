@@ -38,8 +38,6 @@
     PKGDEL - 
         proto_version       string      DXPB PKG Management Protocol Version 00
         pkgname             string      
-        version             string      
-        arch                string      
 
     WANNASHARE_ - 
         proto_version       string      DXPB PKG Management Protocol Version 00

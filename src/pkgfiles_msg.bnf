@@ -30,11 +30,9 @@ The following ABNF grammar defines the DXPB File Location and Management Protoco
 
     ;  No description                                                        
 
-    PKGDEL          = signature %d6 proto_version pkgname version arch
+    PKGDEL          = signature %d6 proto_version pkgname
     proto_version   = string                ; DXPB PKG Management Protocol Version 00
     pkgname         = string                ; 
-    version         = string                ; 
-    arch            = string                ; 
 
     ;  No description                                                        
 

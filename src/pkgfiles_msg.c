@@ -371,8 +371,6 @@ pkgfiles_msg_recv (pkgfiles_msg_t *self, zsock_t *input)
                 }
             }
             GET_STRING (self->pkgname);
-            GET_STRING (self->version);
-            GET_STRING (self->arch);
             break;
 
         case PKGFILES_MSG_WANNASHARE_:
@@ -557,8 +555,6 @@ pkgfiles_msg_send (pkgfiles_msg_t *self, zsock_t *output)
         case PKGFILES_MSG_PKGDEL:
             frame_size += 1 + strlen ("DPKG00");
             frame_size += 1 + strlen (self->pkgname);
-            frame_size += 1 + strlen (self->version);
-            frame_size += 1 + strlen (self->arch);
             break;
         case PKGFILES_MSG_WANNASHARE_:
             frame_size += 1 + strlen ("DPKG00");
@@ -645,8 +641,6 @@ pkgfiles_msg_send (pkgfiles_msg_t *self, zsock_t *output)
         case PKGFILES_MSG_PKGDEL:
             PUT_STRING ("DPKG00");
             PUT_STRING (self->pkgname);
-            PUT_STRING (self->version);
-            PUT_STRING (self->arch);
             break;
 
         case PKGFILES_MSG_WANNASHARE_:
@@ -760,8 +754,6 @@ pkgfiles_msg_print (pkgfiles_msg_t *self)
             zsys_debug ("PKGFILES_MSG_PKGDEL:");
             zsys_debug ("    proto_version=dpkg00");
             zsys_debug ("    pkgname='%s'", self->pkgname);
-            zsys_debug ("    version='%s'", self->version);
-            zsys_debug ("    arch='%s'", self->arch);
             break;
 
         case PKGFILES_MSG_WANNASHARE_:
@@ -1184,8 +1176,6 @@ pkgfiles_msg_test (bool verbose)
     pkgfiles_msg_set_id (self, PKGFILES_MSG_PKGDEL);
 
     pkgfiles_msg_set_pkgname (self, "Life is short but Now lasts for ever");
-    pkgfiles_msg_set_version (self, "Life is short but Now lasts for ever");
-    pkgfiles_msg_set_arch (self, "Life is short but Now lasts for ever");
     //  Send twice
     pkgfiles_msg_send (self, output);
     pkgfiles_msg_send (self, output);
@@ -1194,8 +1184,6 @@ pkgfiles_msg_test (bool verbose)
         pkgfiles_msg_recv (self, input);
         assert (pkgfiles_msg_routing_id (self));
         assert (streq (pkgfiles_msg_pkgname (self), "Life is short but Now lasts for ever"));
-        assert (streq (pkgfiles_msg_version (self), "Life is short but Now lasts for ever"));
-        assert (streq (pkgfiles_msg_arch (self), "Life is short but Now lasts for ever"));
     }
     pkgfiles_msg_set_id (self, PKGFILES_MSG_WANNASHARE_);
 

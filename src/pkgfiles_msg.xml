@@ -18,8 +18,6 @@
 	<message name = "INVALID" />
 	<message name = "PKGDEL">
 		<field name = "pkgname" type = "string" />
-		<field name = "version" type = "string" />
-		<field name = "arch" type = "string" />
 	</message>
 	<message name = "WANNASHARE?">
 		<field name = "pkgname" type = "string" />
