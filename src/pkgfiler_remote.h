@@ -59,12 +59,12 @@ zsock_t *
 bool
     pkgfiler_remote_connected (pkgfiler_remote_t *self);
 
-//  Used to connect to the server.                                                  
-int 
+//  Used to connect to the server.
+int
     pkgfiler_remote_construct (pkgfiler_remote_t *self, const char *endpoint);
 
-//  Used to connect to the server.                                                  
-int 
+//  Used to connect to the server.
+int
     pkgfiler_remote_set_hostdir (pkgfiler_remote_t *self, const char *hostdir);
 
 //  Enable verbose tracing (animation) of state machine activity.

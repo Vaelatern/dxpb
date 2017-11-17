@@ -20,74 +20,74 @@
 
 /*  These are the pkgfiles_msg messages:
 
-    HELLO - 
+    HELLO -
         proto_version       string      DXPB PKG Management Protocol Version 00
 
-    ROGER - 
+    ROGER -
         proto_version       string      DXPB PKG Management Protocol Version 00
 
-    IFORGOTU - 
+    IFORGOTU -
         proto_version       string      DXPB PKG Management Protocol Version 00
 
-    PING - 
+    PING -
         proto_version       string      DXPB PKG Management Protocol Version 00
 
-    INVALID - 
+    INVALID -
         proto_version       string      DXPB PKG Management Protocol Version 00
 
-    PKGDEL - 
+    PKGDEL -
         proto_version       string      DXPB PKG Management Protocol Version 00
-        pkgname             string      
+        pkgname             string
 
-    WANNASHARE_ - 
+    WANNASHARE_ -
         proto_version       string      DXPB PKG Management Protocol Version 00
-        pkgname             string      
-        version             string      
-        arch                string      
+        pkgname             string
+        version             string
+        arch                string
 
-    IWANNASHARE - 
+    IWANNASHARE -
         proto_version       string      DXPB PKG Management Protocol Version 00
-        pkgname             string      
-        version             string      
-        arch                string      
+        pkgname             string
+        version             string
+        arch                string
 
-    IDONTWANNASHARE - 
+    IDONTWANNASHARE -
         proto_version       string      DXPB PKG Management Protocol Version 00
-        pkgname             string      
-        version             string      
-        arch                string      
+        pkgname             string
+        version             string
+        arch                string
 
-    GIMMEGIMMEGIMME - 
+    GIMMEGIMMEGIMME -
         proto_version       string      DXPB PKG Management Protocol Version 00
 
-    CHUNK - 
+    CHUNK -
         proto_version       string      DXPB PKG Management Protocol Version 00
-        validchunk          number 1    
-        pkgname             string      
-        version             string      
-        arch                string      
+        validchunk          number 1
+        pkgname             string
+        version             string
+        arch                string
         subpath             string      Subdir of hostdir where the pkg can be found
-        position            number 8    
-        eof                 number 1    
-        data                chunk       
+        position            number 8
+        eof                 number 1
+        data                chunk
 
-    PKGNOTHERE - 
+    PKGNOTHERE -
         proto_version       string      DXPB PKG Management Protocol Version 00
-        pkgname             string      
-        version             string      
-        arch                string      
+        pkgname             string
+        version             string
+        arch                string
 
-    PKGHERE - 
+    PKGHERE -
         proto_version       string      DXPB PKG Management Protocol Version 00
-        pkgname             string      
-        version             string      
-        arch                string      
+        pkgname             string
+        version             string
+        arch                string
 
-    ISPKGHERE - 
+    ISPKGHERE -
         proto_version       string      DXPB PKG Management Protocol Version 00
-        pkgname             string      
-        version             string      
-        arch                string      
+        pkgname             string
+        version             string
+        arch                string
 */
 
 

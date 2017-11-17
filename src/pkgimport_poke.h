@@ -59,8 +59,8 @@ zsock_t *
 bool
     pkgimport_poke_connected (pkgimport_poke_t *self);
 
-//  Used to connect to the server.                                                  
-int 
+//  Used to connect to the server.
+int
     pkgimport_poke_connect_now (pkgimport_poke_t *self, const char *endpoint);
 
 //  Enable verbose tracing (animation) of state machine activity.

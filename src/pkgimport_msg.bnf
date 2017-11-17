@@ -2,130 +2,130 @@ The following ABNF grammar defines the Package Import Managment Protocol:
 
     pkgimport_msg   = *( HELLO | ROGER | IFORGOTU | RUREADY | READY | RESET | INVALID | RDY2WRK | PING | PLZREADALL | IAMTHEGRAPHER | KTHNKSBYE | STABLESTATUSPLZ | STOP | TURNONTHENEWS | PLZREAD | DIDREAD | PKGINFO | PKGDEL | STABLE | UNSTABLE | WESEEHASH )
 
-    ;  No description                                                        
+    ;  No description
 
     HELLO           = signature %d1 proto_version
     signature       = %xAA %xA0             ; two octets
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  No description                                                        
+    ;  No description
 
     ROGER           = signature %d2 proto_version
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  No description                                                        
+    ;  No description
 
     IFORGOTU        = signature %d3 proto_version
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  No description                                                        
+    ;  No description
 
     RUREADY         = signature %d4 proto_version
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  No description                                                        
+    ;  No description
 
     READY           = signature %d5 proto_version
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  No description                                                        
+    ;  No description
 
     RESET           = signature %d6 proto_version
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  No description                                                        
+    ;  No description
 
     INVALID         = signature %d7 proto_version
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  No description                                                        
+    ;  No description
 
     RDY2WRK         = signature %d8 proto_version
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  No description                                                        
+    ;  No description
 
     PING            = signature %d9 proto_version
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  No description                                                        
+    ;  No description
 
     PLZREADALL      = signature %d10 proto_version
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  No description                                                        
+    ;  No description
 
     IAMTHEGRAPHER   = signature %d11 proto_version
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  No description                                                        
+    ;  No description
 
     KTHNKSBYE       = signature %d12 proto_version
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  No description                                                        
+    ;  No description
 
     STABLESTATUSPLZ = signature %d13 proto_version
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  No description                                                        
+    ;  No description
 
     STOP            = signature %d14 proto_version
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  Used to trigger a git fast forward and reading of new packages.       
+    ;  Used to trigger a git fast forward and reading of new packages.
 
     TURNONTHENEWS   = signature %d15 proto_version
     proto_version   = string                ; Package Import Management Protocol Version 00
 
-    ;  No description                                                        
+    ;  No description
 
     PLZREAD         = signature %d16 proto_version pkgname
     proto_version   = string                ; Package Import Management Protocol Version 00
-    pkgname         = string                ; 
+    pkgname         = string                ;
 
-    ;  No description                                                        
+    ;  No description
 
     DIDREAD         = signature %d17 proto_version pkgname
     proto_version   = string                ; Package Import Management Protocol Version 00
-    pkgname         = string                ; 
+    pkgname         = string                ;
 
-    ;  No description                                                        
+    ;  No description
 
     PKGINFO         = signature %d18 proto_version info_revision pkgname version arch nativehostneeds nativetargetneeds crosshostneeds crosstargetneeds cancross broken bootstrap restricted
     proto_version   = string                ; Package Import Management Protocol Version 00
     info_revision   = string                ; Pkginfo Revision Within Protocol Version
-    pkgname         = string                ; 
-    version         = string                ; 
-    arch            = string                ; 
-    nativehostneeds = longstr               ; 
-    nativetargetneeds = longstr             ; 
-    crosshostneeds  = longstr               ; 
-    crosstargetneeds = longstr              ; 
-    cancross        = number-1              ; 
-    broken          = number-1              ; 
-    bootstrap       = number-1              ; 
-    restricted      = number-1              ; 
+    pkgname         = string                ;
+    version         = string                ;
+    arch            = string                ;
+    nativehostneeds = longstr               ;
+    nativetargetneeds = longstr             ;
+    crosshostneeds  = longstr               ;
+    crosstargetneeds = longstr              ;
+    cancross        = number-1              ;
+    broken          = number-1              ;
+    bootstrap       = number-1              ;
+    restricted      = number-1              ;
 
-    ;  No description                                                        
+    ;  No description
 
     PKGDEL          = signature %d19 proto_version pkgname
     proto_version   = string                ; Package Import Management Protocol Version 00
-    pkgname         = string                ; 
+    pkgname         = string                ;
 
-    ;  No description                                                        
+    ;  No description
 
     STABLE          = signature %d20 proto_version commithash
     proto_version   = string                ; Package Import Management Protocol Version 00
     commithash      = string                ; Hash corresponding to git HEAD
 
-    ;  No description                                                        
+    ;  No description
 
     UNSTABLE        = signature %d21 proto_version commithash
     proto_version   = string                ; Package Import Management Protocol Version 00
     commithash      = string                ; Empty field to mean "No"
 
-    ;  No description                                                        
+    ;  No description
 
     WESEEHASH       = signature %d22 proto_version commithash
     proto_version   = string                ; Package Import Management Protocol Version 00

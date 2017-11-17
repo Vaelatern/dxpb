@@ -2154,9 +2154,9 @@ pkgimport_grapher_msgpipe (pkgimport_grapher_t *self)
 
 
 //  ---------------------------------------------------------------------------
-//  Used to connect to the server.                                                  
+//  Used to connect to the server.
 
-int 
+int
 pkgimport_grapher_construct (pkgimport_grapher_t *self, const char *endpoint)
 {
     assert (self);
@@ -2167,9 +2167,9 @@ pkgimport_grapher_construct (pkgimport_grapher_t *self, const char *endpoint)
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation                                                                  
+//  No explanation
 
-int 
+int
 pkgimport_grapher_pkg_now_completed (pkgimport_grapher_t *self, const char *pkgname, const char *version, const char *arch)
 {
     assert (self);
@@ -2180,9 +2180,9 @@ pkgimport_grapher_pkg_now_completed (pkgimport_grapher_t *self, const char *pkgn
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation                                                                  
+//  No explanation
 
-int 
+int
 pkgimport_grapher_worker_available (pkgimport_grapher_t *self, int addr, int check, const char *hostarch, const char *targetarch, uint8_t iscross, uint16_t cost)
 {
     assert (self);
@@ -2193,9 +2193,9 @@ pkgimport_grapher_worker_available (pkgimport_grapher_t *self, int addr, int che
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation                                                                  
+//  No explanation
 
-int 
+int
 pkgimport_grapher_worker_gone (pkgimport_grapher_t *self, int addr, int check)
 {
     assert (self);
@@ -2206,9 +2206,9 @@ pkgimport_grapher_worker_gone (pkgimport_grapher_t *self, int addr, int check)
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation                                                                  
+//  No explanation
 
-int 
+int
 pkgimport_grapher_pkg_here (pkgimport_grapher_t *self, const char *pkgname, const char *version, const char *arch)
 {
     assert (self);
@@ -2219,9 +2219,9 @@ pkgimport_grapher_pkg_here (pkgimport_grapher_t *self, const char *pkgname, cons
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation                                                                  
+//  No explanation
 
-int 
+int
 pkgimport_grapher_pkg_not_here (pkgimport_grapher_t *self, const char *pkgname, const char *version, const char *arch)
 {
     assert (self);
@@ -2232,9 +2232,9 @@ pkgimport_grapher_pkg_not_here (pkgimport_grapher_t *self, const char *pkgname, 
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation                                                                  
+//  No explanation
 
-int 
+int
 pkgimport_grapher_pkg_failed_to_build (pkgimport_grapher_t *self, int addr, int check, const char *pkgname, const char *version, const char *arch)
 {
     assert (self);
@@ -2245,9 +2245,9 @@ pkgimport_grapher_pkg_failed_to_build (pkgimport_grapher_t *self, int addr, int 
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation                                                                  
+//  No explanation
 
-int 
+int
 pkgimport_grapher_worker_not_appropiate (pkgimport_grapher_t *self, int addr, int check)
 {
     assert (self);
@@ -2258,9 +2258,9 @@ pkgimport_grapher_worker_not_appropiate (pkgimport_grapher_t *self, int addr, in
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation                                                                  
+//  No explanation
 
-int 
+int
 pkgimport_grapher_set_db_path (pkgimport_grapher_t *self, const char *dbpath)
 {
     assert (self);
@@ -2271,9 +2271,9 @@ pkgimport_grapher_set_db_path (pkgimport_grapher_t *self, const char *dbpath)
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation                                                                  
+//  No explanation
 
-int 
+int
 pkgimport_grapher_set_publish_endpoint (pkgimport_grapher_t *self, const char *pubpoint)
 {
     assert (self);

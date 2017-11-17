@@ -20,87 +20,87 @@
 
 /*  These are the pkgimport_msg messages:
 
-    HELLO - 
+    HELLO -
         proto_version       string      Package Import Management Protocol Version 00
 
-    ROGER - 
+    ROGER -
         proto_version       string      Package Import Management Protocol Version 00
 
-    IFORGOTU - 
+    IFORGOTU -
         proto_version       string      Package Import Management Protocol Version 00
 
-    RUREADY - 
+    RUREADY -
         proto_version       string      Package Import Management Protocol Version 00
 
-    READY - 
+    READY -
         proto_version       string      Package Import Management Protocol Version 00
 
-    RESET - 
+    RESET -
         proto_version       string      Package Import Management Protocol Version 00
 
-    INVALID - 
+    INVALID -
         proto_version       string      Package Import Management Protocol Version 00
 
-    RDY2WRK - 
+    RDY2WRK -
         proto_version       string      Package Import Management Protocol Version 00
 
-    PING - 
+    PING -
         proto_version       string      Package Import Management Protocol Version 00
 
-    PLZREADALL - 
+    PLZREADALL -
         proto_version       string      Package Import Management Protocol Version 00
 
-    IAMTHEGRAPHER - 
+    IAMTHEGRAPHER -
         proto_version       string      Package Import Management Protocol Version 00
 
-    KTHNKSBYE - 
+    KTHNKSBYE -
         proto_version       string      Package Import Management Protocol Version 00
 
-    STABLESTATUSPLZ - 
+    STABLESTATUSPLZ -
         proto_version       string      Package Import Management Protocol Version 00
 
-    STOP - 
+    STOP -
         proto_version       string      Package Import Management Protocol Version 00
 
     TURNONTHENEWS - Used to trigger a git fast forward and reading of new packages.
         proto_version       string      Package Import Management Protocol Version 00
 
-    PLZREAD - 
+    PLZREAD -
         proto_version       string      Package Import Management Protocol Version 00
-        pkgname             string      
+        pkgname             string
 
-    DIDREAD - 
+    DIDREAD -
         proto_version       string      Package Import Management Protocol Version 00
-        pkgname             string      
+        pkgname             string
 
-    PKGINFO - 
+    PKGINFO -
         proto_version       string      Package Import Management Protocol Version 00
         info_revision       string      Pkginfo Revision Within Protocol Version
-        pkgname             string      
-        version             string      
-        arch                string      
-        nativehostneeds     longstr     
-        nativetargetneeds   longstr     
-        crosshostneeds      longstr     
-        crosstargetneeds    longstr     
-        cancross            number 1    
-        broken              number 1    
-        bootstrap           number 1    
-        restricted          number 1    
+        pkgname             string
+        version             string
+        arch                string
+        nativehostneeds     longstr
+        nativetargetneeds   longstr
+        crosshostneeds      longstr
+        crosstargetneeds    longstr
+        cancross            number 1
+        broken              number 1
+        bootstrap           number 1
+        restricted          number 1
 
-    PKGDEL - 
+    PKGDEL -
         proto_version       string      Package Import Management Protocol Version 00
-        pkgname             string      
+        pkgname             string
 
-    STABLE - 
+    STABLE -
         proto_version       string      Package Import Management Protocol Version 00
         commithash          string      Hash corresponding to git HEAD
 
-    UNSTABLE - 
+    UNSTABLE -
         proto_version       string      Package Import Management Protocol Version 00
         commithash          string      Empty field to mean "No"
 
-    WESEEHASH - 
+    WESEEHASH -
         proto_version       string      Package Import Management Protocol Version 00
         commithash          string      Hash of git HEAD as seen by persistent storage
 */

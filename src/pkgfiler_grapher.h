@@ -59,8 +59,8 @@ zsock_t *
 bool
     pkgfiler_grapher_connected (pkgfiler_grapher_t *self);
 
-//  Used to connect to the server.                                                  
-int 
+//  Used to connect to the server.
+int
     pkgfiler_grapher_construct (pkgfiler_grapher_t *self, const char *endpoint);
 
 //  Send ISPKGHERE message to server, takes ownership of message
@@ -71,7 +71,7 @@ int
 //  Send PKGDEL message to server, takes ownership of message
 //  and destroys message when done sending it.
 int
-    pkgfiler_grapher_pkgdel (pkgfiler_grapher_t *self, const char *pkgname, const char *version, const char *arch);
+    pkgfiler_grapher_pkgdel (pkgfiler_grapher_t *self, const char *pkgname);
 
 //  Enable verbose tracing (animation) of state machine activity.
 void

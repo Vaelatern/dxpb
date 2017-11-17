@@ -843,9 +843,9 @@ pkgfiler_remote_msgpipe (pkgfiler_remote_t *self)
 
 
 //  ---------------------------------------------------------------------------
-//  Used to connect to the server.                                                  
+//  Used to connect to the server.
 
-int 
+int
 pkgfiler_remote_construct (pkgfiler_remote_t *self, const char *endpoint)
 {
     assert (self);
@@ -856,9 +856,9 @@ pkgfiler_remote_construct (pkgfiler_remote_t *self, const char *endpoint)
 
 
 //  ---------------------------------------------------------------------------
-//  Used to connect to the server.                                                  
+//  Used to connect to the server.
 
-int 
+int
 pkgfiler_remote_set_hostdir (pkgfiler_remote_t *self, const char *hostdir)
 {
     assert (self);

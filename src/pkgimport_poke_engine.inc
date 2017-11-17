@@ -804,9 +804,9 @@ pkgimport_poke_msgpipe (pkgimport_poke_t *self)
 
 
 //  ---------------------------------------------------------------------------
-//  Used to connect to the server.                                                  
+//  Used to connect to the server.
 
-int 
+int
 pkgimport_poke_connect_now (pkgimport_poke_t *self, const char *endpoint)
 {
     assert (self);

@@ -1393,9 +1393,9 @@ pkgimport_client_msgpipe (pkgimport_client_t *self)
 
 
 //  ---------------------------------------------------------------------------
-//  Used to connect to the server.                                                  
+//  Used to connect to the server.
 
-int 
+int
 pkgimport_client_construct (pkgimport_client_t *self, const char *endpoint)
 {
     assert (self);
@@ -1406,9 +1406,9 @@ pkgimport_client_construct (pkgimport_client_t *self, const char *endpoint)
 
 
 //  ---------------------------------------------------------------------------
-//  Used to connect to the server.                                                  
+//  Used to connect to the server.
 
-int 
+int
 pkgimport_client_set_xbps_src_path (pkgimport_client_t *self, const char *xbps_src_path)
 {
     assert (self);

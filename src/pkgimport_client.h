@@ -59,12 +59,12 @@ zsock_t *
 bool
     pkgimport_client_connected (pkgimport_client_t *self);
 
-//  Used to connect to the server.                                                  
-int 
+//  Used to connect to the server.
+int
     pkgimport_client_construct (pkgimport_client_t *self, const char *endpoint);
 
-//  Used to connect to the server.                                                  
-int 
+//  Used to connect to the server.
+int
     pkgimport_client_set_xbps_src_path (pkgimport_client_t *self, const char *xbps_src_path);
 
 //  Enable verbose tracing (animation) of state machine activity.

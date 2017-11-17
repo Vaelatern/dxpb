@@ -615,13 +615,9 @@ s_client_handle_msgpipe (zloop_t *loop, zsock_t *reader, void *argument)
         else
         if (streq (method, "PKGDEL")) {
             char *pkgname;
-            char *version;
-            char *arch;
-            zsock_brecv (self->msgpipe, "sss", &pkgname, &version, &arch);
+            zsock_brecv (self->msgpipe, "s", &pkgname);
             pkgfiles_msg_set_id (self->message, PKGFILES_MSG_PKGDEL);
             pkgfiles_msg_set_pkgname (self->message, pkgname);
-            pkgfiles_msg_set_version (self->message, version);
-            pkgfiles_msg_set_arch (self->message, arch);
             pkgfiles_msg_send (self->message, self->dealer);
         }
         //  Cleanup pipe if any argument frames are still waiting to be eaten
@@ -784,9 +780,9 @@ pkgfiler_grapher_msgpipe (pkgfiler_grapher_t *self)
 
 
 //  ---------------------------------------------------------------------------
-//  Used to connect to the server.                                                  
+//  Used to connect to the server.
 
-int 
+int
 pkgfiler_grapher_construct (pkgfiler_grapher_t *self, const char *endpoint)
 {
     assert (self);
@@ -816,12 +812,12 @@ pkgfiler_grapher_ispkghere (pkgfiler_grapher_t *self, const char *pkgname, const
 //  destroys when done sending it.
 
 int
-pkgfiler_grapher_pkgdel (pkgfiler_grapher_t *self, const char *pkgname, const char *version, const char *arch)
+pkgfiler_grapher_pkgdel (pkgfiler_grapher_t *self, const char *pkgname)
 {
     assert (self);
     //  Send message name as first, separate frame
     zstr_sendm (self->msgpipe, "PKGDEL");
-    int rc = zsock_bsend (self->msgpipe, "sss", pkgname, version, arch);
+    int rc = zsock_bsend (self->msgpipe, "s", pkgname);
     return rc;
 }
 
