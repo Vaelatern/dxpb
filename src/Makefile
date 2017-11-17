@@ -154,25 +154,27 @@ testdb: pkgimport_msg.o bxsrc.o bxbps.o bstring.o bwords.o bgraph.o bxpkg.o bdb.
 #### Binaries and their needs ####
 ##################################
 
+$(BINARIES): bstring.o bfs.o
+
 dxpb-poke: dxpb-poke.o pkgimport_poke.o pkgimport_msg.o
 
 dxpb-pkgimport-agent: LDLIBS += -lbsd
-dxpb-pkgimport-agent: dxpb-pkgimport-agent.o bxpkg.o bpkg.o bwords.o bstring.o bxsrc.o pkgimport_client.o pkgimport_msg.o
+dxpb-pkgimport-agent: dxpb-pkgimport-agent.o bxpkg.o bpkg.o bwords.o bxsrc.o pkgimport_client.o pkgimport_msg.o
 
 dxpb-pkgimport-master: LDLIBS += -lbsd -lgit2
-dxpb-pkgimport-master: dxpb-pkgimport-master.o bxpkg.o bwords.o bstring.o bxsrc.o bfs.o bgit.o pkgimport_server.o pkgimport_msg.o
+dxpb-pkgimport-master: dxpb-pkgimport-master.o bxpkg.o bwords.o bxsrc.o bgit.o pkgimport_server.o pkgimport_msg.o
 
 dxpb-builder: LDLIBS += -lgit2
-dxpb-builder: dxpb-builder.o bstring.o bfs.o bgit.o bbuilder.o bwords.o bxpkg.o bxsrc.o pkggraph_worker.o pkggraph_msg.o
+dxpb-builder: dxpb-builder.o bgit.o bbuilder.o bwords.o bxpkg.o bxsrc.o pkggraph_worker.o pkggraph_msg.o
 
 dxpb-grapher: LDLIBS += -lbsd -lsqlite3 -larchive -lxbps
-dxpb-grapher: dxpb-grapher.o bstring.o bwords.o bxsrc.o bxpkg.o bpkg.o bfs.o bxbps.o bgraph.o bdb.o pkgimport_msg.o pkgimport_grapher.o pkggraph_msg.o pkggraph_grapher.o pkgfiles_msg.o pkgfiler_grapher.o bworker.o btranslate.o
+dxpb-grapher: dxpb-grapher.o bstring.o bwords.o bxsrc.o bxpkg.o bpkg.o bxbps.o bgraph.o bdb.o pkgimport_msg.o pkgimport_grapher.o pkggraph_msg.o pkggraph_grapher.o pkgfiles_msg.o pkgfiler_grapher.o bworker.o btranslate.o
 
 dxpb-hostdir-master: LDLIBS += -larchive -lxbps
-dxpb-hostdir-master: dxpb-hostdir-master.o bstring.o bfs.o bxbps.o pkggraph_msg.o pkggraph_filer.o pkgfiles_msg.o pkgfiler.o
+dxpb-hostdir-master: dxpb-hostdir-master.o bxbps.o pkggraph_msg.o pkggraph_filer.o pkgfiles_msg.o pkgfiler.o
 
 dxpb-hostdir-remote: LDLIBS += -larchive -lxbps
-dxpb-hostdir-remote: dxpb-hostdir-remote.o bxbps.o bstring.o bfs.o pkgfiles_msg.o pkgfiler_remote.o
+dxpb-hostdir-remote: dxpb-hostdir-remote.o bxbps.o pkgfiles_msg.o pkgfiler_remote.o
 
 dxpb-frontend: LDLIBS += -lbsd
 dxpb-frontend: dxpb-frontend.o pkggraph_msg.o bxpkg.o pkggraph_server.o bworker.o
@@ -180,6 +182,12 @@ dxpb-frontend: dxpb-frontend.o pkggraph_msg.o bxpkg.o pkggraph_server.o bworker.
 dxpb-common.c: license.inc
 
 $(BINARIES): dxpb-common.o
+
+########################
+#### Simple  Targets ###
+########################
+
+usebfs: bstring.o bfs.o
 
 ########################
 #### Generic Targets ###
