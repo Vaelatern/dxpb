@@ -1,7 +1,8 @@
 #define _POSIX_C_SOURCE 200809L
 
-#include "../include/bfs.h"
 #include <stdio.h>
+#include <stdint.h>
+#include "../include/bfs.h"
 
 int main(void)
 {
