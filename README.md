@@ -89,6 +89,15 @@ It should be noted that in series, 700 packages would take at least 116 minutes
 to read in from xbps-src. With 14 workers in parallel, this number would be cut
 to about 9 minutes.
 
+### ensure_sock()
+
+On Linux, if you want to communicate over a socket on the filesystem, even just
+to read, you must have read and write access. On BSD, permissions on sockets
+are ignored, and access to the socket directory is the only control on access.
+
+We at least target Linux, so we must chmod 770 the sockets. We can thus use
+group permissions to ensure sockets are not shared inappropiately.
+
 ### The link that straddles pkgimport and pkggraph and pkgfiles
 
 Going on the basic notion that zeromq is based on "multipart" messages, where
