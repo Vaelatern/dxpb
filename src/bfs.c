@@ -176,10 +176,50 @@ bfs_find_file_in_subdir(const char *rootdir, const char *filename, char **subdir
 	return retVal;
 }
 
+int
+bfs_setup_sock(const char *path)
+{
+	struct sockaddr_un sockspec;
+	int sd;
+	int rc;
+
+	sockspec.sun_family = AF_UNIX;
+	memset(&(sockspec.sun_path), 0, sizeof(sockspec.sun_path));
+	(void)strncpy(sockspec.sun_path, path, sizeof(sockspec.sun_path)-1);
+	sockspec.sun_path[sizeof(sockspec.sun_path)-1] = '\0';
+
+	/* Create socket */
+	sd = socket(sockspec.sun_family, SOCK_STREAM, 0);
+	if (sd == -1) {
+		perror("Couldn't create socket");
+		return ERR_CODE_BAD;
+	}
+	if (access(sockspec.sun_path, 0) == 0) {
+		rc = unlink(sockspec.sun_path);
+		if (rc != 0) {
+			perror("Couldn't unlink temporary socket");
+			exit(ERR_CODE_BAD);
+		}
+	}
+
+	/* bind, so as to create the socket */
+	rc = bind(sd, (struct sockaddr *)&sockspec, sizeof(sockspec));
+	if (rc == -1) {
+		perror("Couldn't bind to socket");
+		return ERR_CODE_BAD;
+	}
+
+	rc = close(sd);
+	if (rc != 0) {
+		perror("Can't close the socket after naming it");
+		exit(ERR_CODE_BAD);
+	}
+	return ERR_CODE_OK;
+}
+
 char *
 bfs_new_tmpsock(const char *dirpattern, const char *sockname)
 {
-	int sd;
 	int rc;
 	struct sockaddr_un sockspec;
 	int tmpdir = 0;
@@ -204,46 +244,10 @@ bfs_new_tmpsock(const char *dirpattern, const char *sockname)
 		tmpdir = 1;
 	}
 
-	sockspec.sun_family = AF_UNIX;
-	memset(&(sockspec.sun_path), 0, sizeof(sockspec.sun_path));
-	(void)strncpy(sockspec.sun_path, (retVal = bstring_add(
-					bstring_add(dirpat, "/", NULL, NULL),
-					sockname, NULL, NULL)),
-					sizeof(sockspec.sun_path)-1);
-	sockspec.sun_path[sizeof(sockspec.sun_path)-1] = '\0';
+	retVal = bstring_add(bstring_add(dirpat, "/", NULL, NULL),
+					sockname, NULL, NULL);
 
-	if (retVal == NULL) {
-		perror("bstring_add call ended without usable string");
-		return NULL;
-	}
-
-	/* Create socket */
-	sd = socket(sockspec.sun_family, SOCK_STREAM, 0);
-	if (sd == -1) {
-		perror("Couldn't create socket");
-		return NULL;
-	}
-	if (!tmpdir && access(sockspec.sun_path, 0) == 0) {
-		rc = unlink(sockspec.sun_path);
-		if (rc != 0) {
-			perror("Couldn't unlink temporary socket");
-			exit(ERR_CODE_BAD);
-		}
-	}
-
-	/* bind, so as to create the socket */
-	rc = bind(sd, (struct sockaddr *)&sockspec, sizeof(sockspec));
-	if (rc == -1) {
-		perror("Couldn't bind to socket");
-		return NULL;
-	}
-
-	rc = close(sd);
-	if (rc != 0) {
-		perror("Can't close the socket after naming it");
-		exit(ERR_CODE_BAD);
-	}
-
+	rc = bfs_setup_sock(retVal);
 	return retVal;
 }
 
@@ -297,6 +301,18 @@ bfs_size(int fd)
 	else
 		return sinfo.st_size;
 
+}
+
+int
+bfs_set_shared_sock_perms(const char *sockpath)
+{
+	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP;
+	int rc = chmod(sockpath, mode);
+	if (rc != 0) {
+		perror("Tried to set the socket to be rwxrwx---");
+		return ERR_CODE_BAD;
+	}
+	return ERR_CODE_OK;
 }
 
 // This is short. It is only here so stdio need not be included everywhere.
