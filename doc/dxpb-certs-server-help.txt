@@ -1,0 +1,16 @@
+usage: dxpb-certs-server [arguments]
+
+Arguments:
+  -h		This help, and exit
+  -L		Print license information and exit
+  -k <dir>	Directory with owner-only read/write for storing curve keys If
+		not specified, no encryption will be performed, warnings will
+		be printed, and the entire setup will be unfit for operation
+		over an insecure network.
+  -R		Toggle creation of the frontend cert. Can be specified multiple
+		times, is an XOR. Default is to build the cert.
+  -F		Toggle creation of the filer cert, identical semantics to -R.
+  -G		Toggle creation of the grapher cert, identical semantics to -R.
+
+The following flags have defaults.
+  -k: /etc/dxpb/curve/

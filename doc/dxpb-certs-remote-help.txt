@@ -1,0 +1,13 @@
+usage: dxpb-certs-remote [arguments]
+
+Arguments:
+  -h		This help, and exit
+  -L		Print license information and exit
+  -k <dir>	Directory to write keys.
+  -n <name>	Create a cert to be used by a daemon with <name> as arg0.
+
+The following flags have defaults.
+  -k: /etc/dxpb/curve/
+
+The following flags must be specified on every run:
+  -n

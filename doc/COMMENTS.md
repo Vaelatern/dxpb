@@ -120,3 +120,37 @@ But the basic forms are just 2. `$pkgname{,-$version_$revision}}`, since xbps
 refuses `$pkgname-$version` without `_$revision`.
 Therefore to match a dependency statement to a package name, one simply tries
 the whole string, or passes off the xbps pkgname checking functions.
+### So how does this SSL thing work anyway?
+
+Zeromq provides a curve implementation that uses Curve25519, which is an
+implementation of DJB's protocol to provide perfect forward secrecy. This
+involves server keys, where the public key must be available to every endpoint
+which wants to connect. Private keys are generated on every endpoint. Each
+builder is capable of choosing its own private key (based on argv0), but the
+server does not enforce one key per connection. Thus, if desirable, every
+remote on a single box may use a single private key. Due to the curve
+implementation, and how permanent keys are never sent in the clear, this may be
+an acceptable solution.
+
+The graph protocol server uses the `dxpb-graph` public key, while the file
+protocol server uses the `dxpb-file` public key.
+
+#### Yeah, but I looked at the code. It's just magic.
+
+ZeroMQ provides the magic. For processes with multiple threads, the
+special `inproc://` connection mechanism enables communication over named
+sockets that are not visible to the filesystem or network stack.
+
+When a zeromq socket option is set, setting the encryption to CURVE, the socket
+is told to begin negotiations by passing the protocol through an actor. This
+handles the implementation of the curve protocol to establish encryption, and
+then the socket itself can take over the connection.
+
+There is a special endpoint, `inproc://zeromq.zap.01`, where a `zauth` actor
+listens and replies. That zauth actor is configured in the `dxpb-*` family
+of binaries to be aware of the private and public keys it should use or accept.
+Thus, the socket involved in the connection needs only to know it needs to use
+CURVE authentication for it to be handled automatically.
+
+The list of allowed public keys is not explicitly given to the server. Instead,
+the server with a directory containing the acceptable client public keys.

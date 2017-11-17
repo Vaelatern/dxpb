@@ -60,3 +60,11 @@ ensure_sock_if_ipc(const char *arg)
        rc = bfs_ensure_sock_perms(arg);
        return rc;
 }
+
+int
+setup_ssl(const char *argv0, const char *ssldir)
+{
+	(void) argv0;
+	(void) ssldir;
+	return 0;
+}
