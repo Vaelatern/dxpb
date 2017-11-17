@@ -11,7 +11,7 @@ Arguments:
 		operation over an insecure network.
   -H <dir>	Hostdir builder can use
   -m <dir>	Masterdir builder can use
-  -x <path>	Path to xbps-src executable
+  -r <path>	Path to repo, with ./xbps-src present
   -W <spec>	Spec following hostarch:targetarch:cost:iscross with :iscross
 		being true if present. host:target:cost for non-cross setups.
 
@@ -20,7 +20,7 @@ The following flags have defaults.
   -g: tcp://127.0.0.1:5195
   -k: /etc/dxpb/curve/
   -m: ./masterdir
-  -x: ./xbps-src
+  -r: ./
 
 The following flag is required:
   -W

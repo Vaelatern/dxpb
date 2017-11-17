@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <czmq.h>
+#include "bstring.h"
 #include "dxpb.h"
 #include "bfs.h"
 #include "bbuilder.h"
@@ -133,13 +134,16 @@ spawn_child(char *endpoint, char *masterdir, char *hostdir, char *xbps_src)
 
 int
 run(int flags, char *masterdir, char *hostdir,  char *ssldir, char *endpoint,
-		char *xbps_src, struct workerspec *wrkr)
+		char *repopath, struct workerspec *wrkr)
 {
 	SSLDIR_UNUSED(ssldir);
 	assert((flags & ERR_FLAG) == 0);
 	enum ret_codes retVal = ERR_CODE_BAD;
 	pkggraph_worker_t *client;
 	zactor_t *actor;
+
+	char *xbps_src = bstring_add(bstring_add(NULL, repopath,
+					NULL, NULL), "/xbps-src", NULL, NULL);
 
 	char *child_endpoint = gimme_unix_socket();
 	zsock_t *child = spawn_child(child_endpoint, masterdir, hostdir, xbps_src);
@@ -156,6 +160,7 @@ run(int flags, char *masterdir, char *hostdir,  char *ssldir, char *endpoint,
 		retVal = ERR_CODE_BAD;
 		goto end;
 	}
+	zstr_sendx(actor, "SET REPOPATH", repopath, NULL);
 	zstr_sendx(actor, "CONSTRUCT", endpoint, NULL);
 
 	zpoller_t *polling = zpoller_new(actor, NULL);
@@ -192,13 +197,13 @@ main(int argc, char * const *argv)
 	char *default_hostdir = DEFAULT_HOSTDIR;
 	char *default_ssldir = DEFAULT_SSLDIR;
 	char *default_endpoint = DEFAULT_GRAPH_ENDPOINT;
-	char *default_xbps_src = DEFAULT_XBPS_SRC;
+	char *default_repopath = DEFAULT_REPOPATH;
 	char *masterdir = NULL;
 	char *hostdir = NULL;
 	char *ssldir = NULL;
 	char *endpoint = NULL;
-	char *xbps_src = NULL;
-	const char *optstring = "hvLg:k:H:m:W:";
+	char *repopath = NULL;
+	const char *optstring = "hvLg:k:H:m:W:r:";
 
 	while ((c = getopt(argc, argv, optstring)) != -1) {
 		switch(c) {
@@ -211,8 +216,8 @@ main(int argc, char * const *argv)
 		case 'g':
 			endpoint = optarg;
 			break;
-		case 'x':
-			xbps_src = optarg;
+		case 'r':
+			repopath = optarg;
 			break;
 		case 'k':
 			ssldir = optarg;
@@ -258,8 +263,8 @@ main(int argc, char * const *argv)
 		ssldir = default_ssldir;
 	if (!endpoint)
 		endpoint = default_endpoint;
-	if (!xbps_src)
-		xbps_src = default_xbps_src;
+	if (!repopath)
+		repopath = default_repopath;
 	if (!wrkr)
 		fprintf(stderr, "Need a worker specification (-W)\n");
 	assert(wrkr);
@@ -269,5 +274,5 @@ main(int argc, char * const *argv)
 		exit(ERR_CODE_BAD);
 	}
 
-	return run(flags, masterdir, hostdir, ssldir, endpoint, xbps_src, wrkr);
+	return run(flags, masterdir, hostdir, ssldir, endpoint, repopath, wrkr);
 }
