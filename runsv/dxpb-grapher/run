@@ -3,6 +3,6 @@
 [ -f ./conf ] && . ./conf
 
 : ${USER:=_dxpb_grapher}
-: ${GROUP:=_dxpb_grapher:_dxpb:_dxpb_files:_dxpb_ssl}
+: ${GROUP:=_dxpb:_dxpb_grapher:_dxpb_files:_dxpb_ssl}
 
 exec chpst -u $USER:$GROUP dxpb-grapher
