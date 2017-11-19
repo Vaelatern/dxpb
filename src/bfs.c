@@ -306,7 +306,9 @@ bfs_size(int fd)
 int
 bfs_set_shared_sock_perms(const char *sockpath)
 {
-	mode_t mode = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP;
+	mode_t mode =   S_IRUSR | S_IWUSR | S_IXUSR |
+			S_IRGRP | S_IWGRP | S_IXGRP |
+			S_IROTH | S_IWOTH | S_IXOTH;
 	int rc = chmod(sockpath, mode);
 	if (rc != 0) {
 		perror("Tried to set the socket to be rwxrwx---");
