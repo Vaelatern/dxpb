@@ -185,7 +185,7 @@ mark_pkg_for_deletion (client_t *self)
 		return; // TODO: Perhaps take action here.
 	if (self->pub) {
 		zstr_sendm(self->pub, "DEBUG");
-		zstr_sendf(self->pub, "Marked package for delition: %s",
+		zstr_sendf(self->pub, "Marked package for deletion: %s",
 				pkgimport_msg_pkgname(self->message));
 	}
 	pkgfiles_msg_destroy(&msg);
