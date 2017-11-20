@@ -9,14 +9,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <xbps.h>
+#include <czmq.h>
+#include "dxpb.h"
 #include "bstring.h"
 #include "bfs.h"
-#include <czmq.h>
 #include "bwords.h"
 #include "bxpkg.h"
 #include "bgraph.h"
 #include "bxbps.h"
-#include "dxpb.h"
 
 char *
 bxbps_get_pkgname(const char *spec, bgraph graph)

@@ -19,12 +19,12 @@
 #include "./pkgfiles_msg.h"
 #include "./pkgfiler_remote.h"
 
+#include "dxpb.h"
 #include "bwords.h"
 #include "bxpkg.h"
 #include "bgraph.h"
 #include "bxbps.h"
 #include "bfs.h"
-#include "dxpb.h"
 
 //  Forward reference to method arguments structure
 typedef struct _client_args_t client_args_t;

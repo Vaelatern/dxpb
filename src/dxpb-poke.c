@@ -101,10 +101,5 @@ main(int argc, char * const *argv)
 	if (!endpoint)
 		endpoint = default_endpoint;
 
-	if (ensure_sock(endpoint) != ERR_CODE_OK) {
-		fprintf(stderr, "Aborted due to not being able to ensure our endpoint is there");
-		exit(ERR_CODE_BAD);
-	}
-
 	return run(flags, endpoint);
 }

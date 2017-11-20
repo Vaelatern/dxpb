@@ -168,13 +168,5 @@ main(int argc, char * const *argv)
 	if (!graph_pubpoint)
 		graph_pubpoint = default_graph_pubpoint;
 
-	if (ensure_sock(graph_endpoint) != ERR_CODE_OK ||
-			ensure_sock(graph_pubpoint) != ERR_CODE_OK ||
-			ensure_sock(file_endpoint) != ERR_CODE_OK ||
-			ensure_sock(file_pubpoint) != ERR_CODE_OK) {
-		fprintf(stderr, "Aborted due to not being able to ensure our endpoint is there");
-		exit(ERR_CODE_BAD);
-	}
-
 	return run(flags, ssldir, stagingdir, repodir, logdir, file_endpoint, graph_endpoint, file_pubpoint, graph_pubpoint);
 }

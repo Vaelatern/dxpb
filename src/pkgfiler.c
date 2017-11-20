@@ -19,13 +19,13 @@
 #include "../include/pkgfiles_msg.h"
 #include "../include/pkgfiler.h"
 
+#include "dxpb.h"
 #include "bwords.h"
 #include "bxpkg.h"
 #include "bgraph.h"
 #include "bxbps.h"
 #include "bfs.h"
 #include "bstring.h"
-#include "dxpb.h"
 
 
 //  ---------------------------------------------------------------------------
@@ -806,5 +806,6 @@ ensure_configuration_is_set (client_t *self)
 	if (!self->server->pubpath) {
 		self->server->pubpath = zconfig_get(self->server->config, "dxpb/pubpoint", NULL);
 		self->server->pub = zsock_new_pub(self->server->pubpath);
+		bfs_ensure_sock_perms(self->server->pubpath);
 	}
 }

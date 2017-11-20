@@ -109,12 +109,6 @@ main(int argc, char * const *argv)
 	if (!ssldir)
 		ssldir = default_ssldir;
 
-	if (ensure_sock(endpoint) != ERR_CODE_OK ||
-			ensure_sock(pubpoint) != ERR_CODE_OK) {
-		fprintf(stderr, "Aborted due to not being able to ensure our endpoint is there");
-		exit(ERR_CODE_BAD);
-	}
-
 	run(flags, endpoint, ssldir, pubpoint);
 	return 0;
 }

@@ -363,14 +363,6 @@ main(int argc, char * const *argv)
 	if (!pubpoint)
 		pubpoint = default_pubpoint;
 
-	if (ensure_sock(graph_endpoint) != ERR_CODE_OK ||
-			ensure_sock(import_endpoint) != ERR_CODE_OK ||
-			ensure_sock(file_endpoint) != ERR_CODE_OK ||
-			ensure_sock(pubpoint) != ERR_CODE_OK) {
-		fprintf(stderr, "Aborted due to not being able to ensure our endpoint is there");
-		exit(ERR_CODE_BAD);
-	}
-
 	return run(flags, dbpath, import_endpoint, graph_endpoint,
 			file_endpoint, pubpoint, ssldir);
 }

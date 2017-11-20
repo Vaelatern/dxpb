@@ -95,8 +95,9 @@ On Linux, if you want to communicate over a socket on the filesystem, even just
 to read, you must have read and write access. On BSD, permissions on sockets
 are ignored, and access to the socket directory is the only control on access.
 
-We at least target Linux, so we must chmod 770 the sockets. We can thus use
-group permissions to ensure sockets are not shared inappropiately.
+We at least target Linux, so we must chmod 777 the sockets. We can't use
+group permissions on BSD, so we just use the _dxpb group on `/var/run/dxpb/`
+for a portable permissioning scheme.
 
 ### The link that straddles pkgimport and pkggraph and pkgfiles
 

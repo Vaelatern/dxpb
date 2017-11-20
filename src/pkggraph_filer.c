@@ -19,6 +19,7 @@
 #include "./pkggraph_msg.h"
 #include "./pkggraph_filer.h"
 #include "dxpb.h"
+#include "bfs.h"
 
 //  Forward reference to method arguments structure
 typedef struct _client_args_t client_args_t;
@@ -286,4 +287,5 @@ set_pub_to_provided (client_t *self)
 	if (self->pub)
 		zsock_destroy(&(self->pub));
 	self->pub = zsock_new_pub(self->args->pubpath);
+	bfs_ensure_sock_perms(self->args->pubpath);
 }

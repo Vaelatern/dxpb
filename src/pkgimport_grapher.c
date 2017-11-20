@@ -26,6 +26,7 @@
 #include "bpkg.h"
 #include "bgraph.h"
 #include "bdb.h"
+#include "bfs.h"
 #include "bworker.h"
 #include "btranslate.h"
 
@@ -741,4 +742,5 @@ set_publish_endpoint_as_supplied (client_t *self)
 	if (self->pub)
 		zsock_destroy(&(self->pub));
 	self->pub = zsock_new_pub(self->args->pubpoint);
+	bfs_ensure_sock_perms(self->args->pubpoint);
 }

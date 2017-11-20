@@ -303,7 +303,7 @@ bfs_size(int fd)
 
 }
 
-int
+enum ret_codes
 bfs_set_shared_sock_perms(const char *sockpath)
 {
 	mode_t mode =   S_IRUSR | S_IWUSR | S_IXUSR |
@@ -322,4 +322,14 @@ int
 bfs_rename(const char *a, const char *b)
 {
 	return rename(a, b);
+}
+
+enum ret_codes
+bfs_ensure_sock_perms(const char *arg)
+{
+	if (strstr(arg, "ipc://") != arg)
+		return ERR_CODE_OK;
+	arg = arg + strlen("ipc://");
+	enum ret_codes rc = bfs_set_shared_sock_perms(arg);
+	return rc;
 }

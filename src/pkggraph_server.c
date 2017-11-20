@@ -19,6 +19,7 @@
 #include "../include/pkggraph_msg.h"
 #include "../include/pkggraph_server.h"
 #include "dxpb.h"
+#include "bfs.h"
 #include "bwords.h"
 #include "bxpkg.h"
 #include "bworker.h"
@@ -714,6 +715,7 @@ ensure_all_configuration_is_complete (client_t *self)
 	if (!self->server->pubpath) {
 		self->server->pubpath = zconfig_get(self->server->config, "dxpb/pubpoint", NULL);
 		self->server->pub = zsock_new_pub(self->server->pubpath);
+		bfs_ensure_sock_perms(self->server->pubpath);
 	}
 }
 

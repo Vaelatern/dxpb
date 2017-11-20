@@ -12,4 +12,4 @@ uint64_t bfs_size(int);
 int	 bfs_rename(const char *, const char *);
 void	 bfs_touch(const char *);
 int	 bfs_setup_sock(const char *);
-int	 bfs_set_shared_sock_perms(const char *);
+enum	 ret_codes bfs_ensure_sock_perms(const char *);

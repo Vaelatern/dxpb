@@ -524,6 +524,7 @@ ensure_all_configuration_is_complete (client_t *self)
 	if (!self->server->pubpath) {
 		self->server->pubpath = zconfig_get(self->server->config, "dxpb/pubpoint", NULL);
 		self->server->pub = zsock_new_pub(self->server->pubpath);
+		bfs_ensure_sock_perms(self->server->pubpath);
 	}
 	if (!self->server->xbps_src || !self->server->repopath) {
 		fprintf(stderr, "Caller neglected to set both xbps_src and repopath!\n");
