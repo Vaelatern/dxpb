@@ -2,6 +2,9 @@
 
 [ -f ./conf ] && . ./conf
 
+: ${ETCDIR:=/etc/dxpb/}
+[ -f "${ETCDIR}/sv-common" ] && . "${ETCDIR}/sv-common"
+
 : ${USER:=_dxpb_frontend}
 : ${GROUP:=_dxpb:_dxpb_frontend:_dxpb_graph:_dxpb_ssl}
 

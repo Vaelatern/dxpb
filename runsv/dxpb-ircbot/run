@@ -6,6 +6,9 @@ unset HOME
 
 [ -f ./conf ] && . ./conf
 
+: ${ETCDIR:=/etc/dxpb/}
+[ -f "${ETCDIR}/sv-common" ] && . "${ETCDIR}/sv-common"
+
 : ${USER:=_dxpb_watcher}
 : ${GROUP:=_dxpb}
 : ${WRKDIR:=/etc/dxpb/}

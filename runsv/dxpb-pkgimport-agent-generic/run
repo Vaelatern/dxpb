@@ -5,6 +5,9 @@ unset GROUP
 
 [ -f ./conf ] && . ./conf
 
+: ${ETCDIR:=/etc/dxpb/}
+[ -f "${ETCDIR}/sv-common" ] && . "${ETCDIR}/sv-common"
+
 : ${USER:=_dxpb_import}
 : ${GROUP:=_dxpb:_dxpb_import}
 
