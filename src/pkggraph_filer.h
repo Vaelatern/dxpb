@@ -59,16 +59,16 @@ zsock_t *
 bool
     pkggraph_filer_connected (pkggraph_filer_t *self);
 
-//  Used to connect to the server.
-int
+//  Used to connect to the server.                                                  
+int 
     pkggraph_filer_construct (pkggraph_filer_t *self, const char *endpoint);
 
-//  No explanation
-int
+//  No explanation                                                                  
+int 
     pkggraph_filer_set_logdir (pkggraph_filer_t *self, const char *dir);
 
-//  No explanation
-int
+//  No explanation                                                                  
+int 
     pkggraph_filer_set_pubpath (pkggraph_filer_t *self, const char *pubpath);
 
 //  Enable verbose tracing (animation) of state machine activity.

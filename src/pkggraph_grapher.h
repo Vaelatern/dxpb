@@ -59,8 +59,8 @@ zsock_t *
 bool
     pkggraph_grapher_connected (pkggraph_grapher_t *self);
 
-//  Used to connect to the server.
-int
+//  Used to connect to the server.                                                  
+int 
     pkggraph_grapher_construct (pkggraph_grapher_t *self, const char *endpoint);
 
 //  Send UPDATE BOOTSTRAP message to server, takes ownership of message

@@ -2,6 +2,9 @@
 digraph "pkggraph_worker" {
 
  "start" [shape = "doublecircle"];
+ "start iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "start" -> "start iforgotu";
+ "start iforgotu" -> "negotiate";
  "start invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
  "start" -> "start invalid";
  "start invalid" -> "die";
@@ -31,6 +34,9 @@ digraph "pkggraph_worker" {
  "start connect error" -> "die";
 
  "negotiate" [shape = "doublecircle"];
+ "negotiate iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "negotiate" -> "negotiate iforgotu";
+ "negotiate iforgotu" -> "negotiate";
  "negotiate invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
  "negotiate" -> "negotiate invalid";
  "negotiate invalid" -> "die";
@@ -51,6 +57,9 @@ digraph "pkggraph_worker" {
  "negotiate roger" -> "hesitate";
 
  "hesitate" [shape = "doublecircle"];
+ "hesitate iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "hesitate" -> "hesitate iforgotu";
+ "hesitate iforgotu" -> "negotiate";
  "hesitate invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
  "hesitate" -> "hesitate invalid";
  "hesitate invalid" -> "die";
@@ -71,6 +80,9 @@ digraph "pkggraph_worker" {
  "hesitate roger" -> "preparing";
 
  "preparing" [shape = "doublecircle"];
+ "preparing iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "preparing" -> "preparing iforgotu";
+ "preparing iforgotu" -> "negotiate";
  "preparing invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
  "preparing" -> "preparing invalid";
  "preparing invalid" -> "die";
@@ -94,6 +106,9 @@ digraph "pkggraph_worker" {
  "preparing bootstrap done" -> "ready";
 
  "ready" [shape = "doublecircle"];
+ "ready iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "ready" -> "ready iforgotu";
+ "ready iforgotu" -> "negotiate";
  "ready invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
  "ready" -> "ready invalid";
  "ready invalid" -> "die";
@@ -120,6 +135,9 @@ digraph "pkggraph_worker" {
  "ready needpkg" -> "working";
 
  "bootstrap regular" [shape = "doublecircle"];
+ "bootstrap regular iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "bootstrap regular" -> "bootstrap regular iforgotu";
+ "bootstrap regular iforgotu" -> "negotiate";
  "bootstrap regular invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
  "bootstrap regular" -> "bootstrap regular invalid";
  "bootstrap regular invalid" -> "die";
@@ -146,6 +164,9 @@ digraph "pkggraph_worker" {
  "bootstrap regular bootstrap done" -> "ready";
 
  "bootstrap build wanted" [shape = "doublecircle"];
+ "bootstrap build wanted iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "bootstrap build wanted" -> "bootstrap build wanted iforgotu";
+ "bootstrap build wanted iforgotu" -> "negotiate";
  "bootstrap build wanted invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
  "bootstrap build wanted" -> "bootstrap build wanted invalid";
  "bootstrap build wanted invalid" -> "die";
@@ -169,6 +190,9 @@ digraph "pkggraph_worker" {
  "bootstrap build wanted bootstrap done" -> "working";
 
  "working" [shape = "doublecircle"];
+ "working iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "working" -> "working iforgotu";
+ "working iforgotu" -> "negotiate";
  "working invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
  "working" -> "working invalid";
  "working invalid" -> "die";

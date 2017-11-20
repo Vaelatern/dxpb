@@ -34,9 +34,10 @@ typedef enum {
     pkgdone_event = 4,
     icanhelp_event = 5,
     forget_about_me_event = 6,
-    invalid_event = 7,
-    kthnksbye_event = 8,
-    expired_event = 9
+    iforgotu_event = 7,
+    invalid_event = 8,
+    kthnksbye_event = 9,
+    expired_event = 10
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -60,6 +61,7 @@ s_event_name [] = {
     "PKGDONE",
     "ICANHELP",
     "FORGET_ABOUT_ME",
+    "IFORGOTU",
     "INVALID",
     "kthnksbye",
     "expired"
@@ -329,6 +331,9 @@ s_protocol_event (s_client_t *self, pkggraph_msg_t *message)
         case PKGGRAPH_MSG_ROGER:
             return roger_event;
             break;
+        case PKGGRAPH_MSG_IFORGOTU:
+            return iforgotu_event;
+            break;
         case PKGGRAPH_MSG_INVALID:
             return invalid_event;
             break;
@@ -418,6 +423,21 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ terminate", self->log_prefix);
                         self->fsm_stopped = true;
                     }
+                }
+                else
+                if (self->event == iforgotu_event) {
+                    if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkggraph_msg_print (self->message);
+                        pkggraph_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception)
+                        self->state = negotiate_state;
                 }
                 else
                 if (self->event == invalid_event) {
@@ -511,6 +531,21 @@ s_client_execute (s_client_t *self, event_t event)
                         self->state = hesitate_state;
                 }
                 else
+                if (self->event == iforgotu_event) {
+                    if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkggraph_msg_print (self->message);
+                        pkggraph_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception)
+                        self->state = negotiate_state;
+                }
+                else
                 if (self->event == invalid_event) {
                     if (!self->exception)
                         self->state = die_state;
@@ -602,6 +637,27 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                     if (!self->exception)
                         self->state = ready_state;
+                }
+                else
+                if (self->event == iforgotu_event) {
+                    if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkggraph_msg_print (self->message);
+                        pkggraph_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception) {
+                        //  set expiry
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set expiry", self->log_prefix);
+                        set_expiry (&self->client);
+                    }
+                    if (!self->exception)
+                        self->state = negotiate_state;
                 }
                 else
                 if (self->event == invalid_event) {
@@ -725,6 +781,21 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == iforgotu_event) {
+                    if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkggraph_msg_print (self->message);
+                        pkggraph_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception)
+                        self->state = negotiate_state;
+                }
+                else
                 if (self->event == invalid_event) {
                     if (!self->exception)
                         self->state = die_state;
@@ -817,6 +888,21 @@ s_client_execute (s_client_t *self, event_t event)
                 break;
 
             case defaults_state:
+                if (self->event == iforgotu_event) {
+                    if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkggraph_msg_print (self->message);
+                        pkggraph_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception)
+                        self->state = negotiate_state;
+                }
+                else
                 if (self->event == invalid_event) {
                     if (!self->exception)
                         self->state = die_state;
@@ -1183,9 +1269,9 @@ pkggraph_grapher_msgpipe (pkggraph_grapher_t *self)
 
 
 //  ---------------------------------------------------------------------------
-//  Used to connect to the server.
+//  Used to connect to the server.                                                  
 
-int
+int 
 pkggraph_grapher_construct (pkggraph_grapher_t *self, const char *endpoint)
 {
     assert (self);

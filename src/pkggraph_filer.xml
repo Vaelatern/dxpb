@@ -49,6 +49,9 @@
 	</state>
 
 	<state name = "defaults">
+		<event name = "IFORGOTU" next = "negotiate">
+			<action name = "send" message = "HELLO" />
+		</event>
 		<event name = "INVALID" next = "die" />
 		<event name = "*" next = "die">
 			<action name = "send" message = "INVALID" />
