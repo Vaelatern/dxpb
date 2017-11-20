@@ -5,8 +5,23 @@ digraph "pkggraph_server" {
  "start hello" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">hello</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "start" -> "start hello";
  "start hello" -> "determine role";
+ "start *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "start" -> "start *";
+ "start *" -> "start";
 
  "determine role" [shape = "doublecircle"];
+ "determine role *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "determine role" -> "determine role *";
+ "determine role *" -> "determine role";
+ "determine role ping" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ping</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "determine role" -> "determine role ping";
+ "determine role ping" -> "determine role";
+ "determine role update bootstrap" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">update bootstrap</font></td></tr></table>>];
+ "determine role" -> "determine role update bootstrap";
+ "determine role update bootstrap" -> "determine role";
+ "determine role roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "determine role" -> "determine role roger";
+ "determine role roger" -> "determine role";
  "determine role imthegrapher" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">imthegrapher</font></td></tr><tr><td align="left" port="r3">confirm no grapher</td></tr><tr><td align="left" port="r3">register grapher</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "determine role" -> "determine role imthegrapher";
  "determine role imthegrapher" -> "i am the grapher";
@@ -18,6 +33,15 @@ digraph "pkggraph_server" {
  "determine role iamstorage" -> "i am storage";
 
  "i am the grapher" [shape = "doublecircle"];
+ "i am the grapher *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "i am the grapher" -> "i am the grapher *";
+ "i am the grapher *" -> "i am the grapher";
+ "i am the grapher ping" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ping</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "i am the grapher" -> "i am the grapher ping";
+ "i am the grapher ping" -> "i am the grapher";
+ "i am the grapher roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "i am the grapher" -> "i am the grapher roger";
+ "i am the grapher roger" -> "i am the grapher";
  "i am the grapher tell of worker" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">tell of worker</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "i am the grapher" -> "i am the grapher tell of worker";
  "i am the grapher tell of worker" -> "i am the grapher";
@@ -44,6 +68,15 @@ digraph "pkggraph_server" {
  "i am the grapher expired" -> "i am the grapher";
 
  "i am a worker" [shape = "doublecircle"];
+ "i am a worker ping" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ping</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "i am a worker" -> "i am a worker ping";
+ "i am a worker ping" -> "i am a worker";
+ "i am a worker update bootstrap" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">update bootstrap</font></td></tr></table>>];
+ "i am a worker" -> "i am a worker update bootstrap";
+ "i am a worker update bootstrap" -> "i am a worker";
+ "i am a worker roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "i am a worker" -> "i am a worker roger";
+ "i am a worker roger" -> "i am a worker";
  "i am a worker hello" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">hello</font></td></tr><tr><td align="left" port="r3">remove all workers</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "i am a worker" -> "i am a worker hello";
  "i am a worker hello" -> "determine role";

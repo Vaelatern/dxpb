@@ -514,6 +514,9 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == roger_event) {
+                }
+                else
                 if (self->event == set_repopath_event) {
                     if (!self->exception) {
                         //  set repopath to provided
@@ -822,6 +825,9 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == roger_event) {
+                }
+                else
                 if (self->event == set_repopath_event) {
                     if (!self->exception) {
                         //  set repopath to provided
@@ -941,6 +947,9 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == roger_event) {
+                }
+                else
                 if (self->event == set_repopath_event) {
                     if (!self->exception) {
                         //  set repopath to provided
@@ -1034,6 +1043,9 @@ s_client_execute (s_client_t *self, event_t event)
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
                     }
+                }
+                else
+                if (self->event == roger_event) {
                 }
                 else
                 if (self->event == set_repopath_event) {
@@ -1150,6 +1162,9 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == roger_event) {
+                }
+                else
                 if (self->event == set_repopath_event) {
                     if (!self->exception) {
                         //  set repopath to provided
@@ -1263,6 +1278,9 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == roger_event) {
+                }
+                else
                 if (self->event == set_repopath_event) {
                     if (!self->exception) {
                         //  set repopath to provided
@@ -1362,6 +1380,9 @@ s_client_execute (s_client_t *self, event_t event)
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
                     }
+                }
+                else
+                if (self->event == roger_event) {
                 }
                 else
                 if (self->event == set_repopath_event) {
@@ -1738,9 +1759,9 @@ s_accept_reply (pkggraph_worker_t *self, ...)
 
 
 //  ---------------------------------------------------------------------------
-//  Used to connect to the server.
+//  Used to connect to the server.                                                  
 
-int
+int 
 pkggraph_worker_construct (pkggraph_worker_t *self, const char *endpoint)
 {
     assert (self);
@@ -1751,9 +1772,9 @@ pkggraph_worker_construct (pkggraph_worker_t *self, const char *endpoint)
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation
+//  No explanation                                                                  
 
-int
+int 
 pkggraph_worker_set_repopath (pkggraph_worker_t *self, const char *repopath)
 {
     assert (self);
@@ -1764,10 +1785,10 @@ pkggraph_worker_set_repopath (pkggraph_worker_t *self, const char *repopath)
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation
+//  No explanation                                                                  
 //  Returns >= 0 if successful, -1 if interrupted.
 
-uint32_t
+uint32_t 
 pkggraph_worker_set_build_params (pkggraph_worker_t *self, const char *hostarch, const char *targetarch, uint8_t iscross, uint16_t cost)
 {
     assert (self);
@@ -1782,7 +1803,7 @@ pkggraph_worker_set_build_params (pkggraph_worker_t *self, const char *hostarch,
 //  ---------------------------------------------------------------------------
 //  Return last received ok
 
-uint32_t
+uint32_t 
 pkggraph_worker_ok (pkggraph_worker_t *self)
 {
     assert (self);

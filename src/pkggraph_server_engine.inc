@@ -567,12 +567,18 @@ s_client_execute (s_client_t *self, event_t event)
                         self->state = determine_role_state;
                 }
                 else {
-                    //  Handle unexpected internal events
-                    zsys_warning ("%s: unhandled event %s in %s",
-                        self->log_prefix,
-                        s_event_name [self->event],
-                        s_state_name [self->state]);
-                    assert (false);
+                    //  Handle unexpected protocol events
+                    if (!self->exception) {
+                        //  send IFORGOTU
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send IFORGOTU",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_IFORGOTU);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
                 }
                 break;
 
@@ -660,13 +666,45 @@ s_client_execute (s_client_t *self, event_t event)
                     if (!self->exception)
                         self->state = i_am_storage_state;
                 }
+                else
+                if (self->event == ping_event) {
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_ROGER);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
+                if (self->event == update_bootstrap_event) {
+                }
+                else
+                if (self->event == roger_event) {
+                }
                 else {
-                    //  Handle unexpected internal events
-                    zsys_warning ("%s: unhandled event %s in %s",
-                        self->log_prefix,
-                        s_event_name [self->event],
-                        s_state_name [self->state]);
-                    assert (false);
+                    //  Handle unexpected protocol events
+                    if (!self->exception) {
+                        //  send INVALID
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send INVALID",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_INVALID);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception) {
+                        //  terminate
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ terminate", self->log_prefix);
+                        self->next_event = terminate_event;
+                    }
                 }
                 break;
 
@@ -798,13 +836,42 @@ s_client_execute (s_client_t *self, event_t event)
                         self->next_event = terminate_event;
                     }
                 }
+                else
+                if (self->event == ping_event) {
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_ROGER);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
+                if (self->event == roger_event) {
+                }
                 else {
-                    //  Handle unexpected internal events
-                    zsys_warning ("%s: unhandled event %s in %s",
-                        self->log_prefix,
-                        s_event_name [self->event],
-                        s_state_name [self->state]);
-                    assert (false);
+                    //  Handle unexpected protocol events
+                    if (!self->exception) {
+                        //  send INVALID
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send INVALID",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_INVALID);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception) {
+                        //  terminate
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ terminate", self->log_prefix);
+                        self->next_event = terminate_event;
+                    }
                 }
                 break;
 
@@ -938,6 +1005,26 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ route log", self->log_prefix);
                         route_log (&self->client);
                     }
+                }
+                else
+                if (self->event == ping_event) {
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_ROGER);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
+                if (self->event == update_bootstrap_event) {
+                }
+                else
+                if (self->event == roger_event) {
                 }
                 else {
                     //  Handle unexpected protocol events

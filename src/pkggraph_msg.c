@@ -330,6 +330,18 @@ pkggraph_msg_recv (pkggraph_msg_t *self, zsock_t *input)
             }
             break;
 
+        case PKGGRAPH_MSG_IFORGOTU:
+            {
+                char proto_version [256];
+                GET_STRING (proto_version);
+                if (strneq (proto_version, "GRPH00")) {
+                    zsys_warning ("pkggraph_msg: proto_version is invalid");
+                    rc = -2;    //  Malformed
+                    goto malformed;
+                }
+            }
+            break;
+
         case PKGGRAPH_MSG_INVALID:
             {
                 char proto_version [256];
@@ -627,6 +639,9 @@ pkggraph_msg_send (pkggraph_msg_t *self, zsock_t *output)
         case PKGGRAPH_MSG_ROGER:
             frame_size += 1 + strlen ("GRPH00");
             break;
+        case PKGGRAPH_MSG_IFORGOTU:
+            frame_size += 1 + strlen ("GRPH00");
+            break;
         case PKGGRAPH_MSG_INVALID:
             frame_size += 1 + strlen ("GRPH00");
             break;
@@ -731,6 +746,10 @@ pkggraph_msg_send (pkggraph_msg_t *self, zsock_t *output)
             break;
 
         case PKGGRAPH_MSG_ROGER:
+            PUT_STRING ("GRPH00");
+            break;
+
+        case PKGGRAPH_MSG_IFORGOTU:
             PUT_STRING ("GRPH00");
             break;
 
@@ -870,6 +889,11 @@ pkggraph_msg_print (pkggraph_msg_t *self)
 
         case PKGGRAPH_MSG_ROGER:
             zsys_debug ("PKGGRAPH_MSG_ROGER:");
+            zsys_debug ("    proto_version=grph00");
+            break;
+
+        case PKGGRAPH_MSG_IFORGOTU:
+            zsys_debug ("PKGGRAPH_MSG_IFORGOTU:");
             zsys_debug ("    proto_version=grph00");
             break;
 
@@ -1048,6 +1072,9 @@ pkggraph_msg_command (pkggraph_msg_t *self)
             break;
         case PKGGRAPH_MSG_ROGER:
             return ("ROGER");
+            break;
+        case PKGGRAPH_MSG_IFORGOTU:
+            return ("IFORGOTU");
             break;
         case PKGGRAPH_MSG_INVALID:
             return ("INVALID");
@@ -1384,6 +1411,16 @@ pkggraph_msg_test (bool verbose)
         assert (pkggraph_msg_routing_id (self));
     }
     pkggraph_msg_set_id (self, PKGGRAPH_MSG_ROGER);
+
+    //  Send twice
+    pkggraph_msg_send (self, output);
+    pkggraph_msg_send (self, output);
+
+    for (instance = 0; instance < 2; instance++) {
+        pkggraph_msg_recv (self, input);
+        assert (pkggraph_msg_routing_id (self));
+    }
+    pkggraph_msg_set_id (self, PKGGRAPH_MSG_IFORGOTU);
 
     //  Send twice
     pkggraph_msg_send (self, output);

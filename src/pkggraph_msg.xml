@@ -15,6 +15,7 @@
 
 	<message name = "HELLO" />
 	<message name = "ROGER" />
+	<message name = "IFORGOTU" />
 	<message name = "INVALID" />
 	<message name = "PING" />
 	<message name = "STOP" />

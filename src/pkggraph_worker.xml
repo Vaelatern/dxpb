@@ -104,6 +104,7 @@
 		<event name = "expired">
 			<action name = "send" message = "PING" />
 		</event>
+		<event name = "ROGER" />
 		<event name = "set repopath">
 			<action name = "set repopath to provided" />
 		</event>

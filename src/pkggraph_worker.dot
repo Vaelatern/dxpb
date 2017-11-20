@@ -14,6 +14,9 @@ digraph "pkggraph_worker" {
  "start expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "start" -> "start expired";
  "start expired" -> "start";
+ "start roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "start" -> "start roger";
+ "start roger" -> "start";
  "start set repopath" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set repopath</font></td></tr><tr><td align="left" port="r3">set repopath to provided</td></tr></table>>];
  "start" -> "start set repopath";
  "start set repopath" -> "start";
@@ -80,6 +83,9 @@ digraph "pkggraph_worker" {
  "preparing expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "preparing" -> "preparing expired";
  "preparing expired" -> "preparing";
+ "preparing roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "preparing" -> "preparing roger";
+ "preparing roger" -> "preparing";
  "preparing set repopath" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set repopath</font></td></tr><tr><td align="left" port="r3">set repopath to provided</td></tr></table>>];
  "preparing" -> "preparing set repopath";
  "preparing set repopath" -> "preparing";
@@ -100,6 +106,9 @@ digraph "pkggraph_worker" {
  "ready expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "ready" -> "ready expired";
  "ready expired" -> "ready";
+ "ready roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "ready" -> "ready roger";
+ "ready roger" -> "ready";
  "ready set repopath" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set repopath</font></td></tr><tr><td align="left" port="r3">set repopath to provided</td></tr></table>>];
  "ready" -> "ready set repopath";
  "ready set repopath" -> "ready";
@@ -123,6 +132,9 @@ digraph "pkggraph_worker" {
  "bootstrap regular expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "bootstrap regular" -> "bootstrap regular expired";
  "bootstrap regular expired" -> "bootstrap regular";
+ "bootstrap regular roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "bootstrap regular" -> "bootstrap regular roger";
+ "bootstrap regular roger" -> "bootstrap regular";
  "bootstrap regular set repopath" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set repopath</font></td></tr><tr><td align="left" port="r3">set repopath to provided</td></tr></table>>];
  "bootstrap regular" -> "bootstrap regular set repopath";
  "bootstrap regular set repopath" -> "bootstrap regular";
@@ -146,6 +158,9 @@ digraph "pkggraph_worker" {
  "bootstrap build wanted expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "bootstrap build wanted" -> "bootstrap build wanted expired";
  "bootstrap build wanted expired" -> "bootstrap build wanted";
+ "bootstrap build wanted roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "bootstrap build wanted" -> "bootstrap build wanted roger";
+ "bootstrap build wanted roger" -> "bootstrap build wanted";
  "bootstrap build wanted set repopath" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set repopath</font></td></tr><tr><td align="left" port="r3">set repopath to provided</td></tr></table>>];
  "bootstrap build wanted" -> "bootstrap build wanted set repopath";
  "bootstrap build wanted set repopath" -> "bootstrap build wanted";
@@ -163,6 +178,9 @@ digraph "pkggraph_worker" {
  "working kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "working" -> "working kthnksbye";
  "working kthnksbye" -> "die";
+ "working roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "working" -> "working roger";
+ "working roger" -> "working";
  "working set repopath" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set repopath</font></td></tr><tr><td align="left" port="r3">set repopath to provided</td></tr></table>>];
  "working" -> "working set repopath";
  "working set repopath" -> "working";

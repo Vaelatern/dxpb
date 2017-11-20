@@ -15,12 +15,15 @@
 		<event name = "HELLO" next = "determine role">
 			<action name = "send" message = "ROGER" />
 		</event>
+		<event name = "*">
+			<action name = "send" message = "IFORGOTU" />
+		</event>
 		<after>
 			<action name = "ensure all configuration is complete" />
 		</after>
 	</state>
 
-	<state name = "determine role">
+	<state name = "determine role" inherit = "defaults">
 		<event name = "IMTHEGRAPHER" next = "i am the grapher">
 			<action name = "confirm no grapher" />
 			<action name = "register grapher" />
@@ -38,7 +41,7 @@
 		</event>
 	</state>
 
-	<state name = "i am the grapher">
+	<state name = "i am the grapher" inherit = "defaults">
 		<event name = "tell of worker">
 			<action name = "send" message = "WORKERCANHELP" />
 		</event>
@@ -71,7 +74,7 @@
 		</event>
 	</state>
 
-	<state name = "i am a worker">
+	<state name = "i am a worker" inherit = "defaults">
 		<!-- This is one large state because it makes limited sense to
 			restrict connections to being a single worker -->
 		<event name = "HELLO" next = "determine role">

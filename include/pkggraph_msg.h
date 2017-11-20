@@ -20,122 +20,126 @@
 
 /*  These are the pkggraph_msg messages:
 
-    HELLO -
+    HELLO - 
         proto_version       string      Package Graph Protocol Version 00
 
-    ROGER -
+    ROGER - 
         proto_version       string      Package Graph Protocol Version 00
 
-    INVALID -
+    IFORGOTU - 
         proto_version       string      Package Graph Protocol Version 00
 
-    PING -
+    INVALID - 
         proto_version       string      Package Graph Protocol Version 00
 
-    STOP -
+    PING - 
         proto_version       string      Package Graph Protocol Version 00
 
-    PKGDEL -
+    STOP - 
         proto_version       string      Package Graph Protocol Version 00
-        pkgname             string
 
-    NEEDPKG -
+    PKGDEL - 
         proto_version       string      Package Graph Protocol Version 00
-        pkgname             string
-        version             string
-        arch                string
+        pkgname             string      
 
-    ICANHELP -
+    NEEDPKG - 
         proto_version       string      Package Graph Protocol Version 00
-        hostarch            string
-        targetarch          string
+        pkgname             string      
+        version             string      
+        arch                string      
+
+    ICANHELP - 
+        proto_version       string      Package Graph Protocol Version 00
+        hostarch            string      
+        targetarch          string      
         iscross             number 1    Strict servers might double check this.
         cost                number 2    This should be 0 unless the builder is expensive or slow enough to warrant a lower priority when handing out work. If it's just really fast, then more builders are the answer, not a negative cost.
-        addr                number 2
-        check               number 4
+        addr                number 2    
+        check               number 4    
 
-    WORKERCANHELP -
+    WORKERCANHELP - 
         proto_version       string      Package Graph Protocol Version 00
-        addr                number 2
-        check               number 4
-        pkgname             string
-        version             string
-        arch                string
+        addr                number 2    
+        check               number 4    
+        pkgname             string      
+        version             string      
+        arch                string      
 
-    FORGET_ABOUT_ME -
+    FORGET_ABOUT_ME - 
         proto_version       string      Package Graph Protocol Version 00
-        addr                number 2
-        check               number 4
+        addr                number 2    
+        check               number 4    
 
-    RESETLOG -
+    RESETLOG - 
         proto_version       string      Package Graph Protocol Version 00
-        pkgname             string
-        version             string
-        arch                string
+        pkgname             string      
+        version             string      
+        arch                string      
 
-    LOGHERE -
+    LOGHERE - 
         proto_version       string      Package Graph Protocol Version 00
-        pkgname             string
-        version             string
-        arch                string
+        pkgname             string      
+        version             string      
+        arch                string      
         logs                chunk       Arbitrary text field to append to appropiate log file.
 
     UPDATE_BOOTSTRAP - Useful for when a bootstrap package has been upgraded.
         proto_version       string      Package Graph Protocol Version 00
 
-    PKGDONE -
+    PKGDONE - 
         proto_version       string      Package Graph Protocol Version 00
-        pkgname             string
-        version             string
-        arch                string
+        pkgname             string      
+        version             string      
+        arch                string      
 
     JOB_ENDED - For any reason. It is an error to do this with success without
 also marking a package as done using a PKGDONE.
         proto_version       string      Package Graph Protocol Version 00
-        addr                number 2
-        check               number 4
+        addr                number 2    
+        check               number 4    
         cause               number 1    These are enumerated in bworker_exit_status.h
-        pkgname             string
-        version             string
-        arch                string
+        pkgname             string      
+        version             string      
+        arch                string      
 
-    IMTHEGRAPHER -
+    IMTHEGRAPHER - 
         proto_version       string      Package Graph Protocol Version 00
 
-    IAMSTORAGE -
+    IAMSTORAGE - 
         proto_version       string      Package Graph Protocol Version 00
 
-    IMAWORKER -
+    IMAWORKER - 
         proto_version       string      Package Graph Protocol Version 00
 
-    GRAPHREADY -
+    GRAPHREADY - 
         proto_version       string      Package Graph Protocol Version 00
 
-    GRAPHNOTREADY -
+    GRAPHNOTREADY - 
         proto_version       string      Package Graph Protocol Version 00
 */
 
 
 #define PKGGRAPH_MSG_HELLO                  1
 #define PKGGRAPH_MSG_ROGER                  2
-#define PKGGRAPH_MSG_INVALID                3
-#define PKGGRAPH_MSG_PING                   4
-#define PKGGRAPH_MSG_STOP                   5
-#define PKGGRAPH_MSG_PKGDEL                 6
-#define PKGGRAPH_MSG_NEEDPKG                7
-#define PKGGRAPH_MSG_ICANHELP               8
-#define PKGGRAPH_MSG_WORKERCANHELP          9
-#define PKGGRAPH_MSG_FORGET_ABOUT_ME        10
-#define PKGGRAPH_MSG_RESETLOG               11
-#define PKGGRAPH_MSG_LOGHERE                12
-#define PKGGRAPH_MSG_UPDATE_BOOTSTRAP       13
-#define PKGGRAPH_MSG_PKGDONE                14
-#define PKGGRAPH_MSG_JOB_ENDED              15
-#define PKGGRAPH_MSG_IMTHEGRAPHER           16
-#define PKGGRAPH_MSG_IAMSTORAGE             17
-#define PKGGRAPH_MSG_IMAWORKER              18
-#define PKGGRAPH_MSG_GRAPHREADY             19
-#define PKGGRAPH_MSG_GRAPHNOTREADY          20
+#define PKGGRAPH_MSG_IFORGOTU               3
+#define PKGGRAPH_MSG_INVALID                4
+#define PKGGRAPH_MSG_PING                   5
+#define PKGGRAPH_MSG_STOP                   6
+#define PKGGRAPH_MSG_PKGDEL                 7
+#define PKGGRAPH_MSG_NEEDPKG                8
+#define PKGGRAPH_MSG_ICANHELP               9
+#define PKGGRAPH_MSG_WORKERCANHELP          10
+#define PKGGRAPH_MSG_FORGET_ABOUT_ME        11
+#define PKGGRAPH_MSG_RESETLOG               12
+#define PKGGRAPH_MSG_LOGHERE                13
+#define PKGGRAPH_MSG_UPDATE_BOOTSTRAP       14
+#define PKGGRAPH_MSG_PKGDONE                15
+#define PKGGRAPH_MSG_JOB_ENDED              16
+#define PKGGRAPH_MSG_IMTHEGRAPHER           17
+#define PKGGRAPH_MSG_IAMSTORAGE             18
+#define PKGGRAPH_MSG_IMAWORKER              19
+#define PKGGRAPH_MSG_GRAPHREADY             20
+#define PKGGRAPH_MSG_GRAPHNOTREADY          21
 
 #include <czmq.h>
 
