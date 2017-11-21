@@ -21,9 +21,8 @@ static	int bgit_cb_extract_pkgnames(const git_diff_delta *, float, void *);
 static	void bgit_ff(git_repository *);
 static	bwords bgit_ff_get_changed_pkgs(const char *);
 
-// TODO: This should be changed to _FORCE after the xbps-src patch
-// is merged. Until then, this is necessary.
-#define BGIT_CHECKOUT_STRATEGY GIT_CHECKOUT_SAFE
+// _SAFE if local changes necessary. _FORCE if normal operation
+#define BGIT_CHECKOUT_STRATEGY GIT_CHECKOUT_FORCE
 
 static int
 bgit_cb_extract_pkgnames(const git_diff_delta *delta, float progress, void *payload)
