@@ -221,9 +221,7 @@ bfs_setup_sock(const char *path)
 char *
 bfs_new_tmpsock(const char *dirpattern, const char *sockname)
 {
-	int rc;
 	struct sockaddr_un sockspec;
-	int tmpdir = 0;
 	char *dirpath = NULL;
 	char *dirpat = NULL;
 	char *retVal = NULL;
@@ -238,17 +236,15 @@ bfs_new_tmpsock(const char *dirpattern, const char *sockname)
 
 	dirpath = mkdtemp(dirpat);
 	if (dirpath == NULL) { /* dirpat is less of a pattern than a path */
-		tmpdir = 0;
 		dirpath = dirpat;
 		mkdir(dirpath, 0700);
-	} else {
-		tmpdir = 1;
 	}
 
 	retVal = bstring_add(bstring_add(dirpat, "/", NULL, NULL),
 					sockname, NULL, NULL);
 
-	rc = bfs_setup_sock(retVal);
+	int rc = bfs_setup_sock(retVal);
+	assert(rc == ERR_CODE_OK);
 	return retVal;
 }
 
