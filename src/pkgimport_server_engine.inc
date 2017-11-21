@@ -950,11 +950,11 @@ s_client_execute (s_client_t *self, event_t event)
                         request_pkg_deletion (&self->client);
                     }
                     if (!self->exception) {
-                        //  send READY
+                        //  send ROGER
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send READY",
+                            zsys_debug ("%s:         $ send ROGER",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_READY);
+                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_ROGER);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkgimport_msg_print (self->server->message);
                         pkgimport_msg_set_routing_id (self->server->message, self->routing_id);

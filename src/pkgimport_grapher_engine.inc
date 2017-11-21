@@ -35,14 +35,14 @@ typedef enum {
     roger_event = 4,
     connect_error_event = 5,
     iforgotu_event = 6,
-    no_hash_found_event = 7,
-    confirm_hash_event = 8,
-    expired_event = 9,
-    worker_available_event = 10,
-    invalid_event = 11,
-    kthnksbye_event = 12,
-    stable_event = 13,
-    unstable_event = 14,
+    unstable_event = 7,
+    no_hash_found_event = 8,
+    confirm_hash_event = 9,
+    expired_event = 10,
+    worker_available_event = 11,
+    stable_event = 12,
+    invalid_event = 13,
+    kthnksbye_event = 14,
     pkginfo_event = 15,
     pkgdel_event = 16,
     worker_gone_event = 17,
@@ -75,14 +75,14 @@ s_event_name [] = {
     "ROGER",
     "connect_error",
     "IFORGOTU",
+    "UNSTABLE",
     "no_hash_found",
     "confirm_hash",
     "expired",
     "worker_available",
+    "STABLE",
     "INVALID",
     "KTHNKSBYE",
-    "STABLE",
-    "UNSTABLE",
     "PKGINFO",
     "PKGDEL",
     "worker_gone",
@@ -170,6 +170,8 @@ static void
 static void
     add_worker_to_list (client_t *self);
 static void
+    store_hash (client_t *self);
+static void
     set_expiry_low (client_t *self);
 static void
     find_package_for_worker (client_t *self);
@@ -183,8 +185,6 @@ static void
     ask_around_for_wanted_pkgs (client_t *self);
 static void
     set_expiry_high (client_t *self);
-static void
-    store_hash (client_t *self);
 static void
     create_pkg_from_info (client_t *self);
 static void
@@ -660,6 +660,12 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
                     }
+                    if (!self->exception) {
+                        //  store hash
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store hash", self->log_prefix);
+                        store_hash (&self->client);
+                    }
                 }
                 else
                 if (self->event == iforgotu_event) {
@@ -801,6 +807,9 @@ s_client_execute (s_client_t *self, event_t event)
                 break;
 
             case unstable_state:
+                if (self->event == unstable_event) {
+                }
+                else
                 if (self->event == iforgotu_event) {
                     if (!self->exception) {
                         //  send HELLO
@@ -864,43 +873,6 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
-                if (self->event == invalid_event) {
-                    if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                }
-                else
-                if (self->event == roger_event) {
-                }
-                else
-                if (self->event == kthnksbye_event) {
-                    if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                }
-                else
                 if (self->event == stable_event) {
                     if (!self->exception) {
                         //  store hash
@@ -942,20 +914,40 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
-                if (self->event == unstable_event) {
-                    if (!self->exception) {
-                        //  store hash
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ store hash", self->log_prefix);
-                        store_hash (&self->client);
-                    }
+                if (self->event == invalid_event) {
                     if (!self->exception)
-                        self->state = unstable_state;
+                        self->state = die_state;
                     if (!self->exception) {
-                        //  set expiry low
+                        //  terminate
                         if (self->verbose)
-                            zsys_debug ("%s:         $ set expiry low", self->log_prefix);
-                        set_expiry_low (&self->client);
+                            zsys_debug ("%s:         $ terminate", self->log_prefix);
+                        self->fsm_stopped = true;
+                    }
+                    if (!self->exception) {
+                        //  cease all operations
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
+                        cease_all_operations (&self->client);
+                    }
+                }
+                else
+                if (self->event == roger_event) {
+                }
+                else
+                if (self->event == kthnksbye_event) {
+                    if (!self->exception)
+                        self->state = die_state;
+                    if (!self->exception) {
+                        //  terminate
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ terminate", self->log_prefix);
+                        self->fsm_stopped = true;
+                    }
+                    if (!self->exception) {
+                        //  cease all operations
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
+                        cease_all_operations (&self->client);
                     }
                 }
                 else
@@ -984,6 +976,12 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
                     }
+                    if (!self->exception) {
+                        //  store hash
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store hash", self->log_prefix);
+                        store_hash (&self->client);
+                    }
                 }
                 else
                 if (self->event == pkgdel_event) {
@@ -1000,6 +998,12 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  store hash
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store hash", self->log_prefix);
+                        store_hash (&self->client);
                     }
                 }
                 else
@@ -1164,6 +1168,23 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == unstable_event) {
+                    if (!self->exception)
+                        self->state = unstable_state;
+                    if (!self->exception) {
+                        //  set expiry low
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set expiry low", self->log_prefix);
+                        set_expiry_low (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  store hash
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store hash", self->log_prefix);
+                        store_hash (&self->client);
+                    }
+                }
+                else
                 if (self->event == invalid_event) {
                     if (!self->exception)
                         self->state = die_state;
@@ -1214,64 +1235,6 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
-                if (self->event == stable_event) {
-                    if (!self->exception) {
-                        //  store hash
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ store hash", self->log_prefix);
-                        store_hash (&self->client);
-                    }
-                    if (!self->exception)
-                        self->state = stable_state;
-                    if (!self->exception) {
-                        //  write graph to db
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ write graph to db", self->log_prefix);
-                        write_graph_to_db (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  resolve graph
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ resolve graph", self->log_prefix);
-                        resolve_graph (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  get packages
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ get packages", self->log_prefix);
-                        get_packages (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  ask around for wanted pkgs
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ ask around for wanted pkgs", self->log_prefix);
-                        ask_around_for_wanted_pkgs (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  set expiry high
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ set expiry high", self->log_prefix);
-                        set_expiry_high (&self->client);
-                    }
-                }
-                else
-                if (self->event == unstable_event) {
-                    if (!self->exception) {
-                        //  store hash
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ store hash", self->log_prefix);
-                        store_hash (&self->client);
-                    }
-                    if (!self->exception)
-                        self->state = unstable_state;
-                    if (!self->exception) {
-                        //  set expiry low
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ set expiry low", self->log_prefix);
-                        set_expiry_low (&self->client);
-                    }
-                }
-                else
                 if (self->event == pkginfo_event) {
                     if (!self->exception) {
                         //  create pkg from info
@@ -1297,6 +1260,12 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
                     }
+                    if (!self->exception) {
+                        //  store hash
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store hash", self->log_prefix);
+                        store_hash (&self->client);
+                    }
                 }
                 else
                 if (self->event == pkgdel_event) {
@@ -1313,6 +1282,12 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  store hash
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store hash", self->log_prefix);
+                        store_hash (&self->client);
                     }
                 }
                 else
@@ -1497,64 +1472,6 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
-                if (self->event == stable_event) {
-                    if (!self->exception) {
-                        //  store hash
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ store hash", self->log_prefix);
-                        store_hash (&self->client);
-                    }
-                    if (!self->exception)
-                        self->state = stable_state;
-                    if (!self->exception) {
-                        //  write graph to db
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ write graph to db", self->log_prefix);
-                        write_graph_to_db (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  resolve graph
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ resolve graph", self->log_prefix);
-                        resolve_graph (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  get packages
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ get packages", self->log_prefix);
-                        get_packages (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  ask around for wanted pkgs
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ ask around for wanted pkgs", self->log_prefix);
-                        ask_around_for_wanted_pkgs (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  set expiry high
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ set expiry high", self->log_prefix);
-                        set_expiry_high (&self->client);
-                    }
-                }
-                else
-                if (self->event == unstable_event) {
-                    if (!self->exception) {
-                        //  store hash
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ store hash", self->log_prefix);
-                        store_hash (&self->client);
-                    }
-                    if (!self->exception)
-                        self->state = unstable_state;
-                    if (!self->exception) {
-                        //  set expiry low
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ set expiry low", self->log_prefix);
-                        set_expiry_low (&self->client);
-                    }
-                }
-                else
                 if (self->event == pkginfo_event) {
                     if (!self->exception) {
                         //  create pkg from info
@@ -1580,6 +1497,12 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
                     }
+                    if (!self->exception) {
+                        //  store hash
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store hash", self->log_prefix);
+                        store_hash (&self->client);
+                    }
                 }
                 else
                 if (self->event == pkgdel_event) {
@@ -1596,6 +1519,12 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  store hash
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store hash", self->log_prefix);
+                        store_hash (&self->client);
                     }
                 }
                 else
@@ -2154,9 +2083,9 @@ pkgimport_grapher_msgpipe (pkgimport_grapher_t *self)
 
 
 //  ---------------------------------------------------------------------------
-//  Used to connect to the server.
+//  Used to connect to the server.                                                  
 
-int
+int 
 pkgimport_grapher_construct (pkgimport_grapher_t *self, const char *endpoint)
 {
     assert (self);
@@ -2167,9 +2096,9 @@ pkgimport_grapher_construct (pkgimport_grapher_t *self, const char *endpoint)
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation
+//  No explanation                                                                  
 
-int
+int 
 pkgimport_grapher_pkg_now_completed (pkgimport_grapher_t *self, const char *pkgname, const char *version, const char *arch)
 {
     assert (self);
@@ -2180,9 +2109,9 @@ pkgimport_grapher_pkg_now_completed (pkgimport_grapher_t *self, const char *pkgn
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation
+//  No explanation                                                                  
 
-int
+int 
 pkgimport_grapher_worker_available (pkgimport_grapher_t *self, int addr, int check, const char *hostarch, const char *targetarch, uint8_t iscross, uint16_t cost)
 {
     assert (self);
@@ -2193,9 +2122,9 @@ pkgimport_grapher_worker_available (pkgimport_grapher_t *self, int addr, int che
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation
+//  No explanation                                                                  
 
-int
+int 
 pkgimport_grapher_worker_gone (pkgimport_grapher_t *self, int addr, int check)
 {
     assert (self);
@@ -2206,9 +2135,9 @@ pkgimport_grapher_worker_gone (pkgimport_grapher_t *self, int addr, int check)
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation
+//  No explanation                                                                  
 
-int
+int 
 pkgimport_grapher_pkg_here (pkgimport_grapher_t *self, const char *pkgname, const char *version, const char *arch)
 {
     assert (self);
@@ -2219,9 +2148,9 @@ pkgimport_grapher_pkg_here (pkgimport_grapher_t *self, const char *pkgname, cons
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation
+//  No explanation                                                                  
 
-int
+int 
 pkgimport_grapher_pkg_not_here (pkgimport_grapher_t *self, const char *pkgname, const char *version, const char *arch)
 {
     assert (self);
@@ -2232,9 +2161,9 @@ pkgimport_grapher_pkg_not_here (pkgimport_grapher_t *self, const char *pkgname, 
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation
+//  No explanation                                                                  
 
-int
+int 
 pkgimport_grapher_pkg_failed_to_build (pkgimport_grapher_t *self, int addr, int check, const char *pkgname, const char *version, const char *arch)
 {
     assert (self);
@@ -2245,9 +2174,9 @@ pkgimport_grapher_pkg_failed_to_build (pkgimport_grapher_t *self, int addr, int 
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation
+//  No explanation                                                                  
 
-int
+int 
 pkgimport_grapher_worker_not_appropiate (pkgimport_grapher_t *self, int addr, int check)
 {
     assert (self);
@@ -2258,9 +2187,9 @@ pkgimport_grapher_worker_not_appropiate (pkgimport_grapher_t *self, int addr, in
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation
+//  No explanation                                                                  
 
-int
+int 
 pkgimport_grapher_set_db_path (pkgimport_grapher_t *self, const char *dbpath)
 {
     assert (self);
@@ -2271,9 +2200,9 @@ pkgimport_grapher_set_db_path (pkgimport_grapher_t *self, const char *dbpath)
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation
+//  No explanation                                                                  
 
-int
+int 
 pkgimport_grapher_set_publish_endpoint (pkgimport_grapher_t *self, const char *pubpoint)
 {
     assert (self);

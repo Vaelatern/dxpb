@@ -66,12 +66,6 @@ digraph "pkgimport_grapher" {
  "unstable kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "unstable" -> "unstable kthnksbye";
  "unstable kthnksbye" -> "die";
- "unstable stable" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">stable</font></td></tr><tr><td align="left" port="r3">store hash</td></tr></table>>];
- "unstable" -> "unstable stable";
- "unstable stable" -> "stable";
- "unstable unstable" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">unstable</font></td></tr><tr><td align="left" port="r3">store hash</td></tr></table>>];
- "unstable" -> "unstable unstable";
- "unstable unstable" -> "unstable";
  "unstable pkginfo" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkginfo</font></td></tr><tr><td align="left" port="r3">create pkg from info</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "unstable" -> "unstable pkginfo";
  "unstable pkginfo" -> "unstable";
@@ -96,6 +90,9 @@ digraph "pkgimport_grapher" {
  "unstable worker not appropiate" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">worker not appropiate</font></td></tr><tr><td align="left" port="r3">return pkg to pending</td></tr><tr><td align="left" port="r3">negative pkg affinity for wrkr</td></tr></table>>];
  "unstable" -> "unstable worker not appropiate";
  "unstable worker not appropiate" -> "unstable";
+ "unstable unstable" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">unstable</font></td></tr></table>>];
+ "unstable" -> "unstable unstable";
+ "unstable unstable" -> "unstable";
  "unstable iforgotu" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "unstable" -> "unstable iforgotu";
  "unstable iforgotu" -> "start";
@@ -111,6 +108,9 @@ digraph "pkgimport_grapher" {
  "unstable worker available" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">worker available</font></td></tr><tr><td align="left" port="r3">add worker to list</td></tr></table>>];
  "unstable" -> "unstable worker available";
  "unstable worker available" -> "unstable";
+ "unstable stable" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">stable</font></td></tr><tr><td align="left" port="r3">store hash</td></tr></table>>];
+ "unstable" -> "unstable stable";
+ "unstable stable" -> "stable";
 
  "stable" [shape = "doublecircle"];
  "stable invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
@@ -128,12 +128,6 @@ digraph "pkgimport_grapher" {
  "stable expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "stable" -> "stable expired";
  "stable expired" -> "stable";
- "stable stable" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">stable</font></td></tr><tr><td align="left" port="r3">store hash</td></tr></table>>];
- "stable" -> "stable stable";
- "stable stable" -> "stable";
- "stable unstable" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">unstable</font></td></tr><tr><td align="left" port="r3">store hash</td></tr></table>>];
- "stable" -> "stable unstable";
- "stable unstable" -> "unstable";
  "stable pkginfo" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkginfo</font></td></tr><tr><td align="left" port="r3">create pkg from info</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "stable" -> "stable pkginfo";
  "stable pkginfo" -> "unstable";
@@ -164,6 +158,9 @@ digraph "pkgimport_grapher" {
  "stable worker available" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">worker available</font></td></tr><tr><td align="left" port="r3">add worker to list</td></tr><tr><td align="left" port="r3">find package for worker</td></tr></table>>];
  "stable" -> "stable worker available";
  "stable worker available" -> "stable";
+ "stable unstable" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">unstable</font></td></tr></table>>];
+ "stable" -> "stable unstable";
+ "stable unstable" -> "unstable";
 
  "die" [shape = "doublecircle"];
  "die *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];

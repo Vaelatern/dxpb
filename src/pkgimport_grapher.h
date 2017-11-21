@@ -59,44 +59,44 @@ zsock_t *
 bool
     pkgimport_grapher_connected (pkgimport_grapher_t *self);
 
-//  Used to connect to the server.
-int
+//  Used to connect to the server.                                                  
+int 
     pkgimport_grapher_construct (pkgimport_grapher_t *self, const char *endpoint);
 
-//  No explanation
-int
+//  No explanation                                                                  
+int 
     pkgimport_grapher_pkg_now_completed (pkgimport_grapher_t *self, const char *pkgname, const char *version, const char *arch);
 
-//  No explanation
-int
+//  No explanation                                                                  
+int 
     pkgimport_grapher_worker_available (pkgimport_grapher_t *self, int addr, int check, const char *hostarch, const char *targetarch, uint8_t iscross, uint16_t cost);
 
-//  No explanation
-int
+//  No explanation                                                                  
+int 
     pkgimport_grapher_worker_gone (pkgimport_grapher_t *self, int addr, int check);
 
-//  No explanation
-int
+//  No explanation                                                                  
+int 
     pkgimport_grapher_pkg_here (pkgimport_grapher_t *self, const char *pkgname, const char *version, const char *arch);
 
-//  No explanation
-int
+//  No explanation                                                                  
+int 
     pkgimport_grapher_pkg_not_here (pkgimport_grapher_t *self, const char *pkgname, const char *version, const char *arch);
 
-//  No explanation
-int
+//  No explanation                                                                  
+int 
     pkgimport_grapher_pkg_failed_to_build (pkgimport_grapher_t *self, int addr, int check, const char *pkgname, const char *version, const char *arch);
 
-//  No explanation
-int
+//  No explanation                                                                  
+int 
     pkgimport_grapher_worker_not_appropiate (pkgimport_grapher_t *self, int addr, int check);
 
-//  No explanation
-int
+//  No explanation                                                                  
+int 
     pkgimport_grapher_set_db_path (pkgimport_grapher_t *self, const char *dbpath);
 
-//  No explanation
-int
+//  No explanation                                                                  
+int 
     pkgimport_grapher_set_publish_endpoint (pkgimport_grapher_t *self, const char *pubpoint);
 
 //  Enable verbose tracing (animation) of state machine activity.

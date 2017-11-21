@@ -57,7 +57,7 @@
 		</event>
 		<event name = "PKGDEL" next = "worker worked">
 			<action name = "request pkg deletion" />
-			<action name = "send" message = "READY" />
+			<action name = "send" message = "ROGER" />
 		</event>
 		<event name = "DIDREAD" next = "worker worked">
 			We intend the RDY2WRK to follow this, unless the worker

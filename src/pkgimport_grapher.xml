@@ -45,7 +45,11 @@
 	<state name = "unstable" inherit = "working defaults">
 		<before>
 			<action name = "set expiry low" />
+			<action name = "store hash">
+				So in this case, make the hash null.
+			</action>
 		</before>
+		<event name = "UNSTABLE" />
 		<event name = "IFORGOTU" next = "start">
 			<action name = "send" message = "HELLO" />
 		</event>
@@ -60,6 +64,11 @@
 		</event>
 		<event name = "worker available">
 			<action name = "add worker to list" />
+		</event>
+		<event name = "STABLE" next = "stable">
+			<action name = "store hash">
+				So the listening poller knows what's what.
+			</action>
 		</event>
 	</state>
 	<state name = "stable" inherit = "working defaults">
@@ -77,6 +86,7 @@
 			<action name = "add worker to list" />
 			<action name = "find package for worker" />
 		</event>
+		<event name = "UNSTABLE" next = "unstable" />
 	</state>
 	<state name = "working defaults">
 		<event name = "INVALID" next = "die" />
@@ -87,16 +97,6 @@
 		<event name = "KTHNKSBYE" next = "die" />
 		<event name = "expired">
 			<action name = "send" message = "PING" />
-		</event>
-		<event name = "STABLE" next = "stable">
-			<action name = "store hash">
-				So the listening poller knows what's what.
-			</action>
-		</event>
-		<event name = "UNSTABLE" next = "unstable">
-			<action name = "store hash">
-				So in this case, make the hash null.
-			</action>
 		</event>
 		<event name = "PKGINFO" next = "unstable">
 			<action name = "create pkg from info">
