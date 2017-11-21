@@ -268,7 +268,8 @@ get_log_data (client_t *self)
 static void
 set_timeout_low (client_t *self)
 {
-	engine_set_expiry(self, 0);
+	// .1 seconds
+	engine_set_expiry(self, 100);
 }
 
 

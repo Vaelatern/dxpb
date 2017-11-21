@@ -495,8 +495,8 @@ remove_worker_from_list (client_t *self)
 static void
 set_expiry_low (client_t *self)
 {
-	// 0 ms
-	engine_set_expiry(self, 0);
+	// 0.1 s
+	engine_set_expiry(self, 100);
 }
 
 //  ---------------------------------------------------------------------------
