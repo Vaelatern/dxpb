@@ -55,6 +55,8 @@ client_initialize (client_t *self)
 	self->pub = NULL;
 	self->logdir = NULL;
 	self->logfd = -1;
+	// 1.2 seconds
+	engine_set_expiry(self, 1200);
 	return 0;
 }
 
