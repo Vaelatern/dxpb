@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"strings"
+	"strconv"
 	"sync"
 	"time"
 
@@ -25,6 +26,7 @@ type Chan struct {
 type ircMsg struct {
 	txt      string
 	Loglevel int
+	Num      int
 }
 
 type IrcServer struct {
@@ -52,6 +54,9 @@ func tellchans(server *IrcServer, wg sync.WaitGroup) {
 		}
 		for _, channel := range server.Chans {
 			if channel.Loglevel > msg.Loglevel {
+				if msg.Num > 0 {
+					msg.txt = "(" + strconv.Itoa(msg.Num) + "x) " + msg.txt
+				}
 				server.irc.Notice(channel.Name, msg.txt)
 				switch channel.CanFlood {
 				case false:
@@ -63,6 +68,41 @@ func tellchans(server *IrcServer, wg sync.WaitGroup) {
 	}
 	server.irc.Disconnect()
 	wg.Done()
+}
+
+func combstrs(in <-chan *ircMsg, out chan<- *ircMsg) {
+	var oldmsgs []*ircMsg
+	var newmsgs []*ircMsg
+	timeout := make(chan bool, 1)
+	timeout <- true
+	for {
+	L:
+		select {
+		case newmsg := <-in:
+			for _, msg := range oldmsgs {
+				if msg.Loglevel == newmsg.Loglevel && msg.txt == newmsg.txt {
+					msg.Num++
+					break L
+				}
+			}
+			for _, msg := range newmsgs {
+				if msg.Loglevel == newmsg.Loglevel && msg.txt == newmsg.txt {
+					msg.Num++
+					break L
+				}
+			}
+			newmsgs = append(newmsgs, newmsg)
+		case <-timeout:
+			for _, msg := range oldmsgs {
+				out <- msg
+			}
+			oldmsgs, newmsgs = newmsgs, oldmsgs[0:0]
+			go func() {
+				time.Sleep(3 * time.Second)
+				timeout <- true
+			}()
+		}
+	}
 }
 
 func initIRC(servers []*IrcServer, wg sync.WaitGroup) ([]*IrcServer, []chan<- *ircMsg) {
@@ -86,14 +126,7 @@ func initIRC(servers []*IrcServer, wg sync.WaitGroup) ([]*IrcServer, []chan<- *i
 			}
 			pipe := make(chan *ircMsg, 64)
 			server.pipe = pipe
-			go func(inpipe <-chan *ircMsg, outpipe chan<- *ircMsg) {
-				for msg := range inpipe {
-					select {
-					case outpipe <- msg:
-					default:
-					}
-				}
-			}(pubpipe, pipe)
+			go combstrs(pubpipe, pipe)
 			go tellchans(server, wg)
 		}(server, pubpipe)
 		retPipes = append(retPipes, pubpipe)
