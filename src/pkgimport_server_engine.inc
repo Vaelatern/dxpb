@@ -949,19 +949,6 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ request pkg deletion", self->log_prefix);
                         request_pkg_deletion (&self->client);
                     }
-                    if (!self->exception) {
-                        //  send ROGER
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ send ROGER",
-                                self->log_prefix);
-                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_ROGER);
-                        zsys_debug ("%s: Send message to client", self->log_prefix);
-                        pkgimport_msg_print (self->server->message);
-                        pkgimport_msg_set_routing_id (self->server->message, self->routing_id);
-                        pkgimport_msg_send (self->server->message, self->server->router);
-                    }
-                    if (!self->exception)
-                        self->state = worker_worked_state;
                 }
                 else
                 if (self->event == didread_event) {
