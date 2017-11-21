@@ -55,7 +55,7 @@ func tellchans(server *IrcServer, wg sync.WaitGroup) {
 		for _, channel := range server.Chans {
 			if channel.Loglevel > msg.Loglevel {
 				if msg.Num > 0 {
-					msg.txt = "(" + strconv.Itoa(msg.Num) + "x) " + msg.txt
+					msg.txt = msg.txt + " (" + strconv.Itoa(msg.Num) + "x)"
 				}
 				server.irc.Notice(channel.Name, msg.txt)
 				switch channel.CanFlood {
