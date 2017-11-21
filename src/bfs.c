@@ -20,6 +20,7 @@
 #include <sys/socket.h>
 #include "dxpb.h"
 #include "bstring.h"
+#include "bfs.h"
 
 struct sockaddr_un {
 	unsigned short sun_family;  /* AF_UNIX */
@@ -33,7 +34,7 @@ struct sockaddr_un {
  * assumed to be in the same dir.
  */
 void
-bfs_srcpkgs_to_cb(const char *repopath, int (*cb)(void *, void *), void *topass)
+bfs_srcpkgs_to_cb(const char *repopath, int (*cb)(void *, char *), void *topass)
 {
 	DIR *dir = NULL;
 	struct dirent *dp = NULL;
@@ -256,25 +257,12 @@ bfs_delete(char *oldpath)
 {
 	assert(oldpath);
 
-	enum ret_codes retVal;
 	char *destpath = bstring_add(oldpath, ".del", NULL, NULL);
 	assert(destpath);
 
-	int rc = rename(oldpath, destpath);
+	bfs_touch(destpath);
 
-	if (rc == 0)
-		retVal = ERR_CODE_OK;
-	else
-		switch(errno) {
-		case ENOENT:
-			retVal = ERR_CODE_BADCALLER;
-			break;
-		default:
-			retVal = ERR_CODE_BADCALLER;
-			break;
-		}
-
-	return retVal;
+	return ERR_CODE_OK;
 }
 
 void
