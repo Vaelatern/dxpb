@@ -45,9 +45,6 @@
 	<state name = "unstable" inherit = "working defaults">
 		<before>
 			<action name = "set expiry low" />
-			<action name = "store hash">
-				So in this case, make the hash null.
-			</action>
 		</before>
 		<event name = "UNSTABLE" />
 		<event name = "IFORGOTU" next = "start">
@@ -86,7 +83,11 @@
 			<action name = "add worker to list" />
 			<action name = "find package for worker" />
 		</event>
-		<event name = "UNSTABLE" next = "unstable" />
+		<event name = "UNSTABLE" next = "unstable">
+			<action name = "store hash">
+				So in this case, make the hash null.
+			</action>
+		</event>
 	</state>
 	<state name = "working defaults">
 		<event name = "INVALID" next = "die" />

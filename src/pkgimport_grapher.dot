@@ -158,7 +158,7 @@ digraph "pkgimport_grapher" {
  "stable worker available" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">worker available</font></td></tr><tr><td align="left" port="r3">add worker to list</td></tr><tr><td align="left" port="r3">find package for worker</td></tr></table>>];
  "stable" -> "stable worker available";
  "stable worker available" -> "stable";
- "stable unstable" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">unstable</font></td></tr></table>>];
+ "stable unstable" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">unstable</font></td></tr><tr><td align="left" port="r3">store hash</td></tr></table>>];
  "stable" -> "stable unstable";
  "stable unstable" -> "unstable";
 

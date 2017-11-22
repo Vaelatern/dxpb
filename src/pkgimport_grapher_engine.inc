@@ -660,12 +660,6 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
                     }
-                    if (!self->exception) {
-                        //  store hash
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ store hash", self->log_prefix);
-                        store_hash (&self->client);
-                    }
                 }
                 else
                 if (self->event == iforgotu_event) {
@@ -976,12 +970,6 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
                     }
-                    if (!self->exception) {
-                        //  store hash
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ store hash", self->log_prefix);
-                        store_hash (&self->client);
-                    }
                 }
                 else
                 if (self->event == pkgdel_event) {
@@ -998,12 +986,6 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  store hash
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ store hash", self->log_prefix);
-                        store_hash (&self->client);
                     }
                 }
                 else
@@ -1169,6 +1151,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == unstable_event) {
+                    if (!self->exception) {
+                        //  store hash
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store hash", self->log_prefix);
+                        store_hash (&self->client);
+                    }
                     if (!self->exception)
                         self->state = unstable_state;
                     if (!self->exception) {
@@ -1176,12 +1164,6 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  store hash
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ store hash", self->log_prefix);
-                        store_hash (&self->client);
                     }
                 }
                 else
@@ -1260,12 +1242,6 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
                     }
-                    if (!self->exception) {
-                        //  store hash
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ store hash", self->log_prefix);
-                        store_hash (&self->client);
-                    }
                 }
                 else
                 if (self->event == pkgdel_event) {
@@ -1282,12 +1258,6 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  store hash
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ store hash", self->log_prefix);
-                        store_hash (&self->client);
                     }
                 }
                 else
@@ -1497,12 +1467,6 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
                     }
-                    if (!self->exception) {
-                        //  store hash
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ store hash", self->log_prefix);
-                        store_hash (&self->client);
-                    }
                 }
                 else
                 if (self->event == pkgdel_event) {
@@ -1519,12 +1483,6 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ set expiry low", self->log_prefix);
                         set_expiry_low (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  store hash
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ store hash", self->log_prefix);
-                        store_hash (&self->client);
                     }
                 }
                 else

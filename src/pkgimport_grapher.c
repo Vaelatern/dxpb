@@ -344,6 +344,8 @@ static void
 write_graph_to_db (client_t *self)
 {
 	assert(self->dbpath);
+	assert(self->hash);
+	assert(self->pkggraph);
 	if (self->pub) {
 		zstr_sendm(self->pub, "DEBUG");
 		zstr_sendf(self->pub, "Writing all packages to db");
