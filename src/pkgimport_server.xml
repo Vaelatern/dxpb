@@ -88,6 +88,7 @@
 		</event>
 		<event name = "PLZREADALL">
 			<action name = "add all packages to the queue" />
+			<action name = "get new pkgs from git" />
 			<action name = "assign pending work" />
 		</event>
 		<event name = "STABLESTATUSPLZ">

@@ -623,6 +623,9 @@ bdb_read_pkgs_to_graph(bgraph grph, struct bdb_bound_params *params)
 int
 bdb_write_all(const char *db_path, bgraph grph, const char *hash)
 {
+	assert(db_path);
+	assert(grph);
+	assert(hash);
 	struct bdb_bound_params *params = bdb_params_init(db_path);
 	assert(params->DB);
 	sqlite3_exec(params->DB, "BEGIN TRANSACTION", NULL, NULL, NULL);

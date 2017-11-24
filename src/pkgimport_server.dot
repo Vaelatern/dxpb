@@ -131,7 +131,7 @@ digraph "pkgimport_server" {
  "grapher send myself pkgdel" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">send myself pkgdel</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">grab tmppkg and process</td></tr></table>>];
  "grapher" -> "grapher send myself pkgdel";
  "grapher send myself pkgdel" -> "grapher";
- "grapher plzreadall" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">plzreadall</font></td></tr><tr><td align="left" port="r3">add all packages to the queue</td></tr><tr><td align="left" port="r3">assign pending work</td></tr></table>>];
+ "grapher plzreadall" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">plzreadall</font></td></tr><tr><td align="left" port="r3">add all packages to the queue</td></tr><tr><td align="left" port="r3">get new pkgs from git</td></tr><tr><td align="left" port="r3">assign pending work</td></tr></table>>];
  "grapher" -> "grapher plzreadall";
  "grapher plzreadall" -> "grapher";
  "grapher stablestatusplz" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">stablestatusplz</font></td></tr><tr><td align="left" port="r3">respond specifying stability</td></tr></table>>];

@@ -1329,9 +1329,9 @@ pkggraph_filer_msgpipe (pkggraph_filer_t *self)
 
 
 //  ---------------------------------------------------------------------------
-//  Used to connect to the server.                                                  
+//  Used to connect to the server.
 
-int 
+int
 pkggraph_filer_construct (pkggraph_filer_t *self, const char *endpoint)
 {
     assert (self);
@@ -1342,9 +1342,9 @@ pkggraph_filer_construct (pkggraph_filer_t *self, const char *endpoint)
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation                                                                  
+//  No explanation
 
-int 
+int
 pkggraph_filer_set_logdir (pkggraph_filer_t *self, const char *dir)
 {
     assert (self);
@@ -1355,9 +1355,9 @@ pkggraph_filer_set_logdir (pkggraph_filer_t *self, const char *dir)
 
 
 //  ---------------------------------------------------------------------------
-//  No explanation                                                                  
+//  No explanation
 
-int 
+int
 pkggraph_filer_set_pubpath (pkggraph_filer_t *self, const char *pubpath)
 {
     assert (self);

@@ -1231,6 +1231,12 @@ s_client_execute (s_client_t *self, event_t event)
                         add_all_packages_to_the_queue (&self->client);
                     }
                     if (!self->exception) {
+                        //  get new pkgs from git
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ get new pkgs from git", self->log_prefix);
+                        get_new_pkgs_from_git (&self->client);
+                    }
+                    if (!self->exception) {
                         //  assign pending work
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ assign pending work", self->log_prefix);

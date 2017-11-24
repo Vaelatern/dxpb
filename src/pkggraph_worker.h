@@ -59,21 +59,21 @@ zsock_t *
 bool
     pkggraph_worker_connected (pkggraph_worker_t *self);
 
-//  Used to connect to the server.                                                  
-int 
+//  Used to connect to the server.
+int
     pkggraph_worker_construct (pkggraph_worker_t *self, const char *endpoint);
 
-//  No explanation                                                                  
-int 
+//  No explanation
+int
     pkggraph_worker_set_repopath (pkggraph_worker_t *self, const char *repopath);
 
-//  No explanation                                                                  
+//  No explanation
 //  Returns >= 0 if successful, -1 if interrupted.
-uint32_t 
+uint32_t
     pkggraph_worker_set_build_params (pkggraph_worker_t *self, const char *hostarch, const char *targetarch, uint8_t iscross, uint16_t cost);
 
 //  Return last received ok
-uint32_t 
+uint32_t
     pkggraph_worker_ok (pkggraph_worker_t *self);
 
 //  Enable verbose tracing (animation) of state machine activity.

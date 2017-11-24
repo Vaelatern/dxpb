@@ -414,6 +414,12 @@ add_all_packages_to_the_queue (client_t *self)
 static void
 respond_specifying_stability (client_t *self)
 {
+
+	printf ("curjobs: %d\ttoread: %d\ttmppkgs: %d\n",
+			zlist_size(self->server->curjobs),
+			zlist_size(self->server->toread),
+			zlist_size(self->server->tmppkgs));
+
 	if (zlist_size(self->server->curjobs) == 0 &&
 			zlist_size(self->server->toread) == 0 &&
 			zlist_size(self->server->tmppkgs) == 0) {

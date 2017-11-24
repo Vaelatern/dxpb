@@ -1269,9 +1269,9 @@ pkggraph_grapher_msgpipe (pkggraph_grapher_t *self)
 
 
 //  ---------------------------------------------------------------------------
-//  Used to connect to the server.                                                  
+//  Used to connect to the server.
 
-int 
+int
 pkggraph_grapher_construct (pkggraph_grapher_t *self, const char *endpoint)
 {
     assert (self);

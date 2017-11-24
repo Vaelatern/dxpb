@@ -20,101 +20,101 @@
 
 /*  These are the pkggraph_msg messages:
 
-    HELLO - 
+    HELLO -
         proto_version       string      Package Graph Protocol Version 00
 
-    ROGER - 
+    ROGER -
         proto_version       string      Package Graph Protocol Version 00
 
-    IFORGOTU - 
+    IFORGOTU -
         proto_version       string      Package Graph Protocol Version 00
 
-    INVALID - 
+    INVALID -
         proto_version       string      Package Graph Protocol Version 00
 
-    PING - 
+    PING -
         proto_version       string      Package Graph Protocol Version 00
 
-    STOP - 
+    STOP -
         proto_version       string      Package Graph Protocol Version 00
 
-    PKGDEL - 
+    PKGDEL -
         proto_version       string      Package Graph Protocol Version 00
-        pkgname             string      
+        pkgname             string
 
-    NEEDPKG - 
+    NEEDPKG -
         proto_version       string      Package Graph Protocol Version 00
-        pkgname             string      
-        version             string      
-        arch                string      
+        pkgname             string
+        version             string
+        arch                string
 
-    ICANHELP - 
+    ICANHELP -
         proto_version       string      Package Graph Protocol Version 00
-        hostarch            string      
-        targetarch          string      
+        hostarch            string
+        targetarch          string
         iscross             number 1    Strict servers might double check this.
         cost                number 2    This should be 0 unless the builder is expensive or slow enough to warrant a lower priority when handing out work. If it's just really fast, then more builders are the answer, not a negative cost.
-        addr                number 2    
-        check               number 4    
+        addr                number 2
+        check               number 4
 
-    WORKERCANHELP - 
+    WORKERCANHELP -
         proto_version       string      Package Graph Protocol Version 00
-        addr                number 2    
-        check               number 4    
-        pkgname             string      
-        version             string      
-        arch                string      
+        addr                number 2
+        check               number 4
+        pkgname             string
+        version             string
+        arch                string
 
-    FORGET_ABOUT_ME - 
+    FORGET_ABOUT_ME -
         proto_version       string      Package Graph Protocol Version 00
-        addr                number 2    
-        check               number 4    
+        addr                number 2
+        check               number 4
 
-    RESETLOG - 
+    RESETLOG -
         proto_version       string      Package Graph Protocol Version 00
-        pkgname             string      
-        version             string      
-        arch                string      
+        pkgname             string
+        version             string
+        arch                string
 
-    LOGHERE - 
+    LOGHERE -
         proto_version       string      Package Graph Protocol Version 00
-        pkgname             string      
-        version             string      
-        arch                string      
+        pkgname             string
+        version             string
+        arch                string
         logs                chunk       Arbitrary text field to append to appropiate log file.
 
     UPDATE_BOOTSTRAP - Useful for when a bootstrap package has been upgraded.
         proto_version       string      Package Graph Protocol Version 00
 
-    PKGDONE - 
+    PKGDONE -
         proto_version       string      Package Graph Protocol Version 00
-        pkgname             string      
-        version             string      
-        arch                string      
+        pkgname             string
+        version             string
+        arch                string
 
     JOB_ENDED - For any reason. It is an error to do this with success without
 also marking a package as done using a PKGDONE.
         proto_version       string      Package Graph Protocol Version 00
-        addr                number 2    
-        check               number 4    
+        addr                number 2
+        check               number 4
         cause               number 1    These are enumerated in bworker_exit_status.h
-        pkgname             string      
-        version             string      
-        arch                string      
+        pkgname             string
+        version             string
+        arch                string
 
-    IMTHEGRAPHER - 
+    IMTHEGRAPHER -
         proto_version       string      Package Graph Protocol Version 00
 
-    IAMSTORAGE - 
+    IAMSTORAGE -
         proto_version       string      Package Graph Protocol Version 00
 
-    IMAWORKER - 
+    IMAWORKER -
         proto_version       string      Package Graph Protocol Version 00
 
-    GRAPHREADY - 
+    GRAPHREADY -
         proto_version       string      Package Graph Protocol Version 00
 
-    GRAPHNOTREADY - 
+    GRAPHNOTREADY -
         proto_version       string      Package Graph Protocol Version 00
 */
 
