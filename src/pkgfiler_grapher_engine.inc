@@ -26,12 +26,16 @@ typedef enum {
     NULL_event = 0,
     construct_event = 1,
     roger_event = 2,
-    connect_error_event = 3,
-    iforgotu_event = 4,
-    ispkghere_event = 5,
-    pkghere_event = 6,
-    pkgnothere_event = 7,
-    expired_event = 8
+    do_ispkghere_event = 3,
+    do_pkgdel_event = 4,
+    connect_error_event = 5,
+    iforgotu_event = 6,
+    act_on_do_ispkghere_event = 7,
+    act_on_do_pkgdel_event = 8,
+    ispkghere_event = 9,
+    pkghere_event = 10,
+    pkgnothere_event = 11,
+    expired_event = 12
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -47,8 +51,12 @@ s_event_name [] = {
     "(NONE)",
     "construct",
     "ROGER",
+    "do_ispkghere",
+    "do_pkgdel",
     "connect_error",
     "IFORGOTU",
+    "act_on_do_ispkghere",
+    "act_on_do_pkgdel",
     "ISPKGHERE",
     "PKGHERE",
     "PKGNOTHERE",
@@ -64,6 +72,9 @@ s_event_name [] = {
 //  These are the different method arguments we manage automatically
 struct _client_args_t {
     char *endpoint;
+    char *pkgname;
+    char *version;
+    char *arch;
 };
 
 typedef struct {
@@ -109,7 +120,17 @@ static void
 static void
     connect_to_server (client_t *self);
 static void
+    store_ispkghere_for_later_sending (client_t *self);
+static void
+    store_pkgdel_for_later_sending (client_t *self);
+static void
     complain_about_connection_error (client_t *self);
+static void
+    trigger_send_saved_messages (client_t *self);
+static void
+    prepare_ispkghere_from_pipe (client_t *self);
+static void
+    prepare_pkgdel_from_pipe (client_t *self);
 static void
     tell_msgpipe_we_have_a_pkg (client_t *self);
 static void
@@ -162,6 +183,9 @@ s_client_destroy (s_client_t **self_p)
     if (*self_p) {
         s_client_t *self = *self_p;
         zstr_free (&self->args.endpoint);
+        zstr_free (&self->args.pkgname);
+        zstr_free (&self->args.version);
+        zstr_free (&self->args.arch);
         client_terminate (&self->client);
         pkgfiles_msg_destroy (&self->message);
         zsock_destroy (&self->msgpipe);
@@ -384,6 +408,30 @@ s_client_execute (s_client_t *self, event_t event)
                 if (self->event == roger_event) {
                     if (!self->exception)
                         self->state = time2wrk_state;
+                    if (!self->exception) {
+                        //  trigger send saved messages
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ trigger send saved messages", self->log_prefix);
+                        trigger_send_saved_messages (&self->client);
+                    }
+                }
+                else
+                if (self->event == do_ispkghere_event) {
+                    if (!self->exception) {
+                        //  store ispkghere for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store ispkghere for later sending", self->log_prefix);
+                        store_ispkghere_for_later_sending (&self->client);
+                    }
+                }
+                else
+                if (self->event == do_pkgdel_event) {
+                    if (!self->exception) {
+                        //  store pkgdel for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store pkgdel for later sending", self->log_prefix);
+                        store_pkgdel_for_later_sending (&self->client);
+                    }
                 }
                 else
                 if (self->event == connect_error_event) {
@@ -424,6 +472,86 @@ s_client_execute (s_client_t *self, event_t event)
                 break;
 
             case time2wrk_state:
+                if (self->event == do_ispkghere_event) {
+                    if (!self->exception) {
+                        //  store ispkghere for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store ispkghere for later sending", self->log_prefix);
+                        store_ispkghere_for_later_sending (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  trigger send saved messages
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ trigger send saved messages", self->log_prefix);
+                        trigger_send_saved_messages (&self->client);
+                    }
+                }
+                else
+                if (self->event == act_on_do_ispkghere_event) {
+                    if (!self->exception) {
+                        //  prepare ispkghere from pipe
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ prepare ispkghere from pipe", self->log_prefix);
+                        prepare_ispkghere_from_pipe (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send ISPKGHERE
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send ISPKGHERE",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->message, PKGFILES_MSG_ISPKGHERE);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgfiles_msg_print (self->message);
+                        pkgfiles_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception) {
+                        //  trigger send saved messages
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ trigger send saved messages", self->log_prefix);
+                        trigger_send_saved_messages (&self->client);
+                    }
+                }
+                else
+                if (self->event == do_pkgdel_event) {
+                    if (!self->exception) {
+                        //  store pkgdel for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store pkgdel for later sending", self->log_prefix);
+                        store_pkgdel_for_later_sending (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  trigger send saved messages
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ trigger send saved messages", self->log_prefix);
+                        trigger_send_saved_messages (&self->client);
+                    }
+                }
+                else
+                if (self->event == act_on_do_pkgdel_event) {
+                    if (!self->exception) {
+                        //  prepare pkgdel from pipe
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ prepare pkgdel from pipe", self->log_prefix);
+                        prepare_pkgdel_from_pipe (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send PKGDEL
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send PKGDEL",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->message, PKGFILES_MSG_PKGDEL);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgfiles_msg_print (self->message);
+                        pkgfiles_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception) {
+                        //  trigger send saved messages
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ trigger send saved messages", self->log_prefix);
+                        trigger_send_saved_messages (&self->client);
+                    }
+                }
+                else
                 if (self->event == ispkghere_event) {
                     if (!self->exception) {
                         //  send PKGNOTHERE
@@ -469,6 +597,21 @@ s_client_execute (s_client_t *self, event_t event)
                         pkgfiles_msg_print (self->message);
                         pkgfiles_msg_send (self->message, self->dealer);
                     }
+                }
+                else
+                if (self->event == iforgotu_event) {
+                    if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->message, PKGFILES_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgfiles_msg_print (self->message);
+                        pkgfiles_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception)
+                        self->state = start_state;
                 }
                 else {
                     //  Handle unexpected protocol events
@@ -563,6 +706,20 @@ s_client_handle_cmdpipe (zloop_t *loop, zsock_t *reader, void *argument)
         zsock_recv (self->cmdpipe, "s", &self->args.endpoint);
         s_client_execute (self, construct_event);
     }
+    else
+    if (streq (method, "DO ISPKGHERE")) {
+        zstr_free (&self->args.pkgname);
+        zstr_free (&self->args.version);
+        zstr_free (&self->args.arch);
+        zsock_recv (self->cmdpipe, "sss", &self->args.pkgname, &self->args.version, &self->args.arch);
+        s_client_execute (self, do_ispkghere_event);
+    }
+    else
+    if (streq (method, "DO PKGDEL")) {
+        zstr_free (&self->args.pkgname);
+        zsock_recv (self->cmdpipe, "s", &self->args.pkgname);
+        s_client_execute (self, do_pkgdel_event);
+    }
     //  Cleanup pipe if any argument frames are still waiting to be eaten
     if (zsock_rcvmore (self->cmdpipe)) {
         zsys_error ("%s: trailing API command frames (%s)",
@@ -600,26 +757,6 @@ s_client_handle_msgpipe (zloop_t *loop, zsock_t *reader, void *argument)
         //  the actor.
         if (streq (method, "$FLUSH"))
             zsock_signal (self->cmdpipe, 0);
-        else
-        if (streq (method, "ISPKGHERE")) {
-            char *pkgname;
-            char *version;
-            char *arch;
-            zsock_brecv (self->msgpipe, "sss", &pkgname, &version, &arch);
-            pkgfiles_msg_set_id (self->message, PKGFILES_MSG_ISPKGHERE);
-            pkgfiles_msg_set_pkgname (self->message, pkgname);
-            pkgfiles_msg_set_version (self->message, version);
-            pkgfiles_msg_set_arch (self->message, arch);
-            pkgfiles_msg_send (self->message, self->dealer);
-        }
-        else
-        if (streq (method, "PKGDEL")) {
-            char *pkgname;
-            zsock_brecv (self->msgpipe, "s", &pkgname);
-            pkgfiles_msg_set_id (self->message, PKGFILES_MSG_PKGDEL);
-            pkgfiles_msg_set_pkgname (self->message, pkgname);
-            pkgfiles_msg_send (self->message, self->dealer);
-        }
         //  Cleanup pipe if any argument frames are still waiting to be eaten
         if (zsock_rcvmore (self->msgpipe)) {
             zsys_error ("%s: trailing API message frames (%s)", self->log_prefix, method);
@@ -793,32 +930,28 @@ pkgfiler_grapher_construct (pkgfiler_grapher_t *self, const char *endpoint)
 
 
 //  ---------------------------------------------------------------------------
-//  Send ISPKGHERE message to server, takes ownership of message and
-//  destroys when done sending it.
+//  No explanation
 
 int
-pkgfiler_grapher_ispkghere (pkgfiler_grapher_t *self, const char *pkgname, const char *version, const char *arch)
+pkgfiler_grapher_do_ispkghere (pkgfiler_grapher_t *self, const char *pkgname, const char *version, const char *arch)
 {
     assert (self);
-    //  Send message name as first, separate frame
-    zstr_sendm (self->msgpipe, "ISPKGHERE");
-    int rc = zsock_bsend (self->msgpipe, "sss", pkgname, version, arch);
-    return rc;
+
+    zsock_send (self->actor, "ssss", "DO ISPKGHERE", pkgname, version, arch);
+    return 0;
 }
 
 
 //  ---------------------------------------------------------------------------
-//  Send PKGDEL message to server, takes ownership of message and
-//  destroys when done sending it.
+//  No explanation
 
 int
-pkgfiler_grapher_pkgdel (pkgfiler_grapher_t *self, const char *pkgname)
+pkgfiler_grapher_do_pkgdel (pkgfiler_grapher_t *self, const char *pkgname)
 {
     assert (self);
-    //  Send message name as first, separate frame
-    zstr_sendm (self->msgpipe, "PKGDEL");
-    int rc = zsock_bsend (self->msgpipe, "s", pkgname);
-    return rc;
+
+    zsock_send (self->actor, "ss", "DO PKGDEL", pkgname);
+    return 0;
 }
 
 

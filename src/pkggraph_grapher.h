@@ -63,15 +63,13 @@ bool
 int
     pkggraph_grapher_construct (pkggraph_grapher_t *self, const char *endpoint);
 
-//  Send UPDATE BOOTSTRAP message to server, takes ownership of message
-//  and destroys message when done sending it.
+//  No explanation
 int
-    pkggraph_grapher_update_bootstrap (pkggraph_grapher_t *self);
+    pkggraph_grapher_do_update_bootstrap (pkggraph_grapher_t *self);
 
-//  Send WORKERCANHELP message to server, takes ownership of message
-//  and destroys message when done sending it.
+//  No explanation
 int
-    pkggraph_grapher_workercanhelp (pkggraph_grapher_t *self, uint16_t addr, uint32_t check, const char *pkgname, const char *version, const char *arch);
+    pkggraph_grapher_do_workercanhelp (pkggraph_grapher_t *self, uint16_t addr, uint32_t check, const char *pkgname, const char *version, const char *arch);
 
 //  Enable verbose tracing (animation) of state machine activity.
 void

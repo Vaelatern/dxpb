@@ -63,15 +63,13 @@ bool
 int
     pkgfiler_grapher_construct (pkgfiler_grapher_t *self, const char *endpoint);
 
-//  Send ISPKGHERE message to server, takes ownership of message
-//  and destroys message when done sending it.
+//  No explanation
 int
-    pkgfiler_grapher_ispkghere (pkgfiler_grapher_t *self, const char *pkgname, const char *version, const char *arch);
+    pkgfiler_grapher_do_ispkghere (pkgfiler_grapher_t *self, const char *pkgname, const char *version, const char *arch);
 
-//  Send PKGDEL message to server, takes ownership of message
-//  and destroys message when done sending it.
+//  No explanation
 int
-    pkgfiler_grapher_pkgdel (pkgfiler_grapher_t *self, const char *pkgname);
+    pkgfiler_grapher_do_pkgdel (pkgfiler_grapher_t *self, const char *pkgname);
 
 //  Enable verbose tracing (animation) of state machine activity.
 void

@@ -2,6 +2,12 @@
 digraph "pkggraph_grapher" {
 
  "start" [shape = "doublecircle"];
+ "start do update bootstrap" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">do update bootstrap</font></td></tr><tr><td align="left" port="r3">store update bootstrap for later sending</td></tr></table>>];
+ "start" -> "start do update bootstrap";
+ "start do update bootstrap" -> "start";
+ "start do workercanhelp" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">do workercanhelp</font></td></tr><tr><td align="left" port="r3">store workercanhelp for later sending</td></tr></table>>];
+ "start" -> "start do workercanhelp";
+ "start do workercanhelp" -> "start";
  "start iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "start" -> "start iforgotu";
  "start iforgotu" -> "negotiate";
@@ -25,6 +31,12 @@ digraph "pkggraph_grapher" {
  "start connect error" -> "die";
 
  "negotiate" [shape = "doublecircle"];
+ "negotiate do update bootstrap" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">do update bootstrap</font></td></tr><tr><td align="left" port="r3">store update bootstrap for later sending</td></tr></table>>];
+ "negotiate" -> "negotiate do update bootstrap";
+ "negotiate do update bootstrap" -> "negotiate";
+ "negotiate do workercanhelp" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">do workercanhelp</font></td></tr><tr><td align="left" port="r3">store workercanhelp for later sending</td></tr></table>>];
+ "negotiate" -> "negotiate do workercanhelp";
+ "negotiate do workercanhelp" -> "negotiate";
  "negotiate iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "negotiate" -> "negotiate iforgotu";
  "negotiate iforgotu" -> "negotiate";
@@ -45,6 +57,12 @@ digraph "pkggraph_grapher" {
  "negotiate roger" -> "hesitate";
 
  "hesitate" [shape = "doublecircle"];
+ "hesitate do update bootstrap" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">do update bootstrap</font></td></tr><tr><td align="left" port="r3">store update bootstrap for later sending</td></tr></table>>];
+ "hesitate" -> "hesitate do update bootstrap";
+ "hesitate do update bootstrap" -> "hesitate";
+ "hesitate do workercanhelp" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">do workercanhelp</font></td></tr><tr><td align="left" port="r3">store workercanhelp for later sending</td></tr></table>>];
+ "hesitate" -> "hesitate do workercanhelp";
+ "hesitate do workercanhelp" -> "hesitate";
  "hesitate iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "hesitate" -> "hesitate iforgotu";
  "hesitate iforgotu" -> "negotiate";
@@ -89,6 +107,18 @@ digraph "pkggraph_grapher" {
  "ready forget about me" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">forget about me</font></td></tr><tr><td align="left" port="r3">send message verbatim down the msgpipe</td></tr></table>>];
  "ready" -> "ready forget about me";
  "ready forget about me" -> "ready";
+ "ready act on do update bootstrap" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">act on do update bootstrap</font></td></tr><tr><td align="left" port="r3">prepare update bootstrap from pipe</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">trigger send saved messages</td></tr></table>>];
+ "ready" -> "ready act on do update bootstrap";
+ "ready act on do update bootstrap" -> "ready";
+ "ready act on do workercanhelp" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">act on do workercanhelp</font></td></tr><tr><td align="left" port="r3">prepare workercanhelp from pipe</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">trigger send saved messages</td></tr></table>>];
+ "ready" -> "ready act on do workercanhelp";
+ "ready act on do workercanhelp" -> "ready";
+ "ready do update bootstrap" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">do update bootstrap</font></td></tr><tr><td align="left" port="r3">store update bootstrap for later sending</td></tr><tr><td align="left" port="r3">trigger send saved messages</td></tr></table>>];
+ "ready" -> "ready do update bootstrap";
+ "ready do update bootstrap" -> "ready";
+ "ready do workercanhelp" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">do workercanhelp</font></td></tr><tr><td align="left" port="r3">store workercanhelp for later sending</td></tr><tr><td align="left" port="r3">trigger send saved messages</td></tr></table>>];
+ "ready" -> "ready do workercanhelp";
+ "ready do workercanhelp" -> "ready";
 
  "die" [shape = "doublecircle"];
  "die *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];

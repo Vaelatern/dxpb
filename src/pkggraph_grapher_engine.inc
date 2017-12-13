@@ -22,8 +22,8 @@ typedef enum {
     negotiate_state = 2,
     hesitate_state = 3,
     ready_state = 4,
-    die_state = 5,
-    defaults_state = 6
+    defaults_state = 5,
+    die_state = 6
 } state_t;
 
 typedef enum {
@@ -34,10 +34,14 @@ typedef enum {
     pkgdone_event = 4,
     icanhelp_event = 5,
     forget_about_me_event = 6,
-    iforgotu_event = 7,
-    invalid_event = 8,
-    kthnksbye_event = 9,
-    expired_event = 10
+    act_on_do_update_bootstrap_event = 7,
+    act_on_do_workercanhelp_event = 8,
+    do_update_bootstrap_event = 9,
+    do_workercanhelp_event = 10,
+    iforgotu_event = 11,
+    invalid_event = 12,
+    kthnksbye_event = 13,
+    expired_event = 14
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -48,8 +52,8 @@ s_state_name [] = {
     "negotiate",
     "hesitate",
     "ready",
-    "die",
-    "defaults"
+    "defaults",
+    "die"
 };
 
 static char *
@@ -61,6 +65,10 @@ s_event_name [] = {
     "PKGDONE",
     "ICANHELP",
     "FORGET_ABOUT_ME",
+    "act_on_do_update_bootstrap",
+    "act_on_do_workercanhelp",
+    "do_update_bootstrap",
+    "do_workercanhelp",
     "IFORGOTU",
     "INVALID",
     "kthnksbye",
@@ -76,6 +84,11 @@ s_event_name [] = {
 //  These are the different method arguments we manage automatically
 struct _client_args_t {
     char *endpoint;
+    uint16_t addr;
+    uint32_t check;
+    char *pkgname;
+    char *version;
+    char *arch;
 };
 
 typedef struct {
@@ -129,6 +142,16 @@ static void
 static void
     send_message_verbatim_down_the_msgpipe (client_t *self);
 static void
+    prepare_update_bootstrap_from_pipe (client_t *self);
+static void
+    trigger_send_saved_messages (client_t *self);
+static void
+    prepare_workercanhelp_from_pipe (client_t *self);
+static void
+    store_update_bootstrap_for_later_sending (client_t *self);
+static void
+    store_workercanhelp_for_later_sending (client_t *self);
+static void
     cease_all_operations (client_t *self);
 
 //  Create a new client connection
@@ -178,6 +201,9 @@ s_client_destroy (s_client_t **self_p)
     if (*self_p) {
         s_client_t *self = *self_p;
         zstr_free (&self->args.endpoint);
+        zstr_free (&self->args.pkgname);
+        zstr_free (&self->args.version);
+        zstr_free (&self->args.arch);
         client_terminate (&self->client);
         pkggraph_msg_destroy (&self->message);
         zsock_destroy (&self->msgpipe);
@@ -425,6 +451,24 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == do_update_bootstrap_event) {
+                    if (!self->exception) {
+                        //  store update bootstrap for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store update bootstrap for later sending", self->log_prefix);
+                        store_update_bootstrap_for_later_sending (&self->client);
+                    }
+                }
+                else
+                if (self->event == do_workercanhelp_event) {
+                    if (!self->exception) {
+                        //  store workercanhelp for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store workercanhelp for later sending", self->log_prefix);
+                        store_workercanhelp_for_later_sending (&self->client);
+                    }
+                }
+                else
                 if (self->event == iforgotu_event) {
                     if (!self->exception) {
                         //  send HELLO
@@ -529,6 +573,24 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                     if (!self->exception)
                         self->state = hesitate_state;
+                }
+                else
+                if (self->event == do_update_bootstrap_event) {
+                    if (!self->exception) {
+                        //  store update bootstrap for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store update bootstrap for later sending", self->log_prefix);
+                        store_update_bootstrap_for_later_sending (&self->client);
+                    }
+                }
+                else
+                if (self->event == do_workercanhelp_event) {
+                    if (!self->exception) {
+                        //  store workercanhelp for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store workercanhelp for later sending", self->log_prefix);
+                        store_workercanhelp_for_later_sending (&self->client);
+                    }
                 }
                 else
                 if (self->event == iforgotu_event) {
@@ -637,6 +699,30 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                     if (!self->exception)
                         self->state = ready_state;
+                    if (!self->exception) {
+                        //  trigger send saved messages
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ trigger send saved messages", self->log_prefix);
+                        trigger_send_saved_messages (&self->client);
+                    }
+                }
+                else
+                if (self->event == do_update_bootstrap_event) {
+                    if (!self->exception) {
+                        //  store update bootstrap for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store update bootstrap for later sending", self->log_prefix);
+                        store_update_bootstrap_for_later_sending (&self->client);
+                    }
+                }
+                else
+                if (self->event == do_workercanhelp_event) {
+                    if (!self->exception) {
+                        //  store workercanhelp for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store workercanhelp for later sending", self->log_prefix);
+                        store_workercanhelp_for_later_sending (&self->client);
+                    }
                 }
                 else
                 if (self->event == iforgotu_event) {
@@ -781,6 +867,195 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == act_on_do_update_bootstrap_event) {
+                    if (!self->exception) {
+                        //  prepare update bootstrap from pipe
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ prepare update bootstrap from pipe", self->log_prefix);
+                        prepare_update_bootstrap_from_pipe (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send UPDATE_BOOTSTRAP
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send UPDATE_BOOTSTRAP",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_UPDATE_BOOTSTRAP);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkggraph_msg_print (self->message);
+                        pkggraph_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception) {
+                        //  trigger send saved messages
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ trigger send saved messages", self->log_prefix);
+                        trigger_send_saved_messages (&self->client);
+                    }
+                }
+                else
+                if (self->event == act_on_do_workercanhelp_event) {
+                    if (!self->exception) {
+                        //  prepare workercanhelp from pipe
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ prepare workercanhelp from pipe", self->log_prefix);
+                        prepare_workercanhelp_from_pipe (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send WORKERCANHELP
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send WORKERCANHELP",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_WORKERCANHELP);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkggraph_msg_print (self->message);
+                        pkggraph_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception) {
+                        //  trigger send saved messages
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ trigger send saved messages", self->log_prefix);
+                        trigger_send_saved_messages (&self->client);
+                    }
+                }
+                else
+                if (self->event == do_update_bootstrap_event) {
+                    if (!self->exception) {
+                        //  store update bootstrap for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store update bootstrap for later sending", self->log_prefix);
+                        store_update_bootstrap_for_later_sending (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  trigger send saved messages
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ trigger send saved messages", self->log_prefix);
+                        trigger_send_saved_messages (&self->client);
+                    }
+                }
+                else
+                if (self->event == do_workercanhelp_event) {
+                    if (!self->exception) {
+                        //  store workercanhelp for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store workercanhelp for later sending", self->log_prefix);
+                        store_workercanhelp_for_later_sending (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  trigger send saved messages
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ trigger send saved messages", self->log_prefix);
+                        trigger_send_saved_messages (&self->client);
+                    }
+                }
+                else
+                if (self->event == iforgotu_event) {
+                    if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkggraph_msg_print (self->message);
+                        pkggraph_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception)
+                        self->state = negotiate_state;
+                }
+                else
+                if (self->event == invalid_event) {
+                    if (!self->exception)
+                        self->state = die_state;
+                    if (!self->exception) {
+                        //  cease all operations
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
+                        cease_all_operations (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  terminate
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ terminate", self->log_prefix);
+                        self->fsm_stopped = true;
+                    }
+                }
+                else
+                if (self->event == kthnksbye_event) {
+                    if (!self->exception)
+                        self->state = die_state;
+                    if (!self->exception) {
+                        //  cease all operations
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
+                        cease_all_operations (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  terminate
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ terminate", self->log_prefix);
+                        self->fsm_stopped = true;
+                    }
+                }
+                else
+                if (self->event == expired_event) {
+                    if (!self->exception) {
+                        //  send PING
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send PING",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_PING);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkggraph_msg_print (self->message);
+                        pkggraph_msg_send (self->message, self->dealer);
+                    }
+                }
+                else {
+                    //  Handle unexpected protocol events
+                    if (!self->exception) {
+                        //  send INVALID
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send INVALID",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_INVALID);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkggraph_msg_print (self->message);
+                        pkggraph_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception)
+                        self->state = die_state;
+                    if (!self->exception) {
+                        //  cease all operations
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
+                        cease_all_operations (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  terminate
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ terminate", self->log_prefix);
+                        self->fsm_stopped = true;
+                    }
+                }
+                break;
+
+            case defaults_state:
+                if (self->event == do_update_bootstrap_event) {
+                    if (!self->exception) {
+                        //  store update bootstrap for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store update bootstrap for later sending", self->log_prefix);
+                        store_update_bootstrap_for_later_sending (&self->client);
+                    }
+                }
+                else
+                if (self->event == do_workercanhelp_event) {
+                    if (!self->exception) {
+                        //  store workercanhelp for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store workercanhelp for later sending", self->log_prefix);
+                        store_workercanhelp_for_later_sending (&self->client);
+                    }
+                }
+                else
                 if (self->event == iforgotu_event) {
                     if (!self->exception) {
                         //  send HELLO
@@ -886,97 +1161,6 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 break;
-
-            case defaults_state:
-                if (self->event == iforgotu_event) {
-                    if (!self->exception) {
-                        //  send HELLO
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ send HELLO",
-                                self->log_prefix);
-                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
-                        zsys_debug ("%s: Send message to server", self->log_prefix);
-                        pkggraph_msg_print (self->message);
-                        pkggraph_msg_send (self->message, self->dealer);
-                    }
-                    if (!self->exception)
-                        self->state = negotiate_state;
-                }
-                else
-                if (self->event == invalid_event) {
-                    if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                }
-                else
-                if (self->event == kthnksbye_event) {
-                    if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                }
-                else
-                if (self->event == expired_event) {
-                    if (!self->exception) {
-                        //  send PING
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ send PING",
-                                self->log_prefix);
-                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_PING);
-                        zsys_debug ("%s: Send message to server", self->log_prefix);
-                        pkggraph_msg_print (self->message);
-                        pkggraph_msg_send (self->message, self->dealer);
-                    }
-                }
-                else {
-                    //  Handle unexpected protocol events
-                    if (!self->exception) {
-                        //  send INVALID
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
-                                self->log_prefix);
-                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_INVALID);
-                        zsys_debug ("%s: Send message to server", self->log_prefix);
-                        pkggraph_msg_print (self->message);
-                        pkggraph_msg_send (self->message, self->dealer);
-                    }
-                    if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                }
-                break;
         }
         //  If we had an exception event, interrupt normal programming
         if (self->exception) {
@@ -1050,6 +1234,18 @@ s_client_handle_cmdpipe (zloop_t *loop, zsock_t *reader, void *argument)
         zsock_recv (self->cmdpipe, "s", &self->args.endpoint);
         s_client_execute (self, construct_event);
     }
+    else
+    if (streq (method, "DO UPDATE BOOTSTRAP")) {
+        s_client_execute (self, do_update_bootstrap_event);
+    }
+    else
+    if (streq (method, "DO WORKERCANHELP")) {
+        zstr_free (&self->args.pkgname);
+        zstr_free (&self->args.version);
+        zstr_free (&self->args.arch);
+        zsock_recv (self->cmdpipe, "24sss", &self->args.addr, &self->args.check, &self->args.pkgname, &self->args.version, &self->args.arch);
+        s_client_execute (self, do_workercanhelp_event);
+    }
     //  Cleanup pipe if any argument frames are still waiting to be eaten
     if (zsock_rcvmore (self->cmdpipe)) {
         zsys_error ("%s: trailing API command frames (%s)",
@@ -1087,28 +1283,6 @@ s_client_handle_msgpipe (zloop_t *loop, zsock_t *reader, void *argument)
         //  the actor.
         if (streq (method, "$FLUSH"))
             zsock_signal (self->cmdpipe, 0);
-        else
-        if (streq (method, "UPDATE BOOTSTRAP")) {
-            zsock_brecv (self->msgpipe, "");
-            pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_UPDATE_BOOTSTRAP);
-            pkggraph_msg_send (self->message, self->dealer);
-        }
-        else
-        if (streq (method, "WORKERCANHELP")) {
-            uint16_t addr;
-            uint32_t check;
-            char *pkgname;
-            char *version;
-            char *arch;
-            zsock_brecv (self->msgpipe, "24sss", &addr, &check, &pkgname, &version, &arch);
-            pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_WORKERCANHELP);
-            pkggraph_msg_set_addr (self->message, addr);
-            pkggraph_msg_set_check (self->message, check);
-            pkggraph_msg_set_pkgname (self->message, pkgname);
-            pkggraph_msg_set_version (self->message, version);
-            pkggraph_msg_set_arch (self->message, arch);
-            pkggraph_msg_send (self->message, self->dealer);
-        }
         //  Cleanup pipe if any argument frames are still waiting to be eaten
         if (zsock_rcvmore (self->msgpipe)) {
             zsys_error ("%s: trailing API message frames (%s)", self->log_prefix, method);
@@ -1282,32 +1456,28 @@ pkggraph_grapher_construct (pkggraph_grapher_t *self, const char *endpoint)
 
 
 //  ---------------------------------------------------------------------------
-//  Send UPDATE BOOTSTRAP message to server, takes ownership of message and
-//  destroys when done sending it.
+//  No explanation
 
 int
-pkggraph_grapher_update_bootstrap (pkggraph_grapher_t *self)
+pkggraph_grapher_do_update_bootstrap (pkggraph_grapher_t *self)
 {
     assert (self);
-    //  Send message name as first, separate frame
-    zstr_sendm (self->msgpipe, "UPDATE BOOTSTRAP");
-    int rc = zsock_bsend (self->msgpipe, "");
-    return rc;
+
+    zsock_send (self->actor, "s", "DO UPDATE BOOTSTRAP");
+    return 0;
 }
 
 
 //  ---------------------------------------------------------------------------
-//  Send WORKERCANHELP message to server, takes ownership of message and
-//  destroys when done sending it.
+//  No explanation
 
 int
-pkggraph_grapher_workercanhelp (pkggraph_grapher_t *self, uint16_t addr, uint32_t check, const char *pkgname, const char *version, const char *arch)
+pkggraph_grapher_do_workercanhelp (pkggraph_grapher_t *self, uint16_t addr, uint32_t check, const char *pkgname, const char *version, const char *arch)
 {
     assert (self);
-    //  Send message name as first, separate frame
-    zstr_sendm (self->msgpipe, "WORKERCANHELP");
-    int rc = zsock_bsend (self->msgpipe, "24sss", addr, check, pkgname, version, arch);
-    return rc;
+
+    zsock_send (self->actor, "s24sss", "DO WORKERCANHELP", addr, check, pkgname, version, arch);
+    return 0;
 }
 
 

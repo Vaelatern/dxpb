@@ -30,13 +30,55 @@ help(void)
 	printf("%.*s\n", ___doc_dxpb_grapher_help_txt_len, ___doc_dxpb_grapher_help_txt);
 }
 
-#define DXPB_HANDLE_SOCK(type, sock, msg, importer, retVal) { \
+#define DXPB_HANDLE_SOCK(type, sock, msg, outbound, direction, retVal) { \
 		pkg##type##_msg_recv(msg, sock); \
-		retVal = handle_##type##_msg(msg, importer); \
+		retVal = handle_##type##_##direction##_msg(msg, outbound); \
 	}
 
 enum ret_codes
-handle_graph_msg(pkggraph_msg_t *msg, pkgimport_grapher_t *importer)
+handle_files_out_msg(pkgfiles_msg_t *msg, pkgfiler_grapher_t *filer)
+{
+	switch(pkgfiles_msg_id(msg)) {
+	case PKGFILES_MSG_ISPKGHERE:
+		pkgfiler_grapher_do_ispkghere(filer,
+				pkgfiles_msg_pkgname(msg),
+				pkgfiles_msg_version(msg),
+				pkgfiles_msg_arch(msg));
+		break;
+	case PKGFILES_MSG_PKGDEL:
+		pkgfiler_grapher_do_pkgdel(filer,
+				pkgfiles_msg_pkgname(msg));
+		break;
+	default:
+		return ERR_CODE_BAD;
+	}
+	return ERR_CODE_OK;
+}
+
+
+enum ret_codes
+handle_graph_out_msg(pkggraph_msg_t *msg, pkggraph_grapher_t *grapher)
+{
+	switch(pkggraph_msg_id(msg)) {
+	case PKGGRAPH_MSG_WORKERCANHELP:
+		pkggraph_grapher_do_workercanhelp(grapher,
+				pkggraph_msg_addr(msg),
+				pkggraph_msg_check(msg),
+				pkggraph_msg_pkgname(msg),
+				pkggraph_msg_version(msg),
+				pkggraph_msg_arch(msg));
+		break;
+	case PKGGRAPH_MSG_UPDATE_BOOTSTRAP:
+		pkggraph_grapher_do_update_bootstrap(grapher);
+		break;
+	default:
+		return ERR_CODE_BAD;
+	}
+	return ERR_CODE_OK;
+}
+
+enum ret_codes
+handle_graph_in_msg(pkggraph_msg_t *msg, pkgimport_grapher_t *importer)
 {
 	switch(pkggraph_msg_id(msg)) {
 	case PKGGRAPH_MSG_ICANHELP:
@@ -91,7 +133,7 @@ handle_graph_msg(pkggraph_msg_t *msg, pkgimport_grapher_t *importer)
 }
 
 int
-handle_files_msg(pkgfiles_msg_t *msg, pkgimport_grapher_t *importer)
+handle_files_in_msg(pkgfiles_msg_t *msg, pkgimport_grapher_t *importer)
 {
 	switch(pkgfiles_msg_id(msg)) {
 	case PKGFILES_MSG_PKGHERE:
@@ -123,7 +165,6 @@ main_loop(pkgimport_grapher_t *importer, pkggraph_grapher_t *grapher,
 	zsock_t *in_sock;
 	zpoller_t *polling;
 	zsock_t *import_sock, *graph_sock, *file_sock;
-	int rc;
 
 	pkgimport_msg_t *import_msg;
 	pkggraph_msg_t *graph_msg;
@@ -155,36 +196,22 @@ main_loop(pkgimport_grapher_t *importer, pkggraph_grapher_t *grapher,
 			zframe_t *frame = zframe_recv(import_sock);
 			switch (btranslate_type_of_msg(frame)) {
 			case TRANSLATE_FILES:
-				rc = pkgfiles_msg_recv(file_msg, import_sock);
-				switch (rc) {
-				case -2:
-					exit(ERR_CODE_BADSOCK);
-				case -1:
-					exit(ERR_CODE_SADSOCK);
-				}
-				rc = pkgfiles_msg_send(file_msg, file_sock);
-				assert(rc == 0);
+				DXPB_HANDLE_SOCK(files, import_sock, file_msg,
+						filer, out, retVal);
 				break;
 			case TRANSLATE_GRAPH:
-				rc = pkggraph_msg_recv(graph_msg, import_sock);
-				switch (rc) {
-				case -2:
-					exit(ERR_CODE_BADSOCK);
-				case -1:
-					exit(ERR_CODE_SADSOCK);
-				}
-				rc = pkggraph_msg_send(graph_msg, graph_sock);
-				assert(rc == 0);
+				DXPB_HANDLE_SOCK(graph, import_sock, graph_msg,
+						grapher, out, retVal);
 				break;
 			default:
 				break;
 			}
 		} else if (in_sock == graph_sock) {
 			DXPB_HANDLE_SOCK(graph, in_sock, graph_msg, importer,
-					retVal);
+					in, retVal);
 		} else if (in_sock == file_sock) {
 			DXPB_HANDLE_SOCK(files, in_sock, file_msg, importer,
-					retVal);
+					in, retVal);
 		} else /* interrupted, bid everybody farewell and die */
 			retVal = ERR_CODE_DONE;
 	}

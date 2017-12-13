@@ -8,6 +8,12 @@ digraph "pkgfiler_grapher" {
  "start roger" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
  "start" -> "start roger";
  "start roger" -> "time2wrk";
+ "start do ispkghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">do ispkghere</font></td></tr><tr><td align="left" port="r3">store ispkghere for later sending</td></tr></table>>];
+ "start" -> "start do ispkghere";
+ "start do ispkghere" -> "start";
+ "start do pkgdel" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">do pkgdel</font></td></tr><tr><td align="left" port="r3">store pkgdel for later sending</td></tr></table>>];
+ "start" -> "start do pkgdel";
+ "start do pkgdel" -> "start";
  "start connect error" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">connect error</font></td></tr><tr><td align="left" port="r3">complain about connection error</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
  "start" -> "start connect error";
  "start connect error" -> "start";
@@ -16,6 +22,18 @@ digraph "pkgfiler_grapher" {
  "start iforgotu" -> "start";
 
  "time2wrk" [shape = "doublecircle"];
+ "time2wrk do ispkghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">do ispkghere</font></td></tr><tr><td align="left" port="r3">store ispkghere for later sending</td></tr><tr><td align="left" port="r3">trigger send saved messages</td></tr></table>>];
+ "time2wrk" -> "time2wrk do ispkghere";
+ "time2wrk do ispkghere" -> "time2wrk";
+ "time2wrk act on do ispkghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">act on do ispkghere</font></td></tr><tr><td align="left" port="r3">prepare ispkghere from pipe</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">trigger send saved messages</td></tr></table>>];
+ "time2wrk" -> "time2wrk act on do ispkghere";
+ "time2wrk act on do ispkghere" -> "time2wrk";
+ "time2wrk do pkgdel" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">do pkgdel</font></td></tr><tr><td align="left" port="r3">store pkgdel for later sending</td></tr><tr><td align="left" port="r3">trigger send saved messages</td></tr></table>>];
+ "time2wrk" -> "time2wrk do pkgdel";
+ "time2wrk do pkgdel" -> "time2wrk";
+ "time2wrk act on do pkgdel" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">act on do pkgdel</font></td></tr><tr><td align="left" port="r3">prepare pkgdel from pipe</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">trigger send saved messages</td></tr></table>>];
+ "time2wrk" -> "time2wrk act on do pkgdel";
+ "time2wrk act on do pkgdel" -> "time2wrk";
  "time2wrk ispkghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ispkghere</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "time2wrk" -> "time2wrk ispkghere";
  "time2wrk ispkghere" -> "time2wrk";
@@ -34,4 +52,7 @@ digraph "pkgfiler_grapher" {
  "time2wrk *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
  "time2wrk" -> "time2wrk *";
  "time2wrk *" -> "time2wrk";
+ "time2wrk iforgotu" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "time2wrk" -> "time2wrk iforgotu";
+ "time2wrk iforgotu" -> "start";
 }

@@ -18,6 +18,7 @@
 //  TODO: Change these to match your project's needs
 #include "./pkgfiles_msg.h"
 #include "./pkgfiler_grapher.h"
+#include "dxpb.h"
 
 //  Forward reference to method arguments structure
 typedef struct _client_args_t client_args_t;
@@ -36,10 +37,18 @@ typedef struct {
     client_args_t *args;        //  Arguments from methods
 
     //  TODO: Add specific properties for your application
+    zlist_t *msgs_to_send;
 } client_t;
 
 //  Include the generated client engine
 #include "pkgfiler_grapher_engine.inc"
+
+struct message_to_send {
+	int type;
+	char *pkgname;
+	char *version;
+	char *arch;
+};
 
 //  Allocate properties and structures for a new client instance.
 //  Return 0 if OK, -1 if failed
@@ -47,8 +56,8 @@ typedef struct {
 static int
 client_initialize (client_t *self)
 {
-    (void) self;
-    return 0;
+	self->msgs_to_send = zlist_new();
+	return 0;
 }
 
 //  Free properties and structures for a client instance
@@ -56,8 +65,7 @@ client_initialize (client_t *self)
 static void
 client_terminate (client_t *self)
 {
-    (void) self;
-    //  Destroy properties here
+	zlist_destroy(&(self->msgs_to_send));
 }
 
 //  ---------------------------------------------------------------------------
@@ -129,4 +137,109 @@ tell_msgpipe_we_do_not_have_a_pkg (client_t *self)
 {
 	int rc = pkgfiles_msg_send(self->message, self->msgpipe);
 	assert(rc == 0);
+}
+
+
+//  ---------------------------------------------------------------------------
+//  store_ispkghere_for_later_sending
+//
+
+static void
+store_message_for_later_sending(client_t *self, int type)
+{
+	struct message_to_send *tosave = malloc(sizeof(struct message_to_send));
+	if (tosave == NULL) {
+		fprintf(stderr, "Couldn't save a message, no memory\n");
+		exit(ERR_CODE_NOMEM);
+	}
+	tosave->type = type;
+	tosave->pkgname = self->args->pkgname;
+	tosave->version = self->args->version;
+	tosave->arch = self->args->arch;
+	zlist_append(self->msgs_to_send, tosave);
+}
+
+static void
+store_ispkghere_for_later_sending (client_t *self)
+{
+	store_message_for_later_sending(self, PKGFILES_MSG_ISPKGHERE);
+}
+
+
+//  ---------------------------------------------------------------------------
+//  store_pkgdel_for_later_sending
+//  Only to be executed where we can't yet send messages.
+
+static void
+store_pkgdel_for_later_sending (client_t *self)
+{
+	store_message_for_later_sending(self, PKGFILES_MSG_PKGDEL);
+}
+
+
+//  ---------------------------------------------------------------------------
+//  trigger_send_saved_messages
+//
+
+static void
+trigger_send_saved_messages (client_t *self)
+{
+	if (zlist_size(self->msgs_to_send) == 0)
+		return;
+	struct message_to_send *tosend = zlist_first(self->msgs_to_send);
+	assert(tosend);
+	switch(tosend->type) {
+	case PKGFILES_MSG_PKGDEL:
+		engine_set_next_event(self, act_on_do_pkgdel_event);
+		break;
+	case PKGFILES_MSG_ISPKGHERE:
+		engine_set_next_event(self, act_on_do_ispkghere_event);
+		break;
+	default:
+		fprintf(stderr, "Saved message is non-sensical\n");
+		exit(ERR_CODE_BAD);
+		break;
+	}
+}
+
+
+//  ---------------------------------------------------------------------------
+//  prepare_ispkghere_from_pipe
+//
+
+static void
+prepare_ispkghere_from_pipe (client_t *self)
+{
+	struct message_to_send *tosend = zlist_pop(self->msgs_to_send);
+	assert(tosend);
+	assert(tosend->type == PKGFILES_MSG_ISPKGHERE);
+	pkgfiles_msg_set_pkgname(self->message, tosend->pkgname);
+	pkgfiles_msg_set_version(self->message, tosend->version);
+	pkgfiles_msg_set_arch(self->message, tosend->arch);
+	free(tosend->pkgname);
+	tosend->pkgname = NULL;
+	free(tosend->version);
+	tosend->version = NULL;
+	free(tosend->arch);
+	tosend->arch = NULL;
+	free(tosend);
+	tosend = NULL;
+}
+
+
+//  ---------------------------------------------------------------------------
+//  prepare_pkgdel_from_pipe
+//
+
+static void
+prepare_pkgdel_from_pipe (client_t *self)
+{
+	struct message_to_send *tosend = zlist_pop(self->msgs_to_send);
+	assert(tosend);
+	assert(tosend->type == PKGFILES_MSG_PKGDEL);
+	pkgfiles_msg_set_pkgname(self->message, tosend->pkgname);
+	free(tosend->pkgname);
+	tosend->pkgname = NULL;
+	free(tosend);
+	tosend = NULL;
 }
