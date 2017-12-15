@@ -376,18 +376,18 @@ resolve_graph (client_t *self)
 {
 	if (self->pub) {
 		zstr_sendm(self->pub, "TRACE");
-		zstr_sendf(self->pub, "Beginning grpah resolution");
+		zstr_sendf(self->pub, "Beginning graph resolution");
 	}
 	int rc = bgraph_attempt_resolution(self->pkggraph);
 	if (rc != ERR_CODE_OK) {
 		if (self->pub) {
 			zstr_sendm(self->pub, "ERROR");
-			zstr_sendf(self->pub, "Failed grpah resolution");
+			zstr_sendf(self->pub, "Failed graph resolution");
 		}
 	}
 	if (self->pub) {
 		zstr_sendm(self->pub, "TRACE");
-		zstr_sendf(self->pub, "Ended grpah resolution");
+		zstr_sendf(self->pub, "Ended graph resolution");
 	}
 }
 
