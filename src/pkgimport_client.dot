@@ -30,7 +30,7 @@ digraph "pkgimport_client" {
  "pleasantries stop" -> "pleasantries";
  "pleasantries *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "pleasantries" -> "pleasantries *";
- "pleasantries *" -> "die";
+ "pleasantries *" -> "start";
  "pleasantries kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "pleasantries" -> "pleasantries kthnksbye";
  "pleasantries kthnksbye" -> "die";
@@ -59,7 +59,7 @@ digraph "pkgimport_client" {
  "ready stop" -> "ready";
  "ready *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "ready" -> "ready *";
- "ready *" -> "die";
+ "ready *" -> "start";
  "ready kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "ready" -> "ready kthnksbye";
  "ready kthnksbye" -> "die";
@@ -94,7 +94,7 @@ digraph "pkgimport_client" {
  "finished reading now what stop" -> "finished reading now what";
  "finished reading now what *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "finished reading now what" -> "finished reading now what *";
- "finished reading now what *" -> "die";
+ "finished reading now what *" -> "start";
  "finished reading now what kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "finished reading now what" -> "finished reading now what kthnksbye";
  "finished reading now what kthnksbye" -> "die";

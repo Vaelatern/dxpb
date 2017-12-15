@@ -570,29 +570,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkgimport_msg_print (self->message);
                         pkgimport_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                        self->state = start_state;
                 }
                 break;
 
@@ -810,11 +798,11 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkgimport_msg_print (self->message);
                         pkgimport_msg_send (self->message, self->dealer);
@@ -830,19 +818,7 @@ s_client_execute (s_client_t *self, event_t event)
                         pkgimport_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                        self->state = start_state;
                 }
                 break;
 
@@ -954,29 +930,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkgimport_msg_print (self->message);
                         pkgimport_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                        self->state = start_state;
                 }
                 break;
 
@@ -1092,29 +1056,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkgimport_msg_print (self->message);
                         pkgimport_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                        self->state = start_state;
                 }
                 break;
         }

@@ -69,8 +69,8 @@
 		<event name = "STOP">
 			<action name = "send" message = "ROGER" />
 		</event>
-		<event name = "*" next = "die">
-			<action name = "send" message = "INVALID" />
+		<event name = "*" next = "start">
+			<action name = "send" message = "IFORGOTU" />
 		</event>
 		<event name = "KTHNKSBYE" next = "die" />
 		<event name = "expired">

@@ -53,8 +53,8 @@
 			<action name = "send" message = "HELLO" />
 		</event>
 		<event name = "INVALID" next = "die" />
-		<event name = "*" next = "die">
-			<action name = "send" message = "INVALID" />
+		<event name = "*" next = "negotiate">
+			<action name = "send" message = "HELLO" />
 		</event>
 		<event name = "KTHNKSBYE" next = "die" />
 		<event name = "expired">

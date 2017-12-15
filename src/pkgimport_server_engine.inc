@@ -688,11 +688,11 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkgimport_msg_print (self->server->message);
                         pkgimport_msg_set_routing_id (self->server->message, self->routing_id);
@@ -710,12 +710,8 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ assign pending work", self->log_prefix);
                         assign_pending_work (&self->client);
                     }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
-                    }
+                    if (!self->exception)
+                        self->state = introduction_state;
                 }
                 break;
 
@@ -789,11 +785,11 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkgimport_msg_print (self->server->message);
                         pkgimport_msg_set_routing_id (self->server->message, self->routing_id);
@@ -811,12 +807,8 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ assign pending work", self->log_prefix);
                         assign_pending_work (&self->client);
                     }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
-                    }
+                    if (!self->exception)
+                        self->state = introduction_state;
                 }
                 break;
 
@@ -890,11 +882,11 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkgimport_msg_print (self->server->message);
                         pkgimport_msg_set_routing_id (self->server->message, self->routing_id);
@@ -912,12 +904,8 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ assign pending work", self->log_prefix);
                         assign_pending_work (&self->client);
                     }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
-                    }
+                    if (!self->exception)
+                        self->state = introduction_state;
                 }
                 break;
 
@@ -1026,11 +1014,11 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkgimport_msg_print (self->server->message);
                         pkgimport_msg_set_routing_id (self->server->message, self->routing_id);
@@ -1048,12 +1036,8 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ assign pending work", self->log_prefix);
                         assign_pending_work (&self->client);
                     }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
-                    }
+                    if (!self->exception)
+                        self->state = introduction_state;
                 }
                 break;
 
@@ -1139,11 +1123,11 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkgimport_msg_print (self->server->message);
                         pkgimport_msg_set_routing_id (self->server->message, self->routing_id);
@@ -1161,12 +1145,8 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ assign pending work", self->log_prefix);
                         assign_pending_work (&self->client);
                     }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
-                    }
+                    if (!self->exception)
+                        self->state = introduction_state;
                 }
                 break;
 
@@ -1372,11 +1352,11 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkgimport_msg_print (self->server->message);
                         pkgimport_msg_set_routing_id (self->server->message, self->routing_id);
@@ -1394,12 +1374,8 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ assign pending work", self->log_prefix);
                         assign_pending_work (&self->client);
                     }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
-                    }
+                    if (!self->exception)
+                        self->state = introduction_state;
                 }
                 break;
 
@@ -1457,11 +1433,11 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkgimport_msg_print (self->server->message);
                         pkgimport_msg_set_routing_id (self->server->message, self->routing_id);
@@ -1479,12 +1455,8 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ assign pending work", self->log_prefix);
                         assign_pending_work (&self->client);
                     }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
-                    }
+                    if (!self->exception)
+                        self->state = introduction_state;
                 }
                 break;
         }

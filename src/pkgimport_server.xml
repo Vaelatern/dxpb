@@ -115,11 +115,10 @@
 			It is always valid to re-start the session.
 			<action name = "send" message = "ROGER" />
 		</event>
-		<event name = "*">
-			<action name = "send" message = "INVALID" />
+		<event name = "*" next = "introduction">
+			<action name = "send" message = "IFORGOTU" />
 			<action name = "return job to queue" />
 			<action name = "assign pending work" />
-			<action name = "terminate" />
 		</event>
 		<event name = "PING">
 			<action name = "send" message = "ROGER" />
