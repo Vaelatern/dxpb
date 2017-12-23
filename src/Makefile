@@ -41,6 +41,8 @@ BINARIES = \
 	dxpb-pkgimport-agent \
 	dxpb-pkgimport-master \
 	dxpb-poke
+HARNESSES = harness-grapher
+HARNESS_OBJECTS = harness-grapher.o
 TEST_BINARIES = check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps
 TEST_OBJECTS = check_bgraph.o check_bwords.o check_bstring.o check_btranslate.o check_bpkg.o check_bxbps.o
 OBJECTS = \
@@ -168,7 +170,7 @@ dxpb-builder: LDLIBS += -lgit2
 dxpb-builder: dxpb-builder.o bgit.o bbuilder.o bwords.o bxpkg.o bxsrc.o pkggraph_worker.o pkggraph_msg.o
 
 dxpb-grapher: LDLIBS += -lbsd -lsqlite3 -larchive -lxbps
-dxpb-grapher: dxpb-grapher.o bstring.o bwords.o bxsrc.o bxpkg.o bpkg.o bxbps.o bgraph.o bdb.o pkgimport_msg.o pkgimport_grapher.o pkggraph_msg.o pkggraph_grapher.o pkgfiles_msg.o pkgfiler_grapher.o bworker.o btranslate.o
+dxpb-grapher: dxpb-grapher.o bwords.o bxsrc.o bxpkg.o bpkg.o bxbps.o bgraph.o bdb.o pkgimport_msg.o pkgimport_grapher.o pkggraph_msg.o pkggraph_grapher.o pkgfiles_msg.o pkgfiler_grapher.o bworker.o btranslate.o
 
 dxpb-hostdir-master: LDLIBS += -larchive -lxbps
 dxpb-hostdir-master: dxpb-hostdir-master.o bxbps.o pkggraph_msg.o pkggraph_filer.o pkgfiles_msg.o pkgfiler.o
@@ -183,6 +185,16 @@ dxpb-common.c: license.inc
 
 $(BINARIES): dxpb-common.o
 
+########################################
+#### Test Harnesses and their needs ####
+########################################
+
+harness-grapher: bstring.o bfs.o bxpkg.o harness-grapher.o pkgimport_msg.o pkggraph_msg.o pkgfiles_msg.o
+
+$(HARNESSES): dxpb-common.o
+
+harness: $(HARNESSES) $(BINARIES)
+
 ########################
 #### Simple  Targets ###
 ########################
@@ -195,7 +207,7 @@ usebfs: bstring.o bfs.o
 
 prod: $(OBJECTS) $(BINARIES)
 
-test: $(TEST_BINARIES)
+test: $(TEST_BINARIES) $(HARNESSES)
 
 check: test
 
@@ -203,6 +215,8 @@ mostlyclean:
 	rm -f $(OBJECTS)
 	rm -f $(TEST_OBJECTS)
 	rm -f $(TEST_BINARIES)
+	rm -f $(HARNESS_OBJECTS)
+	rm -f $(HARNESSES)
 
 clean: mostlyclean
 	rm -f $(BINARIES)

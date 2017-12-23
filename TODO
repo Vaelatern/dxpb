@@ -1,6 +1,7 @@
 Vaelatern's short list (v0.1.0):
 	- Ensure that all pipes are always read to the end before closing.
 	- Run tests (https://toyamcox.net/repo in the future)
+	- Add pinger on expiry for all graphers
 
 Todo (v0.1.1):
 	- Shim to unmark package as bad (similar to dxpb-poke)
@@ -11,6 +12,7 @@ Todo (v0.1.1):
 	  filer? Maybe magic new pkgs under pkgimport? Probably cleanest via
 	  pkgimport, generating a "shimmy" pkg that only depends on the main
 	  pkg if the -dbg pkg will be built.
+	- Output graph to .dot format perhaps? For consumption via web.
 
 Longer term:
 	- Replace most usage of zhash and zlist with libbsd alternatives with

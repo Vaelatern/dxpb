@@ -154,8 +154,20 @@ store_message_for_later_sending(client_t *self, int type)
 	}
 	tosave->type = type;
 	tosave->pkgname = self->args->pkgname;
-	tosave->version = self->args->version;
-	tosave->arch = self->args->arch;
+	switch(type) {
+	case PKGFILES_MSG_PKGDEL:
+		tosave->version = NULL;
+		tosave->arch = NULL;
+		break;
+	case PKGFILES_MSG_ISPKGHERE:
+		tosave->version = self->args->version;
+		tosave->arch = self->args->arch;
+		break;
+	default:
+		fprintf(stderr, "Message to save is non-sensical\n");
+		exit(ERR_CODE_BAD);
+		break;
+	}
 	zlist_append(self->msgs_to_send, tosave);
 }
 
@@ -188,11 +200,16 @@ trigger_send_saved_messages (client_t *self)
 		return;
 	struct message_to_send *tosend = zlist_first(self->msgs_to_send);
 	assert(tosend);
+	assert(tosend->type);
 	switch(tosend->type) {
 	case PKGFILES_MSG_PKGDEL:
+		assert(tosend->pkgname);
 		engine_set_next_event(self, act_on_do_pkgdel_event);
 		break;
 	case PKGFILES_MSG_ISPKGHERE:
+		assert(tosend->pkgname);
+		assert(tosend->version);
+		assert(tosend->arch);
 		engine_set_next_event(self, act_on_do_ispkghere_event);
 		break;
 	default:
@@ -213,6 +230,9 @@ prepare_ispkghere_from_pipe (client_t *self)
 	struct message_to_send *tosend = zlist_pop(self->msgs_to_send);
 	assert(tosend);
 	assert(tosend->type == PKGFILES_MSG_ISPKGHERE);
+	assert(tosend->pkgname);
+	assert(tosend->version);
+	assert(tosend->arch);
 	pkgfiles_msg_set_pkgname(self->message, tosend->pkgname);
 	pkgfiles_msg_set_version(self->message, tosend->version);
 	pkgfiles_msg_set_arch(self->message, tosend->arch);
@@ -237,6 +257,7 @@ prepare_pkgdel_from_pipe (client_t *self)
 	struct message_to_send *tosend = zlist_pop(self->msgs_to_send);
 	assert(tosend);
 	assert(tosend->type == PKGFILES_MSG_PKGDEL);
+	assert(tosend->pkgname);
 	pkgfiles_msg_set_pkgname(self->message, tosend->pkgname);
 	free(tosend->pkgname);
 	tosend->pkgname = NULL;
