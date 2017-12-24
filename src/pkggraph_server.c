@@ -201,17 +201,6 @@ pkggraph_server_test (bool verbose)
 }
 
 //  ---------------------------------------------------------------------------
-//  confirm_no_grapher
-//
-
-static void
-confirm_no_grapher (client_t *self)
-{
-	if (self->server->grapher)
-		engine_set_exception(self, killmenow_event);
-}
-
-//  ---------------------------------------------------------------------------
 //  register_grapher
 //
 
@@ -237,17 +226,6 @@ register_worker (client_t *self)
 		zstr_sendm(self->server->pub, "TRACE");
 		zstr_sendf(self->server->pub, "Adding worker");
 	}
-}
-
-//  ---------------------------------------------------------------------------
-//  confirm_no_storage
-//
-
-static void
-confirm_no_storage (client_t *self)
-{
-	if (self->server->storage)
-		engine_set_exception(self, killmenow_event);
 }
 
 //  ---------------------------------------------------------------------------
@@ -745,4 +723,28 @@ remove_self_as_storage (client_t *self)
 		zstr_sendm(self->server->pub, "TRACE");
 		zstr_sendf(self->server->pub, "Removing storage");
 	}
+}
+
+
+//  ---------------------------------------------------------------------------
+//  assert_is_grapher
+//
+
+static void
+assert_is_grapher (client_t *self)
+{
+	if (self->server->grapher == self)
+		engine_set_exception(self, killmenow_event);
+}
+
+
+//  ---------------------------------------------------------------------------
+//  assert_is_storage
+//
+
+static void
+assert_is_storage (client_t *self)
+{
+	if (self->server->storage == self)
+		engine_set_exception(self, killmenow_event);
 }

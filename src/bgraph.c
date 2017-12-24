@@ -130,6 +130,7 @@ bgraph_insert_pkg(bgraph grph, struct pkg *newguy)
 		trgtarch = pkg_archs_str[ARCH_NOARCH];
 	else
 		trgtarch = pkg_archs_str[newguy->arch];
+	assert(trgtarch);
 	relevant = zhash_lookup(grph, trgtarch);
 
 	if (relevant == NULL)
@@ -150,6 +151,7 @@ inline static struct pkg *
 bgraph_find_pkg(zhash_t *arch, zhash_t *noarch, const char *pkgname)
 {
 	struct pkg *retVal = NULL;
+	assert(pkgname);
 	if (arch != NULL)
 		retVal = zhash_lookup(arch, pkgname);
 	else if (noarch != NULL && retVal == NULL)
@@ -303,6 +305,7 @@ bgraph_pkg_ready(struct pkg *needle, bgraph hay)
 	for (struct pkg_need *curneed = zlist_first(needle->needs);
 			curneed != NULL; curneed = zlist_next(needle->needs)) {
 		pin = curneed->pkg;
+		assert(pin->name);
 		rc = bxbps_spec_match(curneed->spec, pin->name, pin->ver);
 		if (rc != ERR_CODE_YES)
 			return rc;

@@ -171,17 +171,15 @@ static int
 static void
     ensure_all_configuration_is_complete (client_t *self);
 static void
-    confirm_no_grapher (client_t *self);
-static void
     register_grapher (client_t *self);
 static void
     register_worker (client_t *self);
 static void
     establish_subgroup (client_t *self);
 static void
-    confirm_no_storage (client_t *self);
-static void
     register_storage (client_t *self);
+static void
+    assert_is_grapher (client_t *self);
 static void
     all_workers_should_bootstrap_update (client_t *self);
 static void
@@ -212,6 +210,8 @@ static void
     route_log (client_t *self);
 static void
     remove_self_as_worker (client_t *self);
+static void
+    assert_is_storage (client_t *self);
 static void
     grab_a_log_chunk (client_t *self);
 static void
@@ -585,12 +585,6 @@ s_client_execute (s_client_t *self, event_t event)
             case determine_role_state:
                 if (self->event == imthegrapher_event) {
                     if (!self->exception) {
-                        //  confirm no grapher
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ confirm no grapher", self->log_prefix);
-                        confirm_no_grapher (&self->client);
-                    }
-                    if (!self->exception) {
                         //  register grapher
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ register grapher", self->log_prefix);
@@ -640,12 +634,6 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == iamstorage_event) {
-                    if (!self->exception) {
-                        //  confirm no storage
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ confirm no storage", self->log_prefix);
-                        confirm_no_storage (&self->client);
-                    }
                     if (!self->exception) {
                         //  register storage
                         if (self->server->verbose)
@@ -711,6 +699,12 @@ s_client_execute (s_client_t *self, event_t event)
             case i_am_the_grapher_state:
                 if (self->event == tell_of_worker_event) {
                     if (!self->exception) {
+                        //  assert is grapher
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
+                        assert_is_grapher (&self->client);
+                    }
+                    if (!self->exception) {
                         //  send WORKERCANHELP
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ send WORKERCANHELP",
@@ -725,6 +719,12 @@ s_client_execute (s_client_t *self, event_t event)
                 else
                 if (self->event == update_bootstrap_event) {
                     if (!self->exception) {
+                        //  assert is grapher
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
+                        assert_is_grapher (&self->client);
+                    }
+                    if (!self->exception) {
                         //  all workers should bootstrap-update
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ all workers should bootstrap-update", self->log_prefix);
@@ -733,6 +733,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == workercanhelp_event) {
+                    if (!self->exception) {
+                        //  assert is grapher
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
+                        assert_is_grapher (&self->client);
+                    }
                     if (!self->exception) {
                         //  confirm worker still valid
                         if (self->server->verbose)
@@ -755,6 +761,12 @@ s_client_execute (s_client_t *self, event_t event)
                 else
                 if (self->event == you_ve_got_a_memo_event) {
                     if (!self->exception) {
+                        //  assert is grapher
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
+                        assert_is_grapher (&self->client);
+                    }
+                    if (!self->exception) {
                         //  parse memo
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ parse memo", self->log_prefix);
@@ -763,6 +775,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == tell_grapher_job_ended_event) {
+                    if (!self->exception) {
+                        //  assert is grapher
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
+                        assert_is_grapher (&self->client);
+                    }
                     if (!self->exception) {
                         //  send JOB_ENDED
                         if (self->server->verbose)
@@ -784,6 +802,12 @@ s_client_execute (s_client_t *self, event_t event)
                 else
                 if (self->event == tell_grapher_worker_gone_event) {
                     if (!self->exception) {
+                        //  assert is grapher
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
+                        assert_is_grapher (&self->client);
+                    }
+                    if (!self->exception) {
                         //  send FORGET_ABOUT_ME
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ send FORGET_ABOUT_ME",
@@ -803,6 +827,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == tell_grapher_worker_can_help_event) {
+                    if (!self->exception) {
+                        //  assert is grapher
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
+                        assert_is_grapher (&self->client);
+                    }
                     if (!self->exception) {
                         //  send WORKERCANHELP
                         if (self->server->verbose)
@@ -1063,6 +1093,12 @@ s_client_execute (s_client_t *self, event_t event)
             case i_am_storage_state:
                 if (self->event == send_the_log_event) {
                     if (!self->exception) {
+                        //  assert is storage
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is storage", self->log_prefix);
+                        assert_is_storage (&self->client);
+                    }
+                    if (!self->exception) {
                         //  grab a log chunk
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ grab a log chunk", self->log_prefix);
@@ -1071,6 +1107,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == send_resetlog_event) {
+                    if (!self->exception) {
+                        //  assert is storage
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is storage", self->log_prefix);
+                        assert_is_storage (&self->client);
+                    }
                     if (!self->exception) {
                         //  send RESETLOG
                         if (self->server->verbose)
@@ -1091,6 +1133,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == send_loghere_event) {
+                    if (!self->exception) {
+                        //  assert is storage
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is storage", self->log_prefix);
+                        assert_is_storage (&self->client);
+                    }
                     if (!self->exception) {
                         //  send LOGHERE
                         if (self->server->verbose)
@@ -1131,6 +1179,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else {
                     //  Handle unexpected protocol events
+                    if (!self->exception) {
+                        //  assert is storage
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is storage", self->log_prefix);
+                        assert_is_storage (&self->client);
+                    }
                     if (!self->exception) {
                         //  remove self as storage
                         if (self->server->verbose)

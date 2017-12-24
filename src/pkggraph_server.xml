@@ -25,7 +25,6 @@
 
 	<state name = "determine role" inherit = "defaults">
 		<event name = "IMTHEGRAPHER" next = "i am the grapher">
-			<action name = "confirm no grapher" />
 			<action name = "register grapher" />
 			<action name = "send" message = "ROGER" />
 		</event>
@@ -35,7 +34,6 @@
 			<action name = "send" message = "ROGER" />
 		</event>
 		<event name = "IAMSTORAGE" next = "i am storage">
-			<action name = "confirm no storage" />
 			<action name = "register storage" />
 			<action name = "send" message = "ROGER" />
 		</event>
@@ -43,28 +41,35 @@
 
 	<state name = "i am the grapher" inherit = "defaults">
 		<event name = "tell of worker">
+			<action name = "assert is grapher" />
 			<action name = "send" message = "WORKERCANHELP" />
 		</event>
 		<event name = "UPDATE BOOTSTRAP">
+			<action name = "assert is grapher" />
 			<action name = "all workers should bootstrap-update" />
 		</event>
 		<event name = "WORKERCANHELP">
+			<action name = "assert is grapher" />
 			<action name = "confirm worker still valid" />
 			<action name = "tell logger to reset log" />
 			<action name = "tell the worker to start work" />
 		</event>
 		<event name = "you've got a memo">
+			<action name = "assert is grapher" />
 			<action name = "parse memo" />
 		</event>
 		<event name = "tell grapher job ended">
+			<action name = "assert is grapher" />
 			<action name = "send" message = "JOB ENDED" />
 			<action name = "set event if more memos" />
 		</event>
 		<event name = "tell grapher worker gone">
+			<action name = "assert is grapher" />
 			<action name = "send" message = "FORGET ABOUT ME" />
 			<action name = "set event if more memos" />
 		</event>
 		<event name = "tell grapher worker can help">
+			<action name = "assert is grapher" />
 			<action name = "send" message = "WORKERCANHELP" />
 			<action name = "set event if more memos" />
 		</event>
@@ -119,17 +124,21 @@
 
 	<state name = "i am storage" inherit = "defaults">
 		<event name = "send the log">
+			<action name = "assert is storage" />
 			<action name = "grab a log chunk" />
 		</event>
 		<event name = "send resetlog">
+			<action name = "assert is storage" />
 			<action name = "send" message = "RESETLOG" />
 			<action name = "post process sending log chunk" />
 		</event>
 		<event name = "send loghere">
+			<action name = "assert is storage" />
 			<action name = "send" message = "LOGHERE" />
 			<action name = "post process sending log chunk" />
 		</event>
 		<event name = "*">
+			<action name = "assert is storage" />
 			<action name = "remove self as storage" />
 			<action name = "terminate" />
 		</event>
