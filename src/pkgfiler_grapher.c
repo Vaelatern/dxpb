@@ -153,15 +153,15 @@ store_message_for_later_sending(client_t *self, int type)
 		exit(ERR_CODE_NOMEM);
 	}
 	tosave->type = type;
-	tosave->pkgname = self->args->pkgname;
+	tosave->pkgname = strdup(self->args->pkgname);
 	switch(type) {
 	case PKGFILES_MSG_PKGDEL:
 		tosave->version = NULL;
 		tosave->arch = NULL;
 		break;
 	case PKGFILES_MSG_ISPKGHERE:
-		tosave->version = self->args->version;
-		tosave->arch = self->args->arch;
+		tosave->version = strdup(self->args->version);
+		tosave->arch = strdup(self->args->arch);
 		break;
 	default:
 		fprintf(stderr, "Message to save is non-sensical\n");
