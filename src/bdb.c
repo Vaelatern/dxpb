@@ -478,12 +478,10 @@ bdb_fill_from_column(struct bdb_bound_params *params, struct pkg *pkg, int col)
 	case 'b': // broken or bootstrap
 		switch(colname[1]) {
 		case 'o': // bootstrap
-			pkg->bootstrap = sqlite3_column_int(params->ROW,
-							params->bootstrap);
+			pkg->bootstrap = sqlite3_column_int(params->ROW, col);
 			break;
 		case 'r': // broken
-			pkg->broken = sqlite3_column_int(params->ROW,
-					params->broken);
+			pkg->broken = sqlite3_column_int(params->ROW, col);
 			break;
 		default:
 			exit(ERR_CODE_BADDB);
@@ -492,18 +490,15 @@ bdb_fill_from_column(struct bdb_bound_params *params, struct pkg *pkg, int col)
 	case 'c': // cancross, crossdestneeds, crosshostneeds
 		switch(colname[5]) {
 		case 'o': // cancross
-			pkg->can_cross = sqlite3_column_int(params->ROW,
-						params->cancross);
+			pkg->can_cross = sqlite3_column_int(params->ROW, col);
 			break;
 		case 'd': // crossdestneeds
-			tmp = sqlite3_column_text(params->ROW,
-					params->crossdestneeds);
+			tmp = sqlite3_column_text(params->ROW, col);
 			pkg->wneeds_cross_target = bwords_from_units(
 					(const char *)tmp);
 			break;
 		case 'h': // crosshostneeds
-			tmp = sqlite3_column_text(params->ROW,
-					params->crosshostneeds);
+			tmp = sqlite3_column_text(params->ROW, col);
 			pkg->wneeds_cross_host = bwords_from_units(
 					(const char *)tmp);
 			break;
@@ -512,7 +507,7 @@ bdb_fill_from_column(struct bdb_bound_params *params, struct pkg *pkg, int col)
 		}
 		break;
 	case 'd': //destneeds
-		tmp = sqlite3_column_text(params->ROW, params->destneeds);
+		tmp = sqlite3_column_text(params->ROW, col);
 		pkg->wneeds_native_target =
 					bwords_from_units((const char *)tmp);
 		break;
@@ -521,8 +516,7 @@ bdb_fill_from_column(struct bdb_bound_params *params, struct pkg *pkg, int col)
 		case 'a': // hashid
 			break;
 		case 'o': // hostneeds
-			tmp = sqlite3_column_text(params->ROW,
-					params->hostneeds);
+			tmp = sqlite3_column_text(params->ROW, col);
 			pkg->wneeds_native_host =
 				bwords_from_units((const char *)tmp);
 			break;
@@ -531,15 +525,14 @@ bdb_fill_from_column(struct bdb_bound_params *params, struct pkg *pkg, int col)
 		}
 		break;
 	case 'n': // name
-		tmp = sqlite3_column_text(params->ROW, params->name);
+		tmp = sqlite3_column_text(params->ROW, col);
 		pkg->name = strdup((const char *)tmp);
 		break;
 	case 'r': // restricted
-		pkg->restricted = sqlite3_column_int(params->ROW,
-				params->restricted);
+		pkg->restricted = sqlite3_column_int(params->ROW, col);
 		break;
 	case 'v': // version
-		tmp = sqlite3_column_text(params->ROW, params->version);
+		tmp = sqlite3_column_text(params->ROW, col);
 		pkg->ver = strdup((const char *)tmp);
 		break;
 	default:
