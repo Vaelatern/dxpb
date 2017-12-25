@@ -25,6 +25,9 @@
 	<state name = "file finding">
 		A big state because we want this to always work and to be
 		asyncronous to all clients.
+		<event name = "HELLO" next = "file finding">
+			<action name = "send" message = "ROGER" />
+		</event>
 		<event name = "ISPKGHERE">
 			Step 1 of locating a file
 			<action name = "check for pkg locally">

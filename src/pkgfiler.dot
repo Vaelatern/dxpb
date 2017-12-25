@@ -10,6 +10,9 @@ digraph "pkgfiler" {
  "start *" -> "start";
 
  "file finding" [shape = "doublecircle"];
+ "file finding hello" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">hello</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "file finding" -> "file finding hello";
+ "file finding hello" -> "file finding";
  "file finding ispkghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ispkghere</font></td></tr><tr><td align="left" port="r3">check for pkg locally</td></tr><tr><td align="left" port="r3">broadcast pkg locate request</td></tr></table>>];
  "file finding" -> "file finding ispkghere";
  "file finding ispkghere" -> "file finding";

@@ -57,6 +57,7 @@ static int
 client_initialize (client_t *self)
 {
 	self->msgs_to_send = zlist_new();
+	engine_set_expiry(self, 15000);
 	return 0;
 }
 

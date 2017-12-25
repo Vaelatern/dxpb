@@ -536,6 +536,22 @@ s_client_execute (s_client_t *self, event_t event)
                 break;
 
             case file_finding_state:
+                if (self->event == hello_event) {
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_ROGER);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception)
+                        self->state = file_finding_state;
+                }
+                else
                 if (self->event == ispkghere_event) {
                     if (!self->exception) {
                         //  check for pkg locally
