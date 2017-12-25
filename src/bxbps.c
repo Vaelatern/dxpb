@@ -50,6 +50,7 @@ bxbps_get_pkgname(const char *spec, bgraph graph)
 		return retVal;
 	}
 
+	fprintf(stderr, "The following spec is unacceptable: %s\n", spec);
 	if (retVal != NULL)
 		free(retVal);
 	retVal = NULL;

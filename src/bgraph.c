@@ -217,6 +217,8 @@ bgraph_resolve_wneed(bgraph hay, bgraph allhay, bwords curwords, void *ineed, vo
 	struct pkg *curpkg = NULL;
 	for (size_t i = 0; i < curwords->num_words; i++) {
 		char *curpkgname = bxbps_get_pkgname(curwords->words[i], allhay);
+		if (curpkgname == NULL)
+			continue;
 		curpkg = bgraph_find_pkg(hay, allhay, curpkgname);
 		if (curpkg == NULL)
 			goto badwant;
