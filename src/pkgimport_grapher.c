@@ -321,6 +321,8 @@ pkgimport_grapher_ask_files_for_missing_pkgs(client_t *self)
 			assert(pkg->status != PKG_STATUS_IN_REPO); // can't be nextup if in_repo
 			if (pkg->status > PKG_STATUS_NONE)
 				continue;
+			if (pkg->arch == ARCH_TARGET)
+				continue;
 
 			retVal = pkgimport_grapher_ask_around_for_pkg(self, pkg);
 			if (retVal == ERR_CODE_OK)
