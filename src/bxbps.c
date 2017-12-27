@@ -94,5 +94,6 @@ bxbps_pkg_to_filename(const char *pkgname, const char *version, const char *arch
 	filename = bstring_add(filename, ".",      &paramA, &paramB);
 	filename = bstring_add(filename, arch,     &paramA, &paramB);
 	filename = bstring_add(filename, ".xbps",  &paramA, &paramB);
+	assert(filename);
 	return filename;
 }

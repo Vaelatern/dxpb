@@ -43,7 +43,7 @@ BINARIES = \
 	dxpb-poke
 HARNESSES = harness-grapher
 HARNESS_OBJECTS = harness-grapher.o
-TEST_BINARIES = check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps
+TEST_BINARIES = check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps usebfs
 TEST_OBJECTS = check_bgraph.o check_bwords.o check_bstring.o check_btranslate.o check_bpkg.o check_bxbps.o
 OBJECTS = \
 	bbuilder.o \

@@ -67,6 +67,7 @@ static struct hunt *
 new_hunt(client_t *asker, const char *pkgname, const char *version, const char *arch)
 {
 	struct hunt *hunt = malloc(sizeof(struct hunt));
+	assert(hunt);
 	hunt->asker = asker;
 	hunt->pkgname = strdup(pkgname);
 	hunt->version = strdup(version);
@@ -288,6 +289,7 @@ check_for_pkg_locally (client_t *self)
 			pkgfiles_msg_pkgname(self->message),
 			pkgfiles_msg_version(self->message),
 			pkgfiles_msg_arch(self->message));
+	assert(pkgfile);
 	int present = bfs_find_file_in_subdir(self->server->repodir, pkgfile, 0);
 	if (present)
 		engine_set_exception(self, pkg_here_event);
@@ -316,8 +318,10 @@ broadcast_pkg_locate_request (client_t *self)
 			pkgfiles_msg_version(self->message),
 			pkgfiles_msg_arch(self->message));
 	char *key = pkgmsg_to_str(self->message);
+	assert(key);
 	zhash_insert(self->server->hunts, key, hunt);
 	self->server->curhunt = hunt;
+	assert(hunt);
 	engine_broadcast_event(self->server, self, trigger_job_hunt_event);
 	free(key);
 	key = NULL;

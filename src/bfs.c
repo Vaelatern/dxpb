@@ -166,7 +166,7 @@ bfs_find_file_in_subdir(const char *rootdir, const char *filename, char **subdir
 		close(fd_top);
 		closedir(dir);
 	} else
-		if (*subdir)
+		if (subdir)
 			retVal = open(curpath, O_RDONLY | O_NONBLOCK);
 		else
 			retVal = 1;
