@@ -35,6 +35,7 @@ LDLIBS += -lzmq -lczmq
 BINARIES = \
 	dxpb-builder \
 	dxpb-frontend \
+	dxpb-graph-to-dot \
 	dxpb-grapher \
 	dxpb-hostdir-master \
 	dxpb-hostdir-remote \
@@ -62,6 +63,7 @@ OBJECTS = \
 	dxpb-builder.o \
 	dxpb-common.o \
 	dxpb-frontend.o \
+	dxpb-graph-to-dot.o \
 	dxpb-grapher.o \
 	dxpb-hostdir-master.o \
 	dxpb-hostdir-remote.o \
@@ -159,6 +161,9 @@ testdb: pkgimport_msg.o bxsrc.o bxbps.o bstring.o bwords.o bgraph.o bxpkg.o bdb.
 $(BINARIES): bstring.o bfs.o
 
 dxpb-poke: dxpb-poke.o pkgimport_poke.o pkgimport_msg.o
+
+dxpb-graph-to-dot: LDLIBS += -lsqlite3 -larchive -lxbps -lcgraph
+dxpb-graph-to-dot: dxpb-graph-to-dot.o bdb.o bwords.o bgraph.o bxpkg.o bpkg.o bxsrc.o pkgimport_msg.o bxbps.o bdot.o
 
 dxpb-pkgimport-agent: LDLIBS += -lbsd
 dxpb-pkgimport-agent: dxpb-pkgimport-agent.o bxpkg.o bpkg.o bwords.o bxsrc.o pkgimport_client.o pkgimport_msg.o

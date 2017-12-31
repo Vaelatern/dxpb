@@ -1,0 +1,11 @@
+usage: dxpb-graph-to-dot [arguments]
+
+Arguments:
+  -h		This help, and exit
+  -L		Print license information and exit
+  -f		Path to sql db
+  -t		Path to target .dot file
+
+The following flags have defaults.
+  -f: /var/cache/dxpb/pkgs.db
+  -t: /var/cache/dxpb/pkgs.dot
