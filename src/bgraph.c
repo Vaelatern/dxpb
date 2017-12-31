@@ -26,7 +26,8 @@ bgraph_new()
 	enum pkg_archs i = ARCH_NOARCH;
 
 	while (pkg_archs_str[i] != NULL && i < ARCH_NUM_MAX) {
-		zhash_insert(retVal, pkg_archs_str[i], zhash_new());
+		if (i != ARCH_TARGET)
+			zhash_insert(retVal, pkg_archs_str[i], zhash_new());
 		i++;
 	}
 
@@ -223,6 +224,7 @@ bgraph_resolve_wneed(bgraph hay, bgraph allhay, bwords curwords, void *ineed, vo
 		if (curpkg == NULL)
 			goto badwant;
 		free(curpkgname); /* mandated by the xbps functions */
+		curpkgname = NULL;
 		zlist_append(ineed, bgraph_new_need(curwords->words[i], curpkg));
 		zlist_append(needs_me, me);
 	}
