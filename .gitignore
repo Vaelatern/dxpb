@@ -1,12 +1,14 @@
 *.o
 dxpb-*
 check_*
+harness-*
 !check_*.c
 !runsv/dxpb*
 !dxpb-*.c
 !dxpb-common.h
 !*.txt
 !*.inc
+!harness-*.c
 .container
 src/gmon.out
 **/conf.yml
