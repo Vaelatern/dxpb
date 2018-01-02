@@ -28,7 +28,7 @@ digraph "pkgfiler" {
  "file finding idontwannashare" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">idontwannashare</font></td></tr><tr><td align="left" port="r3">obsolete peer agreement</td></tr><tr><td align="left" port="r3">tell asker pkg not here</td></tr><tr><td align="left" port="r3">end hunt</td></tr></table>>];
  "file finding" -> "file finding idontwannashare";
  "file finding idontwannashare" -> "file finding";
- "file finding we couldn't find it" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">we couldn't find it</font></td></tr><tr><td align="left" port="r3">tell asker pkg not here</td></tr><tr><td align="left" port="r3">end hunt</td></tr></table>>];
+ "file finding we couldn't find it" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">we couldn't find it</font></td></tr><tr><td align="left" port="r3">tell asker pkg not here</td></tr></table>>];
  "file finding" -> "file finding we couldn't find it";
  "file finding we couldn't find it" -> "file finding";
  "file finding pkghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkghere</font></td></tr><tr><td align="left" port="r3">mark pkg at remote location</td></tr><tr><td align="left" port="r3">act if all remotes returned or expired</td></tr></table>>];
@@ -40,10 +40,10 @@ digraph "pkgfiler" {
  "file finding i have the hunted" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">i have the hunted</font></td></tr><tr><td align="left" port="r3">curhunt to my own message</td></tr><tr><td align="left" port="r3">end hunt</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "file finding" -> "file finding i have the hunted";
  "file finding i have the hunted" -> "file finding";
- "file finding pkg here" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkg here</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "file finding pkg here" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkg here</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">parse memos</td></tr></table>>];
  "file finding" -> "file finding pkg here";
  "file finding pkg here" -> "file finding";
- "file finding pkg not here" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkg not here</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">parse memos</td></tr></table>>];
+ "file finding pkg not here" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkg not here</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">end hunt</td></tr><tr><td align="left" port="r3">parse memos</td></tr></table>>];
  "file finding" -> "file finding pkg not here";
  "file finding pkg not here" -> "file finding";
  "file finding i might want to share" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">i might want to share</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">parse memos</td></tr></table>>];
@@ -58,7 +58,7 @@ digraph "pkgfiler" {
  "file finding invalid" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
  "file finding" -> "file finding invalid";
  "file finding invalid" -> "start";
- "file finding expired" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">mark all pkgs not at this remote location</td></tr><tr><td align="left" port="r3">act if all remotes returned or expired</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "file finding expired" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">mark all pkgs not at this remote location</td></tr><tr><td align="left" port="r3">act if all remotes returned or expired</td></tr></table>>];
  "file finding" -> "file finding expired";
  "file finding expired" -> "file finding";
 }

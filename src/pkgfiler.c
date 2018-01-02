@@ -26,7 +26,7 @@
 #include "bxbps.h"
 #include "bfs.h"
 #include "bstring.h"
-
+#include "bdebug.h"
 
 //  ---------------------------------------------------------------------------
 //  Forward declarations for the two main classes we use here
@@ -53,11 +53,14 @@ pkgmsg_to_str(pkgfiles_msg_t *message)
 			pkgfiles_msg_arch(message));
 }
 
+#define HUNT_AGE_MAX 8
+
 struct hunt {
 	client_t *asker;
 	char *pkgname;
 	char *version;
 	char *arch;
+	uint8_t age;
 	zlist_t *responded;
 	zlist_t *pkg_here;
 	zlist_t *resp_pending;
@@ -75,6 +78,7 @@ new_hunt(client_t *asker, const char *pkgname, const char *version, const char *
 	hunt->responded = zlist_new();
 	hunt->pkg_here = zlist_new();
 	hunt->resp_pending = zlist_new();
+	hunt->age = 0;
 	assert(hunt->pkgname);
 	assert(hunt->version);
 	assert(hunt->arch);
@@ -170,6 +174,111 @@ get_max_inflight(client_t *self)
 //  Include the generated server engine
 #include "pkgfiler_engine.inc"
 
+//  ---------------------------------------------------------------------------
+//  A step to generate memos easily
+//
+
+static void
+generate_memos(server_t *self)
+{
+	printnote("Generating memos");
+	zlist_t *tmphunts = zlist_new();
+	client_t *client = NULL;
+	struct hunt *curhunt;
+	struct hunt_atom *curatom;
+	for (curhunt = zhash_first(self->hunts); curhunt;
+			curhunt = zhash_next(self->hunts)) {
+		if (zlist_size(curhunt->resp_pending) == 0 ||
+				curhunt->age > HUNT_AGE_MAX) {
+			zlist_append(tmphunts, curhunt);
+		}
+	}
+	while ((curhunt = zlist_pop(tmphunts))) {
+		printnote("Popped a tmphunt");
+		struct memo *memo = calloc(1, sizeof(struct memo));
+		assert(curhunt->pkgname);
+		assert(curhunt->version);
+		assert(curhunt->arch);
+		memo->msg = pkgfiles_msg_new();
+		pkgfiles_msg_set_pkgname(memo->msg, curhunt->pkgname);
+		pkgfiles_msg_set_version(memo->msg, curhunt->version);
+		pkgfiles_msg_set_arch(memo->msg, curhunt->arch);
+		switch (zlist_size(curhunt->pkg_here)) {
+		case 0:
+			printnote("We couldn't find a pkg");
+			client = curhunt->asker;
+			pkgfiles_msg_set_id(memo->msg, PKGFILES_MSG_PKGNOTHERE);
+			break;
+		default:
+			printnote("We found a sharer");
+			/* We chose the source of the package */
+			/* Most common for noarch subpackages */
+			curatom = zlist_first(curhunt->pkg_here);
+			client = curatom->client;
+			pkgfiles_msg_set_id(memo->msg, PKGFILES_MSG_WANNASHARE_);
+			break;
+		}
+		memo->client = client;
+		printnote("Appending a message to memos");
+		zlist_append(self->followups, memo);
+	}
+}
+
+
+//
+// A step to parse already existing memos
+
+static void
+server_parse_memos(server_t *self)
+{
+	printnote("Parsing a memo");
+	struct memo *memo = zlist_pop(self->followups);
+	if (memo && memo->client->message && memo->msg) {
+		pkgfiles_msg_set_pkgname(memo->client->message, pkgfiles_msg_pkgname(memo->msg));
+		pkgfiles_msg_set_version(memo->client->message, pkgfiles_msg_version(memo->msg));
+		pkgfiles_msg_set_arch(memo->client->message, pkgfiles_msg_arch(memo->msg));
+		switch(pkgfiles_msg_id(memo->msg)) {
+		case PKGFILES_MSG_PKGNOTHERE:
+			engine_send_event(memo->client, pkg_not_here_event);
+			break;
+		case PKGFILES_MSG_WANNASHARE_:
+			engine_send_event(memo->client, i_might_want_to_share_event);
+			break;
+		default:
+			fprintf(stderr, "Entered invalid state! memo->msg = %d\n",
+					pkgfiles_msg_id(memo->msg));
+			exit(ERR_CODE_BAD);
+		}
+		pkgfiles_msg_destroy(&(memo->msg));
+	}
+	if (memo)
+		free(memo);
+	memo = NULL;
+
+	if (self->pub) {
+		zstr_sendm(self->pub, "TRACE");
+		zstr_sendf(self->pub, "Parsed a memo");
+	}
+}
+
+//
+// Run regularly to crunch the server
+
+static int
+regular_maintenance(zloop_t *loop, int timer_id, void *argument)
+{
+	(void) loop;
+	(void) timer_id;
+	server_t *self = (server_t *) argument;
+	for (struct hunt *curhunt = zhash_first(self->hunts); curhunt;
+			curhunt = zhash_next(self->hunts)) {
+		curhunt->age++;
+	}
+	generate_memos(self);
+	server_parse_memos(self);
+	return 0;                   //  0 = continue, -1 = end reactor
+}
+
 //  Allocate properties and structures for a new server instance.
 //  Return 0 if OK, or -1 if there was an error.
 
@@ -184,6 +293,8 @@ server_initialize (server_t *self)
 	self->peering = zhash_new();
 	self->repodir = NULL;
 	self->stagingdir = NULL;
+	engine_configure(self, "server/timeout", "15000");
+	engine_set_monitor (self, 2000, regular_maintenance);
 	//  Construct properties here
 	return 0;
 }
@@ -284,13 +395,14 @@ pkgfiler_test (bool verbose)
 static void
 check_for_pkg_locally (client_t *self)
 {
+	printnote("Checking for pkg locally");
 	assert(self->server->repodir);
 	char *pkgfile = bxbps_pkg_to_filename(
 			pkgfiles_msg_pkgname(self->message),
 			pkgfiles_msg_version(self->message),
 			pkgfiles_msg_arch(self->message));
 	assert(pkgfile);
-	int present = bfs_find_file_in_subdir(self->server->repodir, pkgfile, 0);
+	int present = bfs_find_file_in_subdir(self->server->repodir, pkgfile, NULL);
 	if (present)
 		engine_set_exception(self, pkg_here_event);
 	free(pkgfile);
@@ -304,6 +416,7 @@ check_for_pkg_locally (client_t *self)
 				pkgfiles_msg_arch(self->message),
 				(!!(present))*3, "n't"); // 3 is strlen("n't")
 	}
+	printnote("Ended checking for pkg");
 }
 
 
@@ -314,6 +427,7 @@ check_for_pkg_locally (client_t *self)
 static void
 broadcast_pkg_locate_request (client_t *self)
 {
+	printnote("Broadcasting request for package");
 	struct hunt *hunt = new_hunt(self, pkgfiles_msg_pkgname(self->message),
 			pkgfiles_msg_version(self->message),
 			pkgfiles_msg_arch(self->message));
@@ -340,9 +454,8 @@ delete_package (client_t *self)
 			pkgfiles_msg_pkgname(self->message),
 			pkgfiles_msg_version(self->message),
 			pkgfiles_msg_arch(self->message));
-	uint32_t parA, parB;
-	parA = parB = 0;
-	char *subdir;
+	uint32_t parA = 0, parB = 0;
+	char *subdir = NULL;
 	int rc = bfs_find_file_in_subdir(self->server->repodir, filename, &subdir);
 	if (rc == 0)
 		return; // Package doesn't exist to be deleted.
@@ -413,7 +526,7 @@ write_file_chunk (client_t *self)
 		// but it would be nice to decide TODO: if we need to ensure
 		// the subpaths line up with what we want, to detect bad peers.
 		// const char *subpath = pkgfiles_msg_subpath(self->message);
-		uint32_t parA, parB;
+		uint32_t parA = 0, parB = 0;
 		char *filepath = bstring_add(NULL, self->server->stagingdir,
 				&parA, &parB);
 		if (filepath[parB] != '/')
@@ -544,37 +657,8 @@ end:
 static void
 act_if_all_remotes_returned_or_expired (client_t *self)
 {
-	zlist_t *tmphunts = zlist_new();
-	client_t *client = NULL;
-	struct hunt *curhunt;
-	struct hunt_atom *curatom;
-	for (curhunt = zhash_first(self->server->hunts); curhunt;
-			curhunt = zhash_next(self->server->hunts)) {
-		if (zlist_size(curhunt->resp_pending) == 0) {
-			zlist_append(tmphunts, curhunt);
-		}
-	}
-	while ((curhunt = zlist_pop(tmphunts))) {
-		struct memo *memo = calloc(1, sizeof(struct memo));
-		pkgfiles_msg_set_pkgname(memo->msg, curhunt->pkgname);
-		pkgfiles_msg_set_version(memo->msg, curhunt->version);
-		pkgfiles_msg_set_arch(memo->msg, curhunt->arch);
-		switch (zlist_size(curhunt->pkg_here)) {
-		case 0:
-			client = curhunt->asker;
-			pkgfiles_msg_set_id(memo->msg, PKGFILES_MSG_PKGNOTHERE);
-			break;
-		default:
-			/* We chose the source of the package */
-			/* Most common for noarch subpackages */
-			curatom = zlist_first(curhunt->pkg_here);
-			client = curatom->client;
-			pkgfiles_msg_set_id(memo->msg, PKGFILES_MSG_WANNASHARE_);
-			break;
-		}
-		memo->client = client;
-		zlist_append(self->server->followups, memo);
-	}
+	printnote("Acting on all remotes returned or expired");
+	generate_memos(self->server);
 }
 
 
@@ -616,22 +700,21 @@ mark_all_pkgs_not_at_this_remote_location (client_t *self)
 				togo = atom;
 		}
 		zlist_remove(curhunt->responded, togo);
-	}
-	for (struct hunt *curhunt = zlist_first(self->refs); curhunt; curhunt = zlist_next(self->refs)) {
+		togo = NULL;
 		for (struct hunt_atom *atom = zlist_first(curhunt->pkg_here);
 				atom; atom = zlist_next(curhunt->pkg_here)) {
 			if (atom->client == self)
 				togo = atom;
 		}
 		zlist_remove(curhunt->pkg_here, togo);
-	}
-	for (struct hunt *curhunt = zlist_first(self->refs); curhunt; curhunt = zlist_next(self->refs)) {
+		togo = NULL;
 		for (struct hunt_atom *atom = zlist_first(curhunt->resp_pending);
 				atom; atom = zlist_next(curhunt->resp_pending)) {
 			if (atom->client == self)
 				togo = atom;
 		}
 		zlist_remove(curhunt->resp_pending, togo);
+		togo = NULL;
 	}
 }
 
@@ -643,6 +726,9 @@ mark_all_pkgs_not_at_this_remote_location (client_t *self)
 static void
 curhunt_to_my_own_message (client_t *self)
 {
+	assert(self->server->curhunt->pkgname);
+	assert(self->server->curhunt->version);
+	assert(self->server->curhunt->arch);
 	pkgfiles_msg_set_pkgname(self->message, self->server->curhunt->pkgname);
 	pkgfiles_msg_set_version(self->message, self->server->curhunt->version);
 	pkgfiles_msg_set_arch(self->message, self->server->curhunt->arch);
@@ -672,9 +758,11 @@ static void
 end_hunt (client_t *self)
 {
 	char *key = pkgmsg_to_str(self->message);
-	assert(zhash_lookup(self->server->hunts, key));
+	printnote(key);
+	struct hunt *todie = zhash_lookup(self->server->hunts, key);
+	assert(todie);
 	zhash_delete(self->server->hunts, key);
-	destroy_hunt(&(self->server->curhunt));
+	destroy_hunt(&todie);
 	free(key);
 	key = NULL;
 }
@@ -704,8 +792,7 @@ postprocess_chunk (client_t *self)
 		}
 		fetch->fp = NULL;
 
-		uint32_t parA, parB;
-		parA = parB = 0;
+		uint32_t parA = 0, parB = 0;
 		char *newfilepath = bstring_add(NULL, self->server->repodir,
 				&parA, &parB);
 		if (newfilepath[parB] != '/')
@@ -766,29 +853,7 @@ ask_for_more (client_t *self)
 static void
 parse_memos (client_t *self)
 {
-	struct memo *memo = zlist_pop(self->server->followups);
-	if (memo && memo->client->message) {
-		switch(pkgfiles_msg_id(memo->msg)) {
-			case PKGFILES_MSG_PKGNOTHERE:
-				engine_send_event(memo->client, pkg_not_here_event);
-				break;
-			case PKGFILES_MSG_WANNASHARE_:
-				engine_send_event(memo->client, i_might_want_to_share_event);
-				break;
-		}
-		pkgfiles_msg_set_pkgname(memo->client->message, pkgfiles_msg_pkgname(memo->msg));
-		pkgfiles_msg_set_version(memo->client->message, pkgfiles_msg_version(memo->msg));
-		pkgfiles_msg_set_arch(memo->client->message, pkgfiles_msg_arch(memo->msg));
-		pkgfiles_msg_destroy(&(memo->msg));
-	}
-	if (memo)
-		free(memo);
-	memo = NULL;
-
-	if (self->server->pub) {
-		zstr_sendm(self->server->pub, "TRACE");
-		zstr_sendf(self->server->pub, "Parsed a memo");
-	}
+	server_parse_memos(self->server);
 }
 
 

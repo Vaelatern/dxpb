@@ -1,5 +1,5 @@
 #!/bin/sh
 
-make harness-$1
+make harness
 ./harness-$1
 pkill dxpb-$1

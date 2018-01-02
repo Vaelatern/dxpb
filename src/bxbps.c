@@ -87,7 +87,7 @@ bxbps_pkg_to_filename(const char *pkgname, const char *version, const char *arch
 	assert(version);
 	assert(arch);
 	char *filename = NULL;
-	uint32_t paramA, paramB;
+	uint32_t paramA = 0, paramB = 0;
 	filename = bstring_add(filename, pkgname,  &paramA, &paramB);
 	filename = bstring_add(filename, "-",      &paramA, &paramB);
 	filename = bstring_add(filename, version,  &paramA, &paramB);

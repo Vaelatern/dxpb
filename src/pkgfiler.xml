@@ -60,7 +60,6 @@
 		</event>
 		<event name = "we couldn't find it">
 			<action name = "tell asker pkg not here" />
-			<action name = "end hunt" />
 		</event>
 		<event name = "PKGHERE">
 			<action name = "mark pkg at remote location" />
@@ -77,9 +76,11 @@
 		</event>
 		<event name = "pkg here">
 			<action name = "send" message= "PKGHERE" />
+			<action name = "parse memos" />
 		</event>
 		<event name = "pkg not here">
 			<action name = "send" message= "PKGNOTHERE" />
+			<action name = "end hunt" />
 			<action name = "parse memos" />
 		</event>
 		<event name = "I might want to share">
@@ -98,7 +99,6 @@
 			This state should only trigger if a remote e.g. has a bad nfs or sshfs mount that causes them to hang up on file system operations. That or a bad remote.
 			<action name = "mark all pkgs not at this remote location" />
 			<action name = "act if all remotes returned or expired" />
-			<action name = "terminate" />
 		</event>
 	</state>
 </class>

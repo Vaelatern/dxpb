@@ -669,12 +669,6 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ tell asker pkg not here", self->log_prefix);
                         tell_asker_pkg_not_here (&self->client);
                     }
-                    if (!self->exception) {
-                        //  end hunt
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ end hunt", self->log_prefix);
-                        end_hunt (&self->client);
-                    }
                 }
                 else
                 if (self->event == pkghere_event) {
@@ -745,6 +739,12 @@ s_client_execute (s_client_t *self, event_t event)
                         pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
                         pkgfiles_msg_send (self->server->message, self->server->router);
                     }
+                    if (!self->exception) {
+                        //  parse memos
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ parse memos", self->log_prefix);
+                        parse_memos (&self->client);
+                    }
                 }
                 else
                 if (self->event == pkg_not_here_event) {
@@ -758,6 +758,12 @@ s_client_execute (s_client_t *self, event_t event)
                         pkgfiles_msg_print (self->server->message);
                         pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
                         pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception) {
+                        //  end hunt
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ end hunt", self->log_prefix);
+                        end_hunt (&self->client);
                     }
                     if (!self->exception) {
                         //  parse memos
@@ -838,12 +844,6 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ act if all remotes returned or expired", self->log_prefix);
                         act_if_all_remotes_returned_or_expired (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
                     }
                 }
                 else {
