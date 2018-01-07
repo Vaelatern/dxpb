@@ -1,5 +1,4 @@
 Vaelatern's short list (v0.1.0):
-	- Ensure that all pipes are always read to the end before closing.
 	- Run tests (https://toyamcox.net/repo in the future)
 	- Add pinger on expiry for all graphers
 

@@ -33,6 +33,25 @@ static char	*bxsrc_request_to_string(int);
 static char	 bxsrc_did_print(int *);
 
 static int
+unset_fd_o_nonblock(int fd)
+{
+	assert(fd >= 0);
+	int flags;
+	errno = 0;
+	if ((flags = fcntl(fd, F_GETFL)) < 0) {
+		perror("Can't F_GETFL on this file descriptor");
+		return -1;
+	}
+	if (flags & O_NONBLOCK)
+		flags ^= O_NONBLOCK;
+	if (fcntl(fd, F_SETFL, flags) == -1) {
+		perror("Can't F_SETFL on this file descriptor");
+		return -1;
+	}
+	return 0;
+}
+
+static int
 set_fd_o_nonblock(int fd)
 {
 	assert(fd >= 0);
@@ -321,12 +340,22 @@ void
 bxsrc_close(int fds[], pid_t c_pid)
 {
 	assert(fds[0] > 2 && fds[1] > 2 && fds[2] > 2);
+	char buf[80];
 	/* Close writing pipe */
 	close(fds[1]);
 	/* Wait for process to end */
 	int subVal = 0;
 	waitpid(c_pid, &subVal, 0);
 	/* Close reading pipes */
+	/* Read all reading pipes to the end */
+	unset_fd_o_nonblock(fds[0]);
+	unset_fd_o_nonblock(fds[2]);
+	while (read(fds[0], buf, 79)) {
+		;
+	}
+	while (read(fds[2], buf, 79)) {
+		;
+	}
 	close(fds[0]);
 	close(fds[2]);
 	assert(!subVal);
@@ -336,6 +365,7 @@ int
 bxsrc_build_end(const int fds[], const pid_t c_pid)
 {
 	assert(fds[0] > 2 && fds[1] > 2);
+	char buf[80];
 	/* Close writing pipe */
 	close(fds[1]);
 	/* Wait for process to end */
@@ -344,6 +374,10 @@ bxsrc_build_end(const int fds[], const pid_t c_pid)
 		kill(c_pid, SIGTERM);
 	waitpid(c_pid, &retVal, 0);
 	/* Close reading pipe */
+	unset_fd_o_nonblock(fds[0]);
+	while (read(fds[0], buf, 79)) {
+		;
+	}
 	close(fds[0]);
 	return retVal;
 }
