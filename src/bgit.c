@@ -281,7 +281,7 @@ bgit_checkout_hash(const char *repopath, const char *hash)
 		retVal = -2;
 		goto cleanup;
 	}
-	if (git_oid_equal(&hashoid, &headoid) == 0) {
+	if (git_oid_equal(&hashoid, &headoid)) {
 		retVal = 0; // Success. We are at that hash too.
 		goto cleanup;
 	} else if ((rc = git_merge_base(&mergeoid, repo, &headoid, &hashoid)) != 0) {

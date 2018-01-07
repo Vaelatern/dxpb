@@ -47,7 +47,7 @@ SUID_BINARIES = \
 	dxpb-certs-server
 HARNESSES = harness-grapher harness-hostdir-master
 HARNESS_OBJECTS = harness-grapher.o harness-hostdir-master.o
-TEST_BINARIES = check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps usebfs
+TEST_BINARIES = check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps usebfs usebgit
 TEST_OBJECTS = check_bgraph.o check_bwords.o check_bstring.o check_btranslate.o check_bpkg.o check_bxbps.o
 OBJECTS = \
 	bbuilder.o \
@@ -211,6 +211,9 @@ harness: $(BINARIES) $(HARNESSES)
 ########################
 
 usebfs: bstring.o bfs.o
+
+usebgit: LDLIBS += -lgit2
+usebgit: bgit.o bwords.o bstring.o bxsrc.o bxpkg.o
 
 ########################
 #### Generic Targets ###
