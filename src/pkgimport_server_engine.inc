@@ -177,6 +177,8 @@ static void
 static void
     pkg_read_finished (client_t *self);
 static void
+    remove_self_from_worker_list (client_t *self);
+static void
     grab_tmppkg_and_process (client_t *self);
 static void
     add_all_packages_to_the_queue (client_t *self);
@@ -673,6 +675,12 @@ s_client_execute (s_client_t *self, event_t event)
                         return_job_to_queue (&self->client);
                     }
                     if (!self->exception) {
+                        //  remove self from worker list
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ remove self from worker list", self->log_prefix);
+                        remove_self_from_worker_list (&self->client);
+                    }
+                    if (!self->exception) {
                         //  assign pending work
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ assign pending work", self->log_prefix);
@@ -768,6 +776,12 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ return job to queue", self->log_prefix);
                         return_job_to_queue (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  remove self from worker list
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ remove self from worker list", self->log_prefix);
+                        remove_self_from_worker_list (&self->client);
                     }
                     if (!self->exception) {
                         //  assign pending work
@@ -867,6 +881,12 @@ s_client_execute (s_client_t *self, event_t event)
                         return_job_to_queue (&self->client);
                     }
                     if (!self->exception) {
+                        //  remove self from worker list
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ remove self from worker list", self->log_prefix);
+                        remove_self_from_worker_list (&self->client);
+                    }
+                    if (!self->exception) {
                         //  assign pending work
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ assign pending work", self->log_prefix);
@@ -947,6 +967,12 @@ s_client_execute (s_client_t *self, event_t event)
                         pkg_read_finished (&self->client);
                     }
                     if (!self->exception) {
+                        //  remove self from worker list
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ remove self from worker list", self->log_prefix);
+                        remove_self_from_worker_list (&self->client);
+                    }
+                    if (!self->exception) {
                         //  send ROGER
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ send ROGER",
@@ -997,6 +1023,12 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ return job to queue", self->log_prefix);
                         return_job_to_queue (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  remove self from worker list
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ remove self from worker list", self->log_prefix);
+                        remove_self_from_worker_list (&self->client);
                     }
                     if (!self->exception) {
                         //  assign pending work
@@ -1106,6 +1138,12 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ return job to queue", self->log_prefix);
                         return_job_to_queue (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  remove self from worker list
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ remove self from worker list", self->log_prefix);
+                        remove_self_from_worker_list (&self->client);
                     }
                     if (!self->exception) {
                         //  assign pending work
@@ -1337,6 +1375,12 @@ s_client_execute (s_client_t *self, event_t event)
                         return_job_to_queue (&self->client);
                     }
                     if (!self->exception) {
+                        //  remove self from worker list
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ remove self from worker list", self->log_prefix);
+                        remove_self_from_worker_list (&self->client);
+                    }
+                    if (!self->exception) {
                         //  assign pending work
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ assign pending work", self->log_prefix);
@@ -1416,6 +1460,12 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ return job to queue", self->log_prefix);
                         return_job_to_queue (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  remove self from worker list
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ remove self from worker list", self->log_prefix);
+                        remove_self_from_worker_list (&self->client);
                     }
                     if (!self->exception) {
                         //  assign pending work

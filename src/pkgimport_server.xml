@@ -62,6 +62,7 @@
 			We intend the RDY2WRK to follow this, unless the worker
 			is shutting down.
 			<action name = "pkg read finished" />
+			<action name = "remove self from worker list" />
 			<action name = "send" message = "ROGER" />
 		</event>
 	</state>
@@ -125,6 +126,7 @@
 		</event>
 		<event name = "expired">
 			<action name = "return job to queue" />
+			<action name = "remove self from worker list" />
 			<action name = "assign pending work" />
 			<action name = "terminate" />
 		</event>

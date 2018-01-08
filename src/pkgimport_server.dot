@@ -19,7 +19,7 @@ digraph "pkgimport_server" {
  "pleasantries ping" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ping</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "pleasantries" -> "pleasantries ping";
  "pleasantries ping" -> "pleasantries";
- "pleasantries expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">return job to queue</td></tr><tr><td align="left" port="r3">assign pending work</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "pleasantries expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">return job to queue</td></tr><tr><td align="left" port="r3">remove self from worker list</td></tr><tr><td align="left" port="r3">assign pending work</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
  "pleasantries" -> "pleasantries expired";
  "pleasantries expired" -> "pleasantries";
  "pleasantries rdy2wrk" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">rdy2wrk</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
@@ -42,7 +42,7 @@ digraph "pkgimport_server" {
  "worker ready ping" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ping</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "worker ready" -> "worker ready ping";
  "worker ready ping" -> "worker ready";
- "worker ready expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">return job to queue</td></tr><tr><td align="left" port="r3">assign pending work</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "worker ready expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">return job to queue</td></tr><tr><td align="left" port="r3">remove self from worker list</td></tr><tr><td align="left" port="r3">assign pending work</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
  "worker ready" -> "worker ready expired";
  "worker ready expired" -> "worker ready";
  "worker ready ask worker to read" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ask worker to read</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
@@ -59,7 +59,7 @@ digraph "pkgimport_server" {
  "worker asked ping" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ping</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "worker asked" -> "worker asked ping";
  "worker asked ping" -> "worker asked";
- "worker asked expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">return job to queue</td></tr><tr><td align="left" port="r3">assign pending work</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "worker asked expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">return job to queue</td></tr><tr><td align="left" port="r3">remove self from worker list</td></tr><tr><td align="left" port="r3">assign pending work</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
  "worker asked" -> "worker asked expired";
  "worker asked expired" -> "worker asked";
  "worker asked ruready" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ruready</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
@@ -76,7 +76,7 @@ digraph "pkgimport_server" {
  "worker working ping" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ping</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "worker working" -> "worker working ping";
  "worker working ping" -> "worker working";
- "worker working expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">return job to queue</td></tr><tr><td align="left" port="r3">assign pending work</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "worker working expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">return job to queue</td></tr><tr><td align="left" port="r3">remove self from worker list</td></tr><tr><td align="left" port="r3">assign pending work</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
  "worker working" -> "worker working expired";
  "worker working expired" -> "worker working";
  "worker working pkginfo" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkginfo</font></td></tr><tr><td align="left" port="r3">route pkginfo</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
@@ -85,7 +85,7 @@ digraph "pkgimport_server" {
  "worker working pkgdel" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkgdel</font></td></tr><tr><td align="left" port="r3">request pkg deletion</td></tr></table>>];
  "worker working" -> "worker working pkgdel";
  "worker working pkgdel" -> "worker working";
- "worker working didread" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">didread</font></td></tr><tr><td align="left" port="r3">pkg read finished</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "worker working didread" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">didread</font></td></tr><tr><td align="left" port="r3">pkg read finished</td></tr><tr><td align="left" port="r3">remove self from worker list</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "worker working" -> "worker working didread";
  "worker working didread" -> "worker worked";
 
@@ -99,7 +99,7 @@ digraph "pkgimport_server" {
  "worker worked ping" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ping</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "worker worked" -> "worker worked ping";
  "worker worked ping" -> "worker worked";
- "worker worked expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">return job to queue</td></tr><tr><td align="left" port="r3">assign pending work</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "worker worked expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">return job to queue</td></tr><tr><td align="left" port="r3">remove self from worker list</td></tr><tr><td align="left" port="r3">assign pending work</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
  "worker worked" -> "worker worked expired";
  "worker worked expired" -> "worker worked";
  "worker worked rdy2wrk" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">rdy2wrk</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
@@ -116,7 +116,7 @@ digraph "pkgimport_server" {
  "grapher ping" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ping</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "grapher" -> "grapher ping";
  "grapher ping" -> "grapher";
- "grapher expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">return job to queue</td></tr><tr><td align="left" port="r3">assign pending work</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "grapher expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">return job to queue</td></tr><tr><td align="left" port="r3">remove self from worker list</td></tr><tr><td align="left" port="r3">assign pending work</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
  "grapher" -> "grapher expired";
  "grapher expired" -> "grapher";
  "grapher roger" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];

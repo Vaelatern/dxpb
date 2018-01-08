@@ -45,8 +45,12 @@ BINARIES = \
 SUID_BINARIES = \
 	dxpb-certs-remote \
 	dxpb-certs-server
-HARNESSES = harness-grapher harness-hostdir-master
-HARNESS_OBJECTS = harness-grapher.o harness-hostdir-master.o
+HARNESSES = harness-grapher \
+	harness-hostdir-master \
+	harness-pkgimport-master
+HARNESS_OBJECTS = harness-grapher.o \
+	harness-hostdir-master.o \
+	harness-pkgimport-master.o
 TEST_BINARIES = check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps usebfs usebgit
 TEST_OBJECTS = check_bgraph.o check_bwords.o check_bstring.o check_btranslate.o check_bpkg.o check_bxbps.o
 OBJECTS = \
@@ -196,6 +200,8 @@ $(BINARIES): dxpb-common.o
 ########################################
 #### Test Harnesses and their needs ####
 ########################################
+
+harness-pkgimport-master: harness-pkgimport-master.o pkgimport_msg.o bfs.o bstring.o
 
 harness-grapher: bstring.o bfs.o bxpkg.o harness-grapher.o pkgimport_msg.o pkggraph_msg.o pkgfiles_msg.o
 

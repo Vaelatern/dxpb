@@ -274,7 +274,6 @@ pkg_read_finished (client_t *self)
 	if (self->curjob != NULL)
 		zlist_remove(self->server->curjobs, self->curjob);
 	self->curjob = NULL;
-	zlist_remove(self->server->workers, self);
 }
 
 //  ---------------------------------------------------------------------------
@@ -415,10 +414,12 @@ static void
 respond_specifying_stability (client_t *self)
 {
 
-	printf ("curjobs: %d\ttoread: %d\ttmppkgs: %d\n",
-			zlist_size(self->server->curjobs),
-			zlist_size(self->server->toread),
-			zlist_size(self->server->tmppkgs));
+	// DEAD CODE: Replace this with stats for scraping
+	//		printf ("curjobs: %d\ttoread: %d\ttmppkgs: %d\n",
+	//				zlist_size(self->server->curjobs),
+	//				zlist_size(self->server->toread),
+	//				zlist_size(self->server->tmppkgs));
+	//
 
 	if (zlist_size(self->server->curjobs) == 0 &&
 			zlist_size(self->server->toread) == 0 &&
@@ -537,4 +538,15 @@ ensure_all_configuration_is_complete (client_t *self)
 		exit(ERR_CODE_BAD);
 	}
 	self->server->curhash = bgit_get_head_hash(self->server->repopath);
+}
+
+
+//  ---------------------------------------------------------------------------
+//  remove_self_from_worker_list
+//
+
+static void
+remove_self_from_worker_list (client_t *self)
+{
+	zlist_remove(self->server->workers, self);
 }
