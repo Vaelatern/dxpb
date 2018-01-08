@@ -1,6 +1,6 @@
 <class
 	name = "pkgimport_server"
-	title = "Package Import Ventilator"
+	title = "Package Import Manager"
 	script = "../exec/zproto_server_c"
 	protocol_class = "pkgimport_msg"
 	package_dir = "../include"
