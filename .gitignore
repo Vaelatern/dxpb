@@ -2,6 +2,8 @@
 dxpb-*
 check_*
 harness-*
+src/use*
+src/use*.c
 !check_*.c
 !runsv/dxpb*
 !dxpb-*.c
