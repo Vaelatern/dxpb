@@ -2,5 +2,5 @@
 
 killname="$(printf "dxpb-%s" "$1" | dd count=15 bs=1)"
 make harness &&
-	./harness-$1
-pkill $killname
+	./"harness-$1"
+pkill "$killname"
