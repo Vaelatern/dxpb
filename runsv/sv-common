@@ -1,5 +1,5 @@
 for dir in /var/{run/dxpb,lib/dxpb/{staging,logs,pkgs},cache/dxpb}; do
-	mkdir -p /var/run/dxpb
+	mkdir -p $dir
 done
 
 chown root:_dxpb /var/run/dxpb
