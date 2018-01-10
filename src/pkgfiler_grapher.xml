@@ -25,6 +25,9 @@
 			<action name = "complain about connection error" />
 			<action name = "terminate" />
 		</event>
+		<event name = "INVALID">
+			<action name = "send" message = "HELLO" />
+		</event>
 		<event name = "IFORGOTU">
 			<action name = "send" message = "HELLO" />
 		</event>
@@ -69,6 +72,9 @@
 			<action name = "terminate" />
 		</event>
 		<event name = "IFORGOTU" next = "start">
+			<action name = "send" message = "HELLO" />
+		</event>
+		<event name = "INVALID" next = "start">
 			<action name = "send" message = "HELLO" />
 		</event>
 	</state>

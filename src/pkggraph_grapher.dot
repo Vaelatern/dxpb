@@ -11,6 +11,9 @@ digraph "pkggraph_grapher" {
  "start iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "start" -> "start iforgotu";
  "start iforgotu" -> "negotiate";
+ "start roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "start" -> "start roger";
+ "start roger" -> "start";
  "start invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
  "start" -> "start invalid";
  "start invalid" -> "die";
@@ -86,6 +89,9 @@ digraph "pkggraph_grapher" {
  "ready iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "ready" -> "ready iforgotu";
  "ready iforgotu" -> "negotiate";
+ "ready roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
+ "ready" -> "ready roger";
+ "ready roger" -> "ready";
  "ready invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
  "ready" -> "ready invalid";
  "ready invalid" -> "die";

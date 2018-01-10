@@ -484,6 +484,9 @@ s_client_execute (s_client_t *self, event_t event)
                         self->state = negotiate_state;
                 }
                 else
+                if (self->event == roger_event) {
+                }
+                else
                 if (self->event == invalid_event) {
                     if (!self->exception)
                         self->state = die_state;
@@ -962,6 +965,9 @@ s_client_execute (s_client_t *self, event_t event)
                         self->state = negotiate_state;
                 }
                 else
+                if (self->event == roger_event) {
+                }
+                else
                 if (self->event == invalid_event) {
                     if (!self->exception)
                         self->state = die_state;
@@ -1069,6 +1075,9 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                     if (!self->exception)
                         self->state = negotiate_state;
+                }
+                else
+                if (self->event == roger_event) {
                 }
                 else
                 if (self->event == invalid_event) {
