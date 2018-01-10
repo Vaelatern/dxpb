@@ -12,9 +12,9 @@ unset USER GROUP WRKDIR HOSTDIR SSLDIR ENDPOINT LOGFILE
 [ -z "$WRKDIR" -a -z "$HOSTDIR" ] && echo "Will not start - need a hostdir to own" && exit 1
 
 args=""
-[ -n "$SSLDIR" ] && args="$args -k '$SSLDIR'"
-[ -n "$HOSTDIR" ] && args="$args -H '$HOSTDIR'"
-[ -n "$ENDPOINT" ] && args="$args -f '$ENDPOINT'"
+[ -n "$SSLDIR" ] && args="$args -k $SSLDIR"
+[ -n "$HOSTDIR" ] && args="$args -H $HOSTDIR"
+[ -n "$ENDPOINT" ] && args="$args -f $ENDPOINT"
 
 [ -n "$WRKDIR" ] && cd "$WRKDIR"
 

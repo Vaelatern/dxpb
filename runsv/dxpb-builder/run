@@ -17,14 +17,14 @@ needwrkdir=0
 
 args=""
 [ -n "$WRKSPEC" ] && args="$args -W $WRKSPEC"
-[ -n "$SSLDIR" ] && args="$args -k '$SSLDIR'"
-[ -n "$HOSTDIR" ] && args="$args -H '$HOSTDIR'"
-[ -n "$MASTERDIR" ] && args="$args -m '$MASTERDIR'"
-[ -n "$XBPS_SRC" ] && args="$args -x '$XBPS_SRC'"
-[ -n "$ENDPOINT" ] && args="$args -g '$ENDPOINT'"
+[ -n "$SSLDIR" ] && args="$args -k $SSLDIR"
+[ -n "$HOSTDIR" ] && args="$args -H $HOSTDIR"
+[ -n "$MASTERDIR" ] && args="$args -m $MASTERDIR"
+[ -n "$XBPS_SRC" ] && args="$args -x $XBPS_SRC"
+[ -n "$ENDPOINT" ] && args="$args -g $ENDPOINT"
 
 [ -n "$WRKDIR" ] && cd "$WRKDIR"
 
-[ -n "ARGV0" ] && ARGV0="-b '$ARGV0'"
+[ -n "$ARGV0" ] && ARGV0="-b $ARGV0"
 
 exec chpst $ARGV0 -u $USER:$GROUP dxpb-builder $args >$LOGFILE 2>&1

@@ -15,8 +15,8 @@ unset USER GROUP WRKDIR ETCDIR XBPSSRC ENDPOINT LOGFILE
 [ -z "$WRKDIR" -a -z "$XBPSSRC" ] && echo "Will not start - need a path for xbps-src" && exit 1
 
 args=""
-[ -n "$XBPSSRC" ] && args="${args} -x '$XBPSSRC'"
-[ -n "$ENDPOINT" ] && args="${args} -i '$ENDPOINT'"
+[ -n "$XBPSSRC" ] && args="${args} -x $XBPSSRC"
+[ -n "$ENDPOINT" ] && args="${args} -i $ENDPOINT"
 
 [ -n "$WRKDIR" ] && cd "$WRKDIR"
 
