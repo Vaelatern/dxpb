@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.0.3 - 2018-01-10 - The one that can be tested
+## 0.0.4 - 2018-01-10 - The one that can be tested easily
+### Overview
+- Just shell fixes to make testing and spinning up new instances a lot easier.
+
+## 0.0.3 - 2018-01-09 - The one that can be tested
 ### Overview
 - Fixed runit scripts with more bells and whistles, making them more useful in
   testing.
