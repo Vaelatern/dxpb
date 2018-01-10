@@ -1,4 +1,4 @@
-for dir in /var/{run/dxpb,lib/dxpb/{staging,logs,pkgs},cache/dxpb}; do
+for dir in /var/run/dxpb /var/lib/dxpb/staging /var/lib/dxpb/logs /var/lib/dxpb/pkgs /var/cache/dxpb; do
 	mkdir -p $dir
 done
 
