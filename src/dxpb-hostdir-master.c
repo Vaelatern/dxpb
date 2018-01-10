@@ -52,9 +52,9 @@ run(int flags, const char *ssldir, const char *sdir, const char *rdir,
 	zstr_sendx(file_actor, "SET", "dxpb/pubpoint", file_pubpoint, NULL);
 	zstr_sendx(file_actor, "BIND", file_endpoint, NULL);
 
-	zstr_sendx(log_actor, "SET LOGDIR", ldir, NULL);
-	zstr_sendx(log_actor, "SET PUB TO PROVIDED", graph_pubpoint, NULL);
-	zstr_sendx(log_actor, "CONSTRUCT", graph_endpoint, NULL);
+	pkggraph_filer_set_logdir(log_client, ldir);
+	pkggraph_filer_set_pubpath(log_client, graph_pubpoint);
+	pkggraph_filer_construct(log_client, graph_endpoint);
 
 	zpoller_t *polling = zpoller_new(file_actor, log_actor, NULL);
 	assert(polling);
