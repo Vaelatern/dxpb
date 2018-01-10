@@ -1,9 +1,10 @@
 #!/bin/sh
 
-unset USER
-unset GROUP
+unset USER GROUP WRKDIR ETCDIR XBPSSRC ENDPOINT LOGFILE
 
 [ -f ./conf ] && . ./conf
+
+: ${LOGFILE:=/dev/null}
 
 : ${ETCDIR:=/etc/dxpb/}
 [ -f "${ETCDIR}/sv-common" ] && . "${ETCDIR}/sv-common"
@@ -15,7 +16,8 @@ unset GROUP
 
 args=""
 [ -n "$XBPSSRC" ] && args="${args} -x '$XBPSSRC'"
+[ -n "$ENDPOINT" ] && args="${args} -i '$ENDPOINT'"
 
 [ -n "$WRKDIR" ] && cd "$WRKDIR"
 
-exec chpst -u $USER:$GROUP dxpb-pkgimport-agent $args
+exec chpst -u $USER:$GROUP dxpb-pkgimport-agent $args >$LOGFILE 2>&1

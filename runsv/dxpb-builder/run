@@ -1,19 +1,21 @@
 #!/bin/sh
 
-unset USER
-unset GROUP
-unset HOME
+unset USER GROUP HOSTDIR WRKDIR WRKSPEC SSLDIR HOSTDIR MASTERDIR XBPS_SRC
+unset ENDPOINT ARGV0 LOGFILE
 
 [ -f ./conf ] && . ./conf
+
+: ${LOGFILE:=/dev/null}
 
 : ${USER:=_dxpb_build}
 : ${GROUP:=_dxpb:_dxpb_build:_dxpb_ssl}
 
 needwrkdir=0
-args=""
+
 [ -z "$HOSTDIR" -o -z "$MASTERDIR" -o -z "XBPS_SRC" ] && needwrkdir=1
 [ -z "$WRKDIR" -a "$needwrkdir" -eq 1 ] && echo "Will not start - need configured directories" && exit 1
 
+args=""
 [ -n "$WRKSPEC" ] && args="$args -W $WRKSPEC"
 [ -n "$SSLDIR" ] && args="$args -k '$SSLDIR'"
 [ -n "$HOSTDIR" ] && args="$args -H '$HOSTDIR'"
@@ -25,4 +27,4 @@ args=""
 
 [ -n "ARGV0" ] && ARGV0="-b '$ARGV0'"
 
-exec chpst $ARGV0 -u $USER:$GROUP dxpb-builder $args
+exec chpst $ARGV0 -u $USER:$GROUP dxpb-builder $args >$LOGFILE 2>&1

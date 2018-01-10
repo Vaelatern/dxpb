@@ -1,10 +1,10 @@
 #!/bin/sh
 
-unset USER
-unset GROUP
-unset HOME
+unset USER GROUP HOME ETCDIR WRKDIR LOGFILE
 
 [ -f ./conf ] && . ./conf
+
+: ${LOGFILE:=/dev/null}
 
 : ${ETCDIR:=/etc/dxpb/}
 [ -f "${ETCDIR}/sv-common" ] && . "${ETCDIR}/sv-common"
@@ -15,4 +15,4 @@ unset HOME
 
 cd "$WRKDIR"
 
-exec chpst -u $USER:$GROUP dxpb-ircbot
+exec chpst -u $USER:$GROUP dxpb-ircbot >$LOGFILE 2>&1

@@ -1,6 +1,11 @@
 #!/bin/sh
 
+unset ETCDIR USER GROUP SSLDIR REPODIR LOGFILE STAGINGDIR FRONTEND_ENDPOINT
+unset FILES_ENDPOINT FRONTPUB_PUBPOINT FILES_PUBPOINT
+
 [ -f ./conf ] && . ./conf
+
+: ${LOGFILE:=/dev/null}
 
 : ${ETCDIR:=/etc/dxpb/}
 [ -f "${ETCDIR}/sv-common" ] && . "${ETCDIR}/sv-common"
@@ -8,4 +13,17 @@
 : ${USER:=_dxpb_filer}
 : ${GROUP:=_dxpb:_dxpb_files:_dxpb_graph:_dxpb_ssl}
 
-exec chpst -u $USER:$GROUP dxpb-hostdir-master
+
+args=""
+[ -n "$SSLDIR" ] && args="$args -k '$SSLDIR'"
+
+[ -n "$REPODIR" ] && args="$args -r $REPODIR"
+[ -n "$LOGDIR" ] && args="$args -l $LOGDIR"
+[ -n "$STAGINGDIR" ] && args="$args -s $STAGINGDIR"
+
+[ -n "$FRONTEND_ENDPOINT" ] && args="$args -g '$FRONTEND_ENDPOINT'"
+[ -n "$FILES_ENDPOINT" ] && args="$args -f '$FILES_ENDPOINT'"
+[ -n "$FRONTPUB_PUBPOINT" ] && args="$args -G '$FRONTPUB_PUBPOINT'"
+[ -n "$FILES_PUBPOINT" ] && args="$args -F '$FILES_PUBPOINT'"
+
+exec chpst -u $USER:$GROUP dxpb-hostdir-master $args >$LOGFILE 2>&1

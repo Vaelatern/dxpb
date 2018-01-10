@@ -1,10 +1,10 @@
 #!/bin/sh
 
-unset USER
-unset GROUP
-unset HOME
+unset USER GROUP ETCDIR WKRDIR REPODIR XBPSSRC ENDPOINT PUBPOINT LOGFILE
 
 [ -f ./conf ] && . ./conf
+
+: ${LOGFILE:=/dev/null}
 
 : ${ETCDIR:=/etc/dxpb/}
 [ -f "${ETCDIR}/sv-common" ] && . "${ETCDIR}/sv-common"
@@ -16,7 +16,10 @@ unset HOME
 
 args=""
 [ -n "$REPODIR" ] && args="${args} -r '$REPODIR'"
+[ -n "$XBPSSRC" ] && args="${args} -x '$XBPSSRC'"
+[ -n "ENDPOINT" ] && args="${args} -i '$ENDPOINT'"
+[ -n "PUBPOINT" ] && args="${args} -I '$PUBPOINT'"
 
 [ -n "$WRKDIR" ] && cd "$WRKDIR"
 
-exec chpst -u $USER:$GROUP dxpb-pkgimport-master $args
+exec chpst -u $USER:$GROUP dxpb-pkgimport-master $args >$LOGFILE 2>&1

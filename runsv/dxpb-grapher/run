@@ -1,6 +1,10 @@
 #!/bin/sh
 
+unset USER GROUP ETCDIR ARGS LOGFILE
+
 [ -f ./conf ] && . ./conf
+
+: ${LOGFILE:=/dev/null}
 
 : ${ETCDIR:=/etc/dxpb/}
 [ -f "${ETCDIR}/sv-common" ] && . "${ETCDIR}/sv-common"
@@ -8,4 +12,4 @@
 : ${USER:=_dxpb_grapher}
 : ${GROUP:=_dxpb:_dxpb_grapher:_dxpb_files:_dxpb_ssl}
 
-exec chpst -u $USER:$GROUP dxpb-grapher
+exec chpst -u $USER:$GROUP dxpb-grapher $ARGS >$LOGFILE 2>&1

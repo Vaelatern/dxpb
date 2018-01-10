@@ -1,6 +1,10 @@
 #!/bin/sh
 
+unset USER GROUP WRKDIR HOSTDIR SSLDIR ENDPOINT LOGFILE
+
 [ -f ./conf ] && . ./conf
+
+: ${LOGFILE:=/dev/null}
 
 : ${USER:=_dxpb_files}
 : ${GROUP:=_dxpb:_dxpb_files:_dxpb_ssl}
@@ -14,4 +18,4 @@ args=""
 
 [ -n "$WRKDIR" ] && cd "$WRKDIR"
 
-exec chpst -u $USER:$GROUP dxpb-hostdir-remote $args
+exec chpst -u $USER:$GROUP dxpb-hostdir-remote $args >$LOGFILE 2>&1
