@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.3 - 2018-01-10 - The one that can be tested
+### Overview
+- Fixed runit scripts with more bells and whistles, making them more useful in
+  testing.
+
 ## 0.0.2 - 2018-01-08 - The one that can use old package databases
 ### Overview
 - Now with repository rewinding working, for when your pkgs.db is older than
