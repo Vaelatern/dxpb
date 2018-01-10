@@ -189,7 +189,7 @@ main_loop(pkgimport_grapher_t *importer, pkggraph_grapher_t *grapher,
 	 */
 	polling = zpoller_new(import_sock, graph_sock, file_sock, NULL);
 	assert(polling);
-	fprintf(stderr, "Now entering main loop\n");
+
 	while (retVal == ERR_CODE_OK &&
 				(in_sock = zpoller_wait(polling, -1)) != NULL) {
 		if (in_sock == import_sock) {
