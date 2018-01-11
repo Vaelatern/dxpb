@@ -150,7 +150,6 @@ main(int argc, char * const *argv)
 		exit(ERR_CODE_BADWORLD);
 	}
 
-
 	if (!ssldir)
 		ssldir = default_ssldir;
 	if (!stagingdir)
@@ -168,5 +167,15 @@ main(int argc, char * const *argv)
 	if (!graph_pubpoint)
 		graph_pubpoint = default_graph_pubpoint;
 
-	return run(flags, ssldir, stagingdir, repodir, logdir, file_endpoint, graph_endpoint, file_pubpoint, graph_pubpoint);
+	enum ret_codes rc = ensure_sock_if_ipc(file_endpoint);
+	assert(rc == ERR_CODE_OK);
+	rc = ensure_sock_if_ipc(file_pubpoint);
+	assert(rc == ERR_CODE_OK);
+	rc = ensure_sock_if_ipc(graph_endpoint);
+	assert(rc == ERR_CODE_OK);
+	rc = ensure_sock_if_ipc(graph_pubpoint);
+	assert(rc == ERR_CODE_OK);
+
+	return run(flags, ssldir, stagingdir, repodir, logdir, file_endpoint,
+			graph_endpoint, file_pubpoint, graph_pubpoint);
 }

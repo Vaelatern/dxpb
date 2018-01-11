@@ -109,5 +109,8 @@ main(int argc, char * const *argv)
 	if (!xbps_src)
 		xbps_src = default_xbps_src;
 
+	enum ret_codes rc = ensure_sock_if_ipc(endpoint);
+	assert(rc == ERR_CODE_OK);
+
 	return run(flags, endpoint, xbps_src);
 }

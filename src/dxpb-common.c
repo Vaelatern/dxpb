@@ -49,3 +49,16 @@ flushsock(void *sock, const char *prefix)
 	free(tmp);
 	zsock_flush(sock);
 }
+
+enum ret_codes
+ensure_sock_if_ipc(const char *arg)
+{
+       if (strstr(arg, "ipc://") != arg)
+               return ERR_CODE_OK;
+       arg = arg + strlen("ipc://");
+       enum ret_codes rc = bfs_setup_sock(arg);
+       if (rc != ERR_CODE_OK)
+               return rc;
+       rc = bfs_ensure_sock_perms(arg);
+       return rc;
+}

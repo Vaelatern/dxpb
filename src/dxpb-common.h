@@ -1,9 +1,10 @@
 // Remove the following to cause errors when ssldir is ready to be rolled out.
 #define SSLDIR_UNUSED(x) (void)x
 
-void	prologue(const char *);
-void	print_license(void);
-void	flushsock(void *, const char *);
+void		prologue(const char *);
+void		print_license(void);
+void		flushsock(void *, const char *);
+enum ret_codes	ensure_sock_if_ipc(const char *);
 
 #define DEFAULT_SSLDIR "/etc/dxpb/curve/"
 

@@ -190,7 +190,7 @@ end:
 int
 main(int argc, char * const *argv)
 {
-	int c;
+	int ch;
 	int flags = 0;
 	struct workerspec *wrkr = NULL;
 	char *default_masterdir = DEFAULT_MASTERDIR;
@@ -205,8 +205,8 @@ main(int argc, char * const *argv)
 	char *repopath = NULL;
 	const char *optstring = "hvLg:k:H:m:W:r:";
 
-	while ((c = getopt(argc, argv, optstring)) != -1) {
-		switch(c) {
+	while ((ch = getopt(argc, argv, optstring)) != -1) {
+		switch(ch) {
 		case 'h':
 			help();
 			return 0;
@@ -268,6 +268,9 @@ main(int argc, char * const *argv)
 	if (!wrkr)
 		fprintf(stderr, "Need a worker specification (-W)\n");
 	assert(wrkr);
+
+	enum ret_codes rc = ensure_sock_if_ipc(endpoint);
+	assert(rc == ERR_CODE_OK);
 
 	return run(flags, masterdir, hostdir, ssldir, endpoint, repopath, wrkr);
 }

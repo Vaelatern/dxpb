@@ -109,6 +109,11 @@ main(int argc, char * const *argv)
 	if (!ssldir)
 		ssldir = default_ssldir;
 
+	enum ret_codes rc = ensure_sock_if_ipc(endpoint);
+	assert(rc == ERR_CODE_OK);
+	rc = ensure_sock_if_ipc(pubpoint);
+	assert(rc == ERR_CODE_OK);
+
 	run(flags, endpoint, ssldir, pubpoint);
 	return 0;
 }

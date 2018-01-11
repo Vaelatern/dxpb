@@ -390,6 +390,15 @@ main(int argc, char * const *argv)
 	if (!pubpoint)
 		pubpoint = default_pubpoint;
 
+	enum ret_codes rc = ensure_sock_if_ipc(pubpoint);
+	assert(rc == ERR_CODE_OK);
+	rc = ensure_sock_if_ipc(import_endpoint);
+	assert(rc == ERR_CODE_OK);
+	rc = ensure_sock_if_ipc(file_endpoint);
+	assert(rc == ERR_CODE_OK);
+	rc = ensure_sock_if_ipc(graph_endpoint);
+	assert(rc == ERR_CODE_OK);
+
 	return run(flags, dbpath, import_endpoint, graph_endpoint,
 			file_endpoint, pubpoint, ssldir);
 }
