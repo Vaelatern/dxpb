@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.5 - 2018-01-10 - The one that handles grapher timeouts better
+### Overview
+- It kills daemons less often due to timeouts and properly unassigns graphers.
+
 ## 0.0.4 - 2018-01-10 - The one that can be tested easily
 ### Overview
 - Just shell fixes to make testing and spinning up new instances a lot easier.
