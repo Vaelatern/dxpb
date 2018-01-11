@@ -26,7 +26,7 @@ prologue(const char *argv0)
 	assert(arg);
 	printf("DXPB: Distributed XBPS Package Builder\n"
 			"%s %s\n"
-			"Copyright 2016-2017, Toyam Cox\n"
+			"Copyright 2016-2018, Toyam Cox\n"
 			"This is free software with ABSOLUTELY NO WARRANTY.\n"
 			"For license details, pass the -L flag\n"
 			"Compiled: %s %s\n\n",
