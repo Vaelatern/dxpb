@@ -207,6 +207,9 @@ pkggraph_server_test (bool verbose)
 static void
 register_grapher (client_t *self)
 {
+	if (self->server->grapher != NULL)
+		engine_send_event(self->server->grapher, expired_event);
+
 	self->server->grapher = self;
 	if (self->server->pub) {
 		zstr_sendm(self->server->pub, "TRACE");
@@ -411,8 +414,8 @@ route_log (client_t *self)
 static void
 remove_self_as_grapher (client_t *self)
 {
-	assert(self->server->grapher == self);
-	self->server->grapher = NULL;
+	if (self->server->grapher == self)
+		self->server->grapher = NULL;
 	if (self->server->pub) {
 		zstr_sendm(self->server->pub, "TRACE");
 		zstr_sendf(self->server->pub, "Removing grapher");
