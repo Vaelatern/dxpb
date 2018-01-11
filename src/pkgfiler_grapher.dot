@@ -17,6 +17,9 @@ digraph "pkgfiler_grapher" {
  "start connect error" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">connect error</font></td></tr><tr><td align="left" port="r3">complain about connection error</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
  "start" -> "start connect error";
  "start connect error" -> "start";
+ "start expired" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "start" -> "start expired";
+ "start expired" -> "start";
  "start invalid" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "start" -> "start invalid";
  "start invalid" -> "start";

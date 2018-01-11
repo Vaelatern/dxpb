@@ -29,14 +29,14 @@ typedef enum {
     do_ispkghere_event = 3,
     do_pkgdel_event = 4,
     connect_error_event = 5,
-    invalid_event = 6,
-    iforgotu_event = 7,
-    act_on_do_ispkghere_event = 8,
-    act_on_do_pkgdel_event = 9,
-    ispkghere_event = 10,
-    pkghere_event = 11,
-    pkgnothere_event = 12,
-    expired_event = 13
+    expired_event = 6,
+    invalid_event = 7,
+    iforgotu_event = 8,
+    act_on_do_ispkghere_event = 9,
+    act_on_do_pkgdel_event = 10,
+    ispkghere_event = 11,
+    pkghere_event = 12,
+    pkgnothere_event = 13
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -55,14 +55,14 @@ s_event_name [] = {
     "do_ispkghere",
     "do_pkgdel",
     "connect_error",
+    "expired",
     "INVALID",
     "IFORGOTU",
     "act_on_do_ispkghere",
     "act_on_do_pkgdel",
     "ISPKGHERE",
     "PKGHERE",
-    "PKGNOTHERE",
-    "expired"
+    "PKGNOTHERE"
 };
 
 
@@ -451,6 +451,19 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ terminate", self->log_prefix);
                         self->fsm_stopped = true;
+                    }
+                }
+                else
+                if (self->event == expired_event) {
+                    if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->message, PKGFILES_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgfiles_msg_print (self->message);
+                        pkgfiles_msg_send (self->message, self->dealer);
                     }
                 }
                 else

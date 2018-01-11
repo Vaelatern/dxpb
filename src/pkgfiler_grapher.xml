@@ -25,6 +25,9 @@
 			<action name = "complain about connection error" />
 			<action name = "terminate" />
 		</event>
+		<event name = "expired">
+			<action name = "send" message = "HELLO" />
+		</event>
 		<event name = "INVALID">
 			<action name = "send" message = "HELLO" />
 		</event>
