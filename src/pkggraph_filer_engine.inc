@@ -34,11 +34,10 @@ typedef enum {
     resetlog_event = 4,
     loghere_event = 5,
     iforgotu_event = 6,
-    invalid_event = 7,
-    kthnksbye_event = 8,
-    expired_event = 9,
-    set_logdir_event = 10,
-    set_pubpath_event = 11
+    kthnksbye_event = 7,
+    expired_event = 8,
+    set_logdir_event = 9,
+    set_pubpath_event = 10
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -62,7 +61,6 @@ s_event_name [] = {
     "RESETLOG",
     "LOGHERE",
     "IFORGOTU",
-    "INVALID",
     "kthnksbye",
     "expired",
     "set_logdir",
@@ -342,9 +340,6 @@ s_protocol_event (s_client_t *self, pkggraph_msg_t *message)
         case PKGGRAPH_MSG_IFORGOTU:
             return iforgotu_event;
             break;
-        case PKGGRAPH_MSG_INVALID:
-            return invalid_event;
-            break;
         case PKGGRAPH_MSG_RESETLOG:
             return resetlog_event;
             break;
@@ -445,7 +440,7 @@ s_client_execute (s_client_t *self, event_t event)
                         self->state = negotiate_state;
                 }
                 else
-                if (self->event == invalid_event) {
+                if (self->event == kthnksbye_event) {
                     if (!self->exception)
                         self->state = die_state;
                     if (!self->exception) {
@@ -462,21 +457,7 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
-                if (self->event == kthnksbye_event) {
-                    if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                if (self->event == roger_event) {
                 }
                 else
                 if (self->event == expired_event) {
@@ -555,23 +536,6 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                     if (!self->exception)
                         self->state = negotiate_state;
-                }
-                else
-                if (self->event == invalid_event) {
-                    if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
                 }
                 else
                 if (self->event == kthnksbye_event) {
@@ -657,23 +621,6 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                     if (!self->exception)
                         self->state = negotiate_state;
-                }
-                else
-                if (self->event == invalid_event) {
-                    if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
                 }
                 else
                 if (self->event == kthnksbye_event) {
@@ -794,7 +741,7 @@ s_client_execute (s_client_t *self, event_t event)
                         self->state = negotiate_state;
                 }
                 else
-                if (self->event == invalid_event) {
+                if (self->event == kthnksbye_event) {
                     if (!self->exception)
                         self->state = die_state;
                     if (!self->exception) {
@@ -811,21 +758,7 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
-                if (self->event == kthnksbye_event) {
-                    if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                if (self->event == roger_event) {
                 }
                 else
                 if (self->event == expired_event) {
@@ -907,7 +840,7 @@ s_client_execute (s_client_t *self, event_t event)
                         self->state = negotiate_state;
                 }
                 else
-                if (self->event == invalid_event) {
+                if (self->event == kthnksbye_event) {
                     if (!self->exception)
                         self->state = die_state;
                     if (!self->exception) {
@@ -924,21 +857,7 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
-                if (self->event == kthnksbye_event) {
-                    if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                if (self->event == roger_event) {
                 }
                 else
                 if (self->event == expired_event) {

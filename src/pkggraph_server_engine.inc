@@ -669,6 +669,22 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == hello_event) {
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_ROGER);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception)
+                        self->state = determine_role_state;
+                }
+                else
                 if (self->event == update_bootstrap_event) {
                 }
                 else
@@ -879,6 +895,22 @@ s_client_execute (s_client_t *self, event_t event)
                         pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
                         pkggraph_msg_send (self->server->message, self->server->router);
                     }
+                }
+                else
+                if (self->event == hello_event) {
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_ROGER);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception)
+                        self->state = determine_role_state;
                 }
                 else
                 if (self->event == roger_event) {
@@ -1172,6 +1204,22 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == hello_event) {
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_ROGER);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception)
+                        self->state = determine_role_state;
+                }
+                else
                 if (self->event == update_bootstrap_event) {
                 }
                 else
@@ -1184,6 +1232,17 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ assert is storage", self->log_prefix);
                         assert_is_storage (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send INVALID
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send INVALID",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_INVALID);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
                     }
                     if (!self->exception) {
                         //  remove self as storage
@@ -1213,6 +1272,22 @@ s_client_execute (s_client_t *self, event_t event)
                         pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
                         pkggraph_msg_send (self->server->message, self->server->router);
                     }
+                }
+                else
+                if (self->event == hello_event) {
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_ROGER);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception)
+                        self->state = determine_role_state;
                 }
                 else
                 if (self->event == update_bootstrap_event) {

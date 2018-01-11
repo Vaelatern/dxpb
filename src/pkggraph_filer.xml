@@ -52,11 +52,11 @@
 		<event name = "IFORGOTU" next = "negotiate">
 			<action name = "send" message = "HELLO" />
 		</event>
-		<event name = "INVALID" next = "die" />
 		<event name = "*" next = "negotiate">
 			<action name = "send" message = "HELLO" />
 		</event>
 		<event name = "KTHNKSBYE" next = "die" />
+		<event name = "ROGER" />
 		<event name = "expired">
 			<action name = "send" message = "PING" />
 		</event>

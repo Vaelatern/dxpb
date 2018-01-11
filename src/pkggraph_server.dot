@@ -16,6 +16,9 @@ digraph "pkggraph_server" {
  "determine role ping" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ping</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "determine role" -> "determine role ping";
  "determine role ping" -> "determine role";
+ "determine role hello" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">hello</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "determine role" -> "determine role hello";
+ "determine role hello" -> "determine role";
  "determine role update bootstrap" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">update bootstrap</font></td></tr></table>>];
  "determine role" -> "determine role update bootstrap";
  "determine role update bootstrap" -> "determine role";
@@ -39,6 +42,9 @@ digraph "pkggraph_server" {
  "i am the grapher ping" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ping</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "i am the grapher" -> "i am the grapher ping";
  "i am the grapher ping" -> "i am the grapher";
+ "i am the grapher hello" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">hello</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "i am the grapher" -> "i am the grapher hello";
+ "i am the grapher hello" -> "determine role";
  "i am the grapher roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
  "i am the grapher" -> "i am the grapher roger";
  "i am the grapher roger" -> "i am the grapher";
@@ -109,6 +115,9 @@ digraph "pkggraph_server" {
  "i am storage ping" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ping</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "i am storage" -> "i am storage ping";
  "i am storage ping" -> "i am storage";
+ "i am storage hello" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">hello</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "i am storage" -> "i am storage hello";
+ "i am storage hello" -> "determine role";
  "i am storage update bootstrap" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">update bootstrap</font></td></tr></table>>];
  "i am storage" -> "i am storage update bootstrap";
  "i am storage update bootstrap" -> "i am storage";
@@ -124,7 +133,7 @@ digraph "pkggraph_server" {
  "i am storage send loghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">send loghere</font></td></tr><tr><td align="left" port="r3">assert is storage</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">post process sending log chunk</td></tr></table>>];
  "i am storage" -> "i am storage send loghere";
  "i am storage send loghere" -> "i am storage";
- "i am storage *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">assert is storage</td></tr><tr><td align="left" port="r3">remove self as storage</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "i am storage *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">assert is storage</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">remove self as storage</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
  "i am storage" -> "i am storage *";
  "i am storage *" -> "i am storage";
 
