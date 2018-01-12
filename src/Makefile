@@ -28,7 +28,7 @@ SVDIR = /etc/sv/
 GSL_BIN ?= gsl
 
 LOCAL_CFLAGS = -std=c11 -I../include/
-CFLAGS += -g -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Werror -O3 -fstack-protector-strong -D_FORTIFY_SOURCE=2
+CFLAGS += -g -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Werror -O3 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -finstrument-functions
 LDFLAGS ?= -fPIC -fPIE
 LDLIBS += -lzmq -lczmq
 
@@ -93,7 +93,8 @@ OBJECTS = \
 	pkgimport_grapher.o \
 	pkgimport_msg.o \
 	pkgimport_poke.o \
-	pkgimport_server.o
+	pkgimport_server.o \
+	ptrace.o
 
 .PHONY: all main test check_%
 
@@ -198,7 +199,7 @@ dxpb-frontend: dxpb-frontend.o pkggraph_msg.o bxpkg.o pkggraph_server.o bworker.
 
 dxpb-common.c: license.inc
 
-$(BINARIES): dxpb-common.o
+$(BINARIES): dxpb-common.o ptrace.o
 
 ########################################
 #### Test Harnesses and their needs ####
