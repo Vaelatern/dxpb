@@ -47,15 +47,18 @@ SUID_BINARIES = \
 	dxpb-certs-server
 HARNESSES = harness-grapher \
 	harness-hostdir-master \
+	harness-frontend \
 	harness-pkgimport-master
 HARNESS_OBJECTS = harness-grapher.o \
 	harness-hostdir-master.o \
+	harness-frontend.o \
 	harness-pkgimport-master.o
 TEST_BINARIES = check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps usebfs usebgit
 TEST_OBJECTS = check_bgraph.o check_bwords.o check_bstring.o check_btranslate.o check_bpkg.o check_bxbps.o
 OBJECTS = \
 	bbuilder.o \
 	bdb.o \
+	bdot.o \
 	bfs.o \
 	bgit.o \
 	bgraph.o \
@@ -201,14 +204,16 @@ $(BINARIES): dxpb-common.o
 #### Test Harnesses and their needs ####
 ########################################
 
-harness-pkgimport-master: harness-pkgimport-master.o pkgimport_msg.o bfs.o bstring.o
+harness-pkgimport-master: harness-pkgimport-master.o pkgimport_msg.o
 
-harness-grapher: bstring.o bfs.o bxpkg.o harness-grapher.o pkgimport_msg.o pkggraph_msg.o pkgfiles_msg.o
+harness-grapher: bxpkg.o harness-grapher.o pkgimport_msg.o pkggraph_msg.o pkgfiles_msg.o
 
 harness-hostdir-master: LDLIBS += -larchive -lxbps
-harness-hostdir-master: bstring.o bfs.o bxbps.o harness-hostdir-master.o pkggraph_msg.o pkgfiles_msg.o
+harness-hostdir-master: bxbps.o harness-hostdir-master.o pkggraph_msg.o pkgfiles_msg.o
 
-$(HARNESSES): dxpb-common.o
+harness-frontend: harness-frontend.o pkggraph_msg.o
+
+$(HARNESSES): dxpb-common.o bfs.o bstring.o
 
 harness: $(BINARIES) $(HARNESSES)
 
