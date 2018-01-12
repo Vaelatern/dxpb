@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.6 - 2018-01-12 - The one that doesn't infinite loop by design.
+### Overview
+- The frontend doesn't infinite loop any longer
+- Build with `make CC=gcc` works again.
+
 ## 0.0.5 - 2018-01-10 - The one that handles grapher timeouts better
 ### Overview
 - It kills daemons less often due to timeouts and properly unassigns graphers.
