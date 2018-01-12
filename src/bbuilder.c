@@ -133,6 +133,12 @@ bbuilder_agent(zsock_t *pipe, char *masterdir, char *hostdir, char *xbps_src)
 			break;
 		case BBUILDER_QUIT:
 			quit = 1;
+			if (srcinstance != 0) {
+				(void)bxsrc_build_end(bd.fds, srcinstance);
+				bbuilder_send(pipe, BBUILDER_ROGER, 0);
+			}
+			srcinstance = 0;
+			break;
 		case BBUILDER_STOP:
 			if (srcinstance != 0) {
 				(void)bxsrc_build_end(bd.fds, srcinstance);
