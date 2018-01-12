@@ -3,6 +3,7 @@ Vaelatern's short list (v0.1.0):
 	- Add pinger on expiry for all graphers
 
 Todo (v0.1.1):
+	- Improve xbps-src's `show-pkg-var` to not have a read-write loop. This requires modifications to dxpb.
 	- Shim to unmark package as bad (similar to dxpb-poke)
 	- Add libevhtp-based web servers to every long-running daemon (not dxpb-poke)
 	  that listens on port 13249 (base64 valud of "DPB" since DXPB was too
