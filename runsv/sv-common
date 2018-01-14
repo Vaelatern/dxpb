@@ -3,10 +3,10 @@ for dir in /var/run/dxpb /var/lib/dxpb/staging /var/lib/dxpb/logs /var/lib/dxpb/
 done
 
 chown root:_dxpb /var/run/dxpb
-chmod 775 /var/run/dxpb
+chmod 770 /var/run/dxpb
 
 chown _dxpb_filer:_dxpb /var/lib/dxpb/*
-chmod 755 /var/run/dxpb
+chmod 755 /var/lib/dxpb
 
 chown _dxpb_grapher:_dxpb_import /var/cache/dxpb/
-chmod 775 /var/run/dxpb
+chmod 775 /var/cache/dxpb
