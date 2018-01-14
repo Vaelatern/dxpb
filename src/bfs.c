@@ -290,12 +290,10 @@ bfs_size(int fd)
 enum ret_codes
 bfs_set_shared_sock_perms(const char *sockpath)
 {
-	mode_t mode =   S_IRUSR | S_IWUSR | S_IXUSR |
-			S_IRGRP | S_IWGRP | S_IXGRP |
-			S_IROTH | S_IWOTH | S_IXOTH;
+	mode_t mode = S_IRWXU | S_IRWXG | S_IRWXO;
 	int rc = chmod(sockpath, mode);
 	if (rc != 0) {
-		perror("Tried to set the socket to be rwxrwx---");
+		perror("Tried to set the socket to be rwxrwxrwx");
 		return ERR_CODE_BAD;
 	}
 	return ERR_CODE_OK;
