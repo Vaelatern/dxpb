@@ -17,7 +17,7 @@
 #include "bfs.h"
 #include "dxpb-common.h"
 
-#define VERSION "0.0.5"
+#define VERSION "0.0.6"
 
 void
 prologue(const char *argv0)
@@ -55,8 +55,7 @@ ensure_sock_if_ipc(const char *arg)
 {
        if (strstr(arg, "ipc://") != arg)
                return ERR_CODE_OK;
-       arg = arg + strlen("ipc://");
-       enum ret_codes rc = bfs_setup_sock(arg);
+       enum ret_codes rc = bfs_setup_sock(arg + strlen("ipc://"));
        if (rc != ERR_CODE_OK)
                return rc;
        rc = bfs_ensure_sock_perms(arg);
