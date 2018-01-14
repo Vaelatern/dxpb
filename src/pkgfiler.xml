@@ -99,9 +99,10 @@
 			<action name = "send" message = "INVALID" />
 		</event>
 		<event name = "expired">
-			This state should only trigger if a remote e.g. has a bad nfs or sshfs mount that causes them to hang up on file system operations. That or a bad remote.
+			This state should only trigger if a remote e.g. has a bad nfs or sshfs mount that causes them to hang up on file system operations. That or a bad remote. Or a remote that just left.
 			<action name = "mark all pkgs not at this remote location" />
 			<action name = "act if all remotes returned or expired" />
+			<action name = "terminate" />
 		</event>
 	</state>
 </class>

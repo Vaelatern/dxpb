@@ -845,6 +845,12 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ act if all remotes returned or expired", self->log_prefix);
                         act_if_all_remotes_returned_or_expired (&self->client);
                     }
+                    if (!self->exception) {
+                        //  terminate
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ terminate", self->log_prefix);
+                        self->next_event = terminate_event;
+                    }
                 }
                 else {
                     //  Handle unexpected protocol events

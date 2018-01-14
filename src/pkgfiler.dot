@@ -61,7 +61,7 @@ digraph "pkgfiler" {
  "file finding *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "file finding" -> "file finding *";
  "file finding *" -> "start";
- "file finding expired" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">mark all pkgs not at this remote location</td></tr><tr><td align="left" port="r3">act if all remotes returned or expired</td></tr></table>>];
+ "file finding expired" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">mark all pkgs not at this remote location</td></tr><tr><td align="left" port="r3">act if all remotes returned or expired</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
  "file finding" -> "file finding expired";
  "file finding expired" -> "file finding";
 }
