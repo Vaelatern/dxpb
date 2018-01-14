@@ -48,9 +48,6 @@ digraph "pkggraph_server" {
  "i am the grapher roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
  "i am the grapher" -> "i am the grapher roger";
  "i am the grapher roger" -> "i am the grapher";
- "i am the grapher tell of worker" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">tell of worker</font></td></tr><tr><td align="left" port="r3">assert is grapher</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
- "i am the grapher" -> "i am the grapher tell of worker";
- "i am the grapher tell of worker" -> "i am the grapher";
  "i am the grapher update bootstrap" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">update bootstrap</font></td></tr><tr><td align="left" port="r3">assert is grapher</td></tr><tr><td align="left" port="r3">all workers should bootstrap-update</td></tr></table>>];
  "i am the grapher" -> "i am the grapher update bootstrap";
  "i am the grapher update bootstrap" -> "i am the grapher";

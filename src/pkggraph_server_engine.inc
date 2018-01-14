@@ -39,27 +39,26 @@ typedef enum {
     imthegrapher_event = 3,
     imaworker_event = 4,
     iamstorage_event = 5,
-    tell_of_worker_event = 6,
-    update_bootstrap_event = 7,
-    workercanhelp_event = 8,
-    you_ve_got_a_memo_event = 9,
-    tell_grapher_job_ended_event = 10,
-    tell_grapher_worker_gone_event = 11,
-    tell_grapher_worker_can_help_event = 12,
-    expired_event = 13,
-    invalid_event = 14,
-    been_ordered_to_update_bootstrap_event = 15,
-    icanhelp_event = 16,
-    forget_about_me_event = 17,
-    you_can_help_with_this_event = 18,
-    job_ended_event = 19,
-    loghere_event = 20,
-    send_the_log_event = 21,
-    send_resetlog_event = 22,
-    send_loghere_event = 23,
-    ping_event = 24,
-    roger_event = 25,
-    killmenow_event = 26
+    update_bootstrap_event = 6,
+    workercanhelp_event = 7,
+    you_ve_got_a_memo_event = 8,
+    tell_grapher_job_ended_event = 9,
+    tell_grapher_worker_gone_event = 10,
+    tell_grapher_worker_can_help_event = 11,
+    expired_event = 12,
+    invalid_event = 13,
+    been_ordered_to_update_bootstrap_event = 14,
+    icanhelp_event = 15,
+    forget_about_me_event = 16,
+    you_can_help_with_this_event = 17,
+    job_ended_event = 18,
+    loghere_event = 19,
+    send_the_log_event = 20,
+    send_resetlog_event = 21,
+    send_loghere_event = 22,
+    ping_event = 23,
+    roger_event = 24,
+    killmenow_event = 25
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -83,7 +82,6 @@ s_event_name [] = {
     "IMTHEGRAPHER",
     "IMAWORKER",
     "IAMSTORAGE",
-    "tell_of_worker",
     "UPDATE_BOOTSTRAP",
     "WORKERCANHELP",
     "you_ve_got_a_memo",
@@ -709,26 +707,6 @@ s_client_execute (s_client_t *self, event_t event)
                 break;
 
             case i_am_the_grapher_state:
-                if (self->event == tell_of_worker_event) {
-                    if (!self->exception) {
-                        //  assert is grapher
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
-                        assert_is_grapher (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  send WORKERCANHELP
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ send WORKERCANHELP",
-                                self->log_prefix);
-                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_WORKERCANHELP);
-                        zsys_debug ("%s: Send message to client", self->log_prefix);
-                        pkggraph_msg_print (self->server->message);
-                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
-                        pkggraph_msg_send (self->server->message, self->server->router);
-                    }
-                }
-                else
                 if (self->event == update_bootstrap_event) {
                     if (!self->exception) {
                         //  assert is grapher

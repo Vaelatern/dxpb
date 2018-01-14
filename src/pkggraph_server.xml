@@ -40,10 +40,6 @@
 	</state>
 
 	<state name = "i am the grapher" inherit = "defaults">
-		<event name = "tell of worker">
-			<action name = "assert is grapher" />
-			<action name = "send" message = "WORKERCANHELP" />
-		</event>
 		<event name = "UPDATE BOOTSTRAP">
 			<action name = "assert is grapher" />
 			<action name = "all workers should bootstrap-update" />
