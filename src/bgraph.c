@@ -302,10 +302,12 @@ bgraph_attempt_resolution(bgraph grph)
 }
 
 static enum ret_codes
-bgraph_pkg_ready(struct pkg *needle, bgraph hay)
+bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay)
 {
 	enum ret_codes rc = ERR_CODE_OK;
 	struct pkg *pin;
+	if (needle->status == PKG_STATUS_IN_REPO)
+		return ERR_CODE_NO;
 	for (struct pkg_need *curneed = zlist_first(needle->needs);
 			curneed != NULL; curneed = zlist_next(needle->needs)) {
 		pin = curneed->pkg;
@@ -338,7 +340,7 @@ bgraph_what_next_for_arch(bgraph grph, enum pkg_archs arch)
 	hay = zhash_lookup(grph, pkg_archs_str[arch]);
 	for (needle = zhash_first(hay); needle != NULL;
 			needle = zhash_next(hay)) {
-		if (bgraph_pkg_ready(needle, hay) == ERR_CODE_YES)
+		if (bgraph_pkg_ready_to_build(needle, hay) == ERR_CODE_YES)
 			zlist_append(retVal, needle);
 	}
 
