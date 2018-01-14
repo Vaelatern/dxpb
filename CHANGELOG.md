@@ -1,6 +1,13 @@
 # Changelog
 
-## 0.0.6 - 2018-01-12 - The one that doesn't infinite loop by design.
+## 0.0.7 - 2018-01-13 - The one without unhandled states
+### Overview
+- State machines now handle every possible message.
+- pkgimport-agent configuration is now centralized by default.
+- sv-common now sets permissions correctly for dirs.
+- Switched to localhost-bound connections by default instead of ipc sockets.
+
+## 0.0.6 - 2018-01-12 - The one that doesn't infinite loop by design
 ### Overview
 - The frontend doesn't infinite loop any longer
 - Build with `make CC=gcc` works again.

@@ -17,7 +17,7 @@
 #include "bfs.h"
 #include "dxpb-common.h"
 
-#define VERSION "0.0.6"
+#define VERSION "0.0.7"
 
 void
 prologue(const char *argv0)

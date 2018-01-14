@@ -2,7 +2,7 @@
 
 First, build the dxpb package as provided
 [here](https://github.com/Vaelatern/void-packages/tree/dxpb/). Should be
-version 0.0.6 or greater.
+version 0.0.7 or greater.
 
 I will assume the following setup: all server processes on the same machine.
 Build on the same machine as well.
@@ -21,13 +21,12 @@ Please have a packages repository (not the git, but the distributed binaries)
 with at least the `bootstrap=yes` set of packages at `/var/lib/dxpb/pkgs/`.
 That path is equivalent to the current `/current/` path on repositories.
 
-Please have the following ports free: 5195 5196. The default configuration set
-will use these for communication.
+Please have the following ports free: `5195`, `5196`, and `5197`. The default
+configuration set will use these for communication.
 
 Please git-clone(1) a packages repository (git this time) under an arbitrary
 path. I like `/var/cache/dxpb/repo`. This will need to be fully owned by the
-`_dxpb_import` user and group. Please also touch
-`$XBPS_MASTERDIR/.xbps_chroot_init`
+`_dxpb_import` user and group. Please also do a binary-bootstrap in that repo.
 
 Please put a `conf` file under `/etc/sv/dxpb-pkgimport-master/`, with at least
 the following contents: `WRKDIR=/var/cache/dxpb/repo`. This directory will be
