@@ -8,7 +8,7 @@ enum ret_codes	ensure_sock_if_ipc(const char *);
 
 #define DEFAULT_SSLDIR "/etc/dxpb/curve/"
 
-#define DEFAULT_IMPORT_ENDPOINT "ipc:///var/run/dxpb/pkgimport.sock"
+#define DEFAULT_IMPORT_ENDPOINT "tcp://127.0.0.1:5197"
 #define DEFAULT_FILE_ENDPOINT   "tcp://127.0.0.1:5196"
 #define DEFAULT_GRAPH_ENDPOINT  "tcp://127.0.0.1:5195"
 
