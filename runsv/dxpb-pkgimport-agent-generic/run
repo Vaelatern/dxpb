@@ -2,7 +2,9 @@
 
 unset USER GROUP WRKDIR ETCDIR XBPSSRC ENDPOINT LOGFILE
 
-[ -f ./conf ] && . ./conf
+getconf=
+[ -f ./conf ] && . ./conf && getconf=no
+[ -z "$getconf" -a -f ../dxpb-pkgimport-agent-generic/conf ] && . ../dxpb-pkgimport-agent-generic/conf
 
 : ${LOGFILE:=/dev/null}
 
