@@ -20,6 +20,9 @@
 		<event name = "ROGER" next = "hesitate">
 			<action name = "send" message = "IAMSTORAGE" />
 		</event>
+		<event name = "*">
+			<action name = "send" message = "HELLO" />
+		</event>
 	</state>
 	<state name = "hesitate" inherit = "defaults">
 		<event name = "ROGER" next = "ready" />
@@ -52,9 +55,6 @@
 		<event name = "IFORGOTU" next = "negotiate">
 			<action name = "send" message = "HELLO" />
 		</event>
-		<event name = "*" next = "negotiate">
-			<action name = "send" message = "HELLO" />
-		</event>
 		<event name = "KTHNKSBYE" next = "die" />
 		<event name = "ROGER" />
 		<event name = "expired">
@@ -65,6 +65,9 @@
 		</event>
 		<event name = "set pubpath">
 			<action name = "set pub to provided" />
+		</event>
+		<event name = "*" next = "negotiate">
+			<action name = "send" message = "HELLO" />
 		</event>
 	</state>
 

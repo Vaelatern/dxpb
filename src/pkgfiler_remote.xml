@@ -26,6 +26,9 @@
 		<event name = "IFORGOTU">
 			<action name = "send" message = "HELLO" />
 		</event>
+		<event name = "*">
+			<action name = "send" message = "HELLO" />
+		</event>
 	</state>
 	<state name = "time2wrk">
 		<event name = "ISPKGHERE">
@@ -51,9 +54,9 @@
 		<event name = "INVALID" next = "start">
 			<action name = "send" message = "HELLO" />
 		</event>
-		<event name = "*">
+		<event name = "*" next = "start">
 			<action name = "send" message = "INVALID" />
-			<action name = "terminate" />
+			<action name = "send" message = "HELLO" />
 		</event>
 	</state>
 

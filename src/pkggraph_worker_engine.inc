@@ -548,29 +548,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_INVALID);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                        self->state = negotiate_state;
                 }
                 break;
 
@@ -663,29 +651,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_INVALID);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                        self->state = negotiate_state;
                 }
                 break;
 
@@ -780,29 +756,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_INVALID);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                        self->state = negotiate_state;
                 }
                 break;
 
@@ -904,29 +868,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_INVALID);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                        self->state = negotiate_state;
                 }
                 break;
 
@@ -1041,29 +993,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_INVALID);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                        self->state = negotiate_state;
                 }
                 break;
 
@@ -1154,29 +1094,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_INVALID);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                        self->state = negotiate_state;
                 }
                 break;
 
@@ -1286,29 +1214,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_INVALID);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                        self->state = negotiate_state;
                 }
                 break;
 
@@ -1417,29 +1333,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_INVALID);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                        self->state = negotiate_state;
                 }
                 break;
 
@@ -1536,29 +1440,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_INVALID);
+                        pkggraph_msg_set_id (self->message, PKGGRAPH_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
+                        self->state = negotiate_state;
                 }
                 break;
         }

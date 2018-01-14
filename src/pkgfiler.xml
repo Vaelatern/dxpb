@@ -95,6 +95,9 @@
 			<action name = "send" message = "ROGER" />
 		</event>
 		<event name = "INVALID" next = "start" />
+		<event name = "*" next = "start">
+			<action name = "send" message = "INVALID" />
+		</event>
 		<event name = "expired">
 			This state should only trigger if a remote e.g. has a bad nfs or sshfs mount that causes them to hang up on file system operations. That or a bad remote.
 			<action name = "mark all pkgs not at this remote location" />

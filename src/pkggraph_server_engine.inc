@@ -703,12 +703,8 @@ s_client_execute (s_client_t *self, event_t event)
                         pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
                         pkggraph_msg_send (self->server->message, self->server->router);
                     }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
-                    }
+                    if (!self->exception)
+                        self->state = start_state;
                 }
                 break;
 
@@ -928,12 +924,8 @@ s_client_execute (s_client_t *self, event_t event)
                         pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
                         pkggraph_msg_send (self->server->message, self->server->router);
                     }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
-                    }
+                    if (!self->exception)
+                        self->state = start_state;
                 }
                 break;
 
@@ -1113,12 +1105,8 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ remove self as worker", self->log_prefix);
                         remove_self_as_worker (&self->client);
                     }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
-                    }
+                    if (!self->exception)
+                        self->state = start_state;
                 }
                 break;
 
@@ -1250,12 +1238,8 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ remove self as storage", self->log_prefix);
                         remove_self_as_storage (&self->client);
                     }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
-                    }
+                    if (!self->exception)
+                        self->state = start_state;
                 }
                 break;
 
@@ -1308,12 +1292,8 @@ s_client_execute (s_client_t *self, event_t event)
                         pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
                         pkggraph_msg_send (self->server->message, self->server->router);
                     }
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
-                    }
+                    if (!self->exception)
+                        self->state = start_state;
                 }
                 break;
 

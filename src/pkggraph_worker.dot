@@ -10,7 +10,7 @@ digraph "pkggraph_worker" {
  "start invalid" -> "die";
  "start *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "start" -> "start *";
- "start *" -> "die";
+ "start *" -> "negotiate";
  "start kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "start" -> "start kthnksbye";
  "start kthnksbye" -> "die";
@@ -42,7 +42,7 @@ digraph "pkggraph_worker" {
  "negotiate invalid" -> "die";
  "negotiate *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "negotiate" -> "negotiate *";
- "negotiate *" -> "die";
+ "negotiate *" -> "negotiate";
  "negotiate kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "negotiate" -> "negotiate kthnksbye";
  "negotiate kthnksbye" -> "die";
@@ -65,7 +65,7 @@ digraph "pkggraph_worker" {
  "hesitate invalid" -> "die";
  "hesitate *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "hesitate" -> "hesitate *";
- "hesitate *" -> "die";
+ "hesitate *" -> "negotiate";
  "hesitate kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "hesitate" -> "hesitate kthnksbye";
  "hesitate kthnksbye" -> "die";
@@ -88,7 +88,7 @@ digraph "pkggraph_worker" {
  "preparing invalid" -> "die";
  "preparing *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "preparing" -> "preparing *";
- "preparing *" -> "die";
+ "preparing *" -> "negotiate";
  "preparing kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "preparing" -> "preparing kthnksbye";
  "preparing kthnksbye" -> "die";
@@ -114,7 +114,7 @@ digraph "pkggraph_worker" {
  "ready invalid" -> "die";
  "ready *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "ready" -> "ready *";
- "ready *" -> "die";
+ "ready *" -> "negotiate";
  "ready kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "ready" -> "ready kthnksbye";
  "ready kthnksbye" -> "die";
@@ -143,7 +143,7 @@ digraph "pkggraph_worker" {
  "bootstrap regular invalid" -> "die";
  "bootstrap regular *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "bootstrap regular" -> "bootstrap regular *";
- "bootstrap regular *" -> "die";
+ "bootstrap regular *" -> "negotiate";
  "bootstrap regular kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "bootstrap regular" -> "bootstrap regular kthnksbye";
  "bootstrap regular kthnksbye" -> "die";
@@ -172,7 +172,7 @@ digraph "pkggraph_worker" {
  "bootstrap build wanted invalid" -> "die";
  "bootstrap build wanted *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "bootstrap build wanted" -> "bootstrap build wanted *";
- "bootstrap build wanted *" -> "die";
+ "bootstrap build wanted *" -> "negotiate";
  "bootstrap build wanted kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "bootstrap build wanted" -> "bootstrap build wanted kthnksbye";
  "bootstrap build wanted kthnksbye" -> "die";
@@ -198,7 +198,7 @@ digraph "pkggraph_worker" {
  "working invalid" -> "die";
  "working *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "working" -> "working *";
- "working *" -> "die";
+ "working *" -> "negotiate";
  "working kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "working" -> "working kthnksbye";
  "working kthnksbye" -> "die";

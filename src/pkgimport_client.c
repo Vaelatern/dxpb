@@ -17,6 +17,7 @@
 #include "pkgimport_client.h"
 #include "pkgimport_msg.h"
 #include "dxpb.h"
+#include "bfs.h"
 #include "bwords.h"
 #include "bxpkg.h"
 #include "bpkg.h"
@@ -112,6 +113,7 @@ connect_to_server (client_t *self)
 		zsock_send (self->cmdpipe, "si", "FAILURE", -1, NULL);
 	} else {
 		zsys_debug("connected to %s", self->args->endpoint);
+		bfs_ensure_sock_perms(self->args->endpoint);
 		zsock_send (self->cmdpipe, "si", "SUCCESS", 0, NULL);
 		engine_set_connected(self, true);
 	}

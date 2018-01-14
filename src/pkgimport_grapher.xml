@@ -90,10 +90,12 @@
 		</event>
 	</state>
 	<state name = "working defaults">
-		<event name = "INVALID" next = "die" />
+		<event name = "INVALID" next = "start">
+			<action name = "send" message = "HELLO" />
+		</event>
 		<event name = "ROGER" />
-		<event name = "*" next = "die">
-			<action name = "send" message = "INVALID" />
+		<event name = "*" next = "start">
+			<action name = "send" message = "HELLO" />
 		</event>
 		<event name = "KTHNKSBYE" next = "die" />
 		<event name = "expired">
@@ -149,10 +151,12 @@
 		</event>
 	</state>
 	<state name = "defaults">
-		<event name = "INVALID" next = "die" />
+		<event name = "INVALID" next = "start">
+			<action name = "send" message = "HELLO" />
+		</event>
 		<event name = "ROGER" />
-		<event name = "*" next = "die">
-			<action name = "send" message = "INVALID" />
+		<event name = "*" next = "start">
+			<action name = "send" message = "HELLO" />
 		</event>
 		<event name = "KTHNKSBYE" next = "die" />
 		<event name = "expired">

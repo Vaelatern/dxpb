@@ -847,12 +847,20 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else {
-                    //  Handle unexpected internal events
-                    zsys_warning ("%s: unhandled event %s in %s",
-                        self->log_prefix,
-                        s_event_name [self->event],
-                        s_state_name [self->state]);
-                    assert (false);
+                    //  Handle unexpected protocol events
+                    if (!self->exception) {
+                        //  send INVALID
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send INVALID",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_INVALID);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception)
+                        self->state = start_state;
                 }
                 break;
         }

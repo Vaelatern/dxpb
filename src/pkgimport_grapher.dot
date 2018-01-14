@@ -2,12 +2,12 @@
 digraph "pkgimport_grapher" {
 
  "start" [shape = "doublecircle"];
- "start invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
+ "start invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "start" -> "start invalid";
- "start invalid" -> "die";
+ "start invalid" -> "start";
  "start *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "start" -> "start *";
- "start *" -> "die";
+ "start *" -> "start";
  "start kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "start" -> "start kthnksbye";
  "start kthnksbye" -> "die";
@@ -34,12 +34,12 @@ digraph "pkgimport_grapher" {
  "start iforgotu" -> "start";
 
  "register" [shape = "doublecircle"];
- "register invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
+ "register invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "register" -> "register invalid";
- "register invalid" -> "die";
+ "register invalid" -> "start";
  "register *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "register" -> "register *";
- "register *" -> "die";
+ "register *" -> "start";
  "register kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "register" -> "register kthnksbye";
  "register kthnksbye" -> "die";
@@ -54,15 +54,15 @@ digraph "pkgimport_grapher" {
  "register iforgotu" -> "start";
 
  "unstable" [shape = "doublecircle"];
- "unstable invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
+ "unstable invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "unstable" -> "unstable invalid";
- "unstable invalid" -> "die";
+ "unstable invalid" -> "start";
  "unstable roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
  "unstable" -> "unstable roger";
  "unstable roger" -> "unstable";
  "unstable *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "unstable" -> "unstable *";
- "unstable *" -> "die";
+ "unstable *" -> "start";
  "unstable kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "unstable" -> "unstable kthnksbye";
  "unstable kthnksbye" -> "die";
@@ -113,15 +113,15 @@ digraph "pkgimport_grapher" {
  "unstable stable" -> "stable";
 
  "stable" [shape = "doublecircle"];
- "stable invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
+ "stable invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "stable" -> "stable invalid";
- "stable invalid" -> "die";
+ "stable invalid" -> "start";
  "stable roger" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
  "stable" -> "stable roger";
  "stable roger" -> "stable";
  "stable *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "stable" -> "stable *";
- "stable *" -> "die";
+ "stable *" -> "start";
  "stable kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "stable" -> "stable kthnksbye";
  "stable kthnksbye" -> "die";

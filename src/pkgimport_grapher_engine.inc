@@ -564,20 +564,18 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == invalid_event) {
+                    if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgimport_msg_print (self->message);
+                        pkgimport_msg_send (self->message, self->dealer);
+                    }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
+                        self->state = start_state;
                 }
                 else
                 if (self->event == kthnksbye_event) {
@@ -612,29 +610,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkgimport_msg_print (self->message);
                         pkgimport_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
+                        self->state = start_state;
                 }
                 break;
 
@@ -691,6 +677,16 @@ s_client_execute (s_client_t *self, event_t event)
                 else
                 if (self->event == invalid_event) {
                     if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgimport_msg_print (self->message);
+                        pkgimport_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception) {
                         //  read all from db
                         if (self->verbose)
                             zsys_debug ("%s:         $ read all from db", self->log_prefix);
@@ -703,19 +699,7 @@ s_client_execute (s_client_t *self, event_t event)
                         decide_next_action_from_hash (&self->client);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
+                        self->state = start_state;
                 }
                 else
                 if (self->event == kthnksbye_event) {
@@ -762,11 +746,11 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkgimport_msg_print (self->message);
                         pkgimport_msg_send (self->message, self->dealer);
@@ -784,19 +768,7 @@ s_client_execute (s_client_t *self, event_t event)
                         decide_next_action_from_hash (&self->client);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
+                        self->state = start_state;
                 }
                 break;
 
@@ -909,20 +881,18 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == invalid_event) {
+                    if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgimport_msg_print (self->message);
+                        pkgimport_msg_send (self->message, self->dealer);
+                    }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
+                        self->state = start_state;
                 }
                 else
                 if (self->event == roger_event) {
@@ -1093,29 +1063,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkgimport_msg_print (self->message);
                         pkgimport_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
+                        self->state = start_state;
                 }
                 break;
 
@@ -1168,20 +1126,18 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == invalid_event) {
+                    if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgimport_msg_print (self->message);
+                        pkgimport_msg_send (self->message, self->dealer);
+                    }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
+                        self->state = start_state;
                 }
                 else
                 if (self->event == roger_event) {
@@ -1365,48 +1321,34 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkgimport_msg_print (self->message);
                         pkgimport_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
+                        self->state = start_state;
                 }
                 break;
 
             case working_defaults_state:
                 if (self->event == invalid_event) {
+                    if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgimport_msg_print (self->message);
+                        pkgimport_msg_send (self->message, self->dealer);
+                    }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
+                        self->state = start_state;
                 }
                 else
                 if (self->event == roger_event) {
@@ -1590,29 +1532,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkgimport_msg_print (self->message);
                         pkgimport_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
+                        self->state = start_state;
                 }
                 break;
 
@@ -1634,20 +1564,18 @@ s_client_execute (s_client_t *self, event_t event)
 
             case defaults_state:
                 if (self->event == invalid_event) {
+                    if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgimport_msg_print (self->message);
+                        pkgimport_msg_send (self->message, self->dealer);
+                    }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
+                        self->state = start_state;
                 }
                 else
                 if (self->event == roger_event) {
@@ -1685,29 +1613,17 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send HELLO",
                                 self->log_prefix);
-                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_INVALID);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_HELLO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkgimport_msg_print (self->message);
                         pkgimport_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = die_state;
-                    if (!self->exception) {
-                        //  terminate
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
-                    }
-                    if (!self->exception) {
-                        //  cease all operations
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ cease all operations", self->log_prefix);
-                        cease_all_operations (&self->client);
-                    }
+                        self->state = start_state;
                 }
                 break;
         }

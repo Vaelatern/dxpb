@@ -113,12 +113,11 @@
 		<event name = "LOGHERE">
 			<action name = "route log" />
 		</event>
-		<event name = "*">
+		<event name = "*" next = "start">
 			killmenow should find this state.
 			<action name = "remove all workers" />
 			<action name = "send" message = "INVALID" />
 			<action name = "remove self as worker" />
-			<action name = "terminate" />
 		</event>
 	</state>
 
@@ -137,19 +136,17 @@
 			<action name = "send" message = "LOGHERE" />
 			<action name = "post process sending log chunk" />
 		</event>
-		<event name = "*">
+		<event name = "*" next = "start">
 			<action name = "assert is storage" />
 			<action name = "send" message = "INVALID" />
 			<action name = "remove self as storage" />
-			<action name = "terminate" />
 		</event>
 	</state>
 
 	<state name = "defaults">
-		<event name = "*">
+		<event name = "*" next = "start">
 			killmenow should find this state.
 			<action name = "send" message = "INVALID" />
-			<action name = "terminate" />
 		</event>
 		<event name = "PING">
 			<action name = "send" message = "ROGER" />

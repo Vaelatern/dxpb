@@ -5,9 +5,6 @@ digraph "pkggraph_filer" {
  "start iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "start" -> "start iforgotu";
  "start iforgotu" -> "negotiate";
- "start *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
- "start" -> "start *";
- "start *" -> "negotiate";
  "start kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "start" -> "start kthnksbye";
  "start kthnksbye" -> "die";
@@ -23,6 +20,9 @@ digraph "pkggraph_filer" {
  "start set pubpath" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set pubpath</font></td></tr><tr><td align="left" port="r3">set pub to provided</td></tr></table>>];
  "start" -> "start set pubpath";
  "start set pubpath" -> "start";
+ "start *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "start" -> "start *";
+ "start *" -> "negotiate";
  "start construct" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">construct</font></td></tr><tr><td align="left" port="r3">connect to server</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "start" -> "start construct";
  "start construct" -> "negotiate";
@@ -34,9 +34,6 @@ digraph "pkggraph_filer" {
  "negotiate iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "negotiate" -> "negotiate iforgotu";
  "negotiate iforgotu" -> "negotiate";
- "negotiate *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
- "negotiate" -> "negotiate *";
- "negotiate *" -> "negotiate";
  "negotiate kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "negotiate" -> "negotiate kthnksbye";
  "negotiate kthnksbye" -> "die";
@@ -52,14 +49,14 @@ digraph "pkggraph_filer" {
  "negotiate roger" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "negotiate" -> "negotiate roger";
  "negotiate roger" -> "hesitate";
+ "negotiate *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "negotiate" -> "negotiate *";
+ "negotiate *" -> "negotiate";
 
  "hesitate" [shape = "doublecircle"];
  "hesitate iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "hesitate" -> "hesitate iforgotu";
  "hesitate iforgotu" -> "negotiate";
- "hesitate *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
- "hesitate" -> "hesitate *";
- "hesitate *" -> "negotiate";
  "hesitate kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "hesitate" -> "hesitate kthnksbye";
  "hesitate kthnksbye" -> "die";
@@ -72,6 +69,9 @@ digraph "pkggraph_filer" {
  "hesitate set pubpath" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set pubpath</font></td></tr><tr><td align="left" port="r3">set pub to provided</td></tr></table>>];
  "hesitate" -> "hesitate set pubpath";
  "hesitate set pubpath" -> "hesitate";
+ "hesitate *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "hesitate" -> "hesitate *";
+ "hesitate *" -> "negotiate";
  "hesitate roger" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
  "hesitate" -> "hesitate roger";
  "hesitate roger" -> "ready";
@@ -80,9 +80,6 @@ digraph "pkggraph_filer" {
  "ready iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "ready" -> "ready iforgotu";
  "ready iforgotu" -> "negotiate";
- "ready *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
- "ready" -> "ready *";
- "ready *" -> "negotiate";
  "ready kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "ready" -> "ready kthnksbye";
  "ready kthnksbye" -> "die";
@@ -98,6 +95,9 @@ digraph "pkggraph_filer" {
  "ready set pubpath" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set pubpath</font></td></tr><tr><td align="left" port="r3">set pub to provided</td></tr></table>>];
  "ready" -> "ready set pubpath";
  "ready set pubpath" -> "ready";
+ "ready *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "ready" -> "ready *";
+ "ready *" -> "negotiate";
  "ready resetlog" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">resetlog</font></td></tr><tr><td align="left" port="r3">truncate log</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "ready" -> "ready resetlog";
  "ready resetlog" -> "ready";

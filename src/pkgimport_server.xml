@@ -116,11 +116,6 @@
 			It is always valid to re-start the session.
 			<action name = "send" message = "ROGER" />
 		</event>
-		<event name = "*" next = "introduction">
-			<action name = "send" message = "IFORGOTU" />
-			<action name = "return job to queue" />
-			<action name = "assign pending work" />
-		</event>
 		<event name = "PING">
 			<action name = "send" message = "ROGER" />
 		</event>
@@ -129,6 +124,11 @@
 			<action name = "remove self from worker list" />
 			<action name = "assign pending work" />
 			<action name = "terminate" />
+		</event>
+		<event name = "*" next = "introduction">
+			<action name = "send" message = "IFORGOTU" />
+			<action name = "return job to queue" />
+			<action name = "assign pending work" />
 		</event>
 	</state>
 </class>

@@ -17,6 +17,9 @@ digraph "pkgfiler_remote" {
  "start iforgotu" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "start" -> "start iforgotu";
  "start iforgotu" -> "start";
+ "start *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "start" -> "start *";
+ "start *" -> "start";
 
  "time2wrk" [shape = "doublecircle"];
  "time2wrk ispkghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ispkghere</font></td></tr><tr><td align="left" port="r3">check for pkg locally</td></tr></table>>];
@@ -37,7 +40,7 @@ digraph "pkgfiler_remote" {
  "time2wrk invalid" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "time2wrk" -> "time2wrk invalid";
  "time2wrk invalid" -> "start";
- "time2wrk *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];
+ "time2wrk *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "time2wrk" -> "time2wrk *";
- "time2wrk *" -> "time2wrk";
+ "time2wrk *" -> "start";
 }

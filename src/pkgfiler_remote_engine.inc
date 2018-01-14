@@ -442,12 +442,17 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else {
-                    //  Handle unexpected internal events
-                    zsys_warning ("%s: unhandled event %s in %s",
-                        self->log_prefix,
-                        s_event_name [self->event],
-                        s_state_name [self->state]);
-                    assert (false);
+                    //  Handle unexpected protocol events
+                    if (!self->exception) {
+                        //  send HELLO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->message, PKGFILES_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgfiles_msg_print (self->message);
+                        pkgfiles_msg_send (self->message, self->dealer);
+                    }
                 }
                 break;
 
@@ -560,11 +565,17 @@ s_client_execute (s_client_t *self, event_t event)
                         pkgfiles_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception) {
-                        //  terminate
+                        //  send HELLO
                         if (self->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->fsm_stopped = true;
+                            zsys_debug ("%s:         $ send HELLO",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->message, PKGFILES_MSG_HELLO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgfiles_msg_print (self->message);
+                        pkgfiles_msg_send (self->message, self->dealer);
                     }
+                    if (!self->exception)
+                        self->state = start_state;
                 }
                 break;
         }

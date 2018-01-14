@@ -19,6 +19,9 @@
 		<event name = "connect error" next = "die">
 			<action name = "complain about connection error" />
 		</event>
+		<event name = "*">
+			<action name = "send" message = "HELLO" />
+		</event>
 	</state>
 	<state name = "pleasantries" inherit = "defaults">
 		<before>
@@ -69,12 +72,12 @@
 		<event name = "STOP">
 			<action name = "send" message = "ROGER" />
 		</event>
-		<event name = "*" next = "start">
-			<action name = "send" message = "IFORGOTU" />
-		</event>
 		<event name = "KTHNKSBYE" next = "die" />
 		<event name = "expired">
 			<action name = "send" message = "PING" />
+		</event>
+		<event name = "*" next = "start">
+			<action name = "send" message = "IFORGOTU" />
 		</event>
 	</state>
 
