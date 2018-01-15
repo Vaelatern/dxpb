@@ -72,117 +72,115 @@ run(const char *ssldir, const char *sdir, const char *rdir,
 
 	zsock_t *graph = zsock_new (ZMQ_ROUTER);
 	zsock_t *file  = zsock_new (ZMQ_DEALER);
+	zsock_t *file2  = zsock_new (ZMQ_DEALER);
 	assert(graph);
 	assert(file);
+	assert(file2);
 
 	zsock_attach(graph, graph_end, true);
 	zsock_attach(file, file_end, false);
+	zsock_attach(file2, file_end, false);
+
+#define SEND(this, msg, sock)        { \
+					pkgfiles_msg_set_id(msg, this); \
+					rc = pkgfiles_msg_send(msg, sock); \
+					assert(rc == 0); \
+				}
+
+#define GET(mymsg, sock)        { \
+					zpoller_t *p = zpoller_new(sock, NULL); \
+					(void) zpoller_wait(p, 10*1000); \
+					assert(!zpoller_expired(p)); \
+					if (zpoller_terminated(p)) \
+					exit(-1); \
+					rc = pkgfiles_msg_recv(mymsg, sock); \
+					assert(rc == 0); \
+					zpoller_destroy(&p); \
+				}
+
+
+#define TOMSG(str)                   PKGFILES_MSG_##str
+#define SETMSG(what, msg, to)        pkgfiles_msg_set_##what(msg, to)
+#define ASSERTMSG(what, msg, eq)     assert(pkgfiles_msg_##what(msg) == eq)
+#define ASSERTMSGSTR(what, msg, eq)     assert(strcmp(pkgfiles_msg_##what(msg), eq) == 0)
 
 	/* And now we get to work */
 
-	{
-		pkgfiles_msg_set_id(file_msg, PKGFILES_MSG_HELLO);
-		rc = pkgfiles_msg_send(file_msg, file);
-		assert(rc == 0);
-	}
-	{
-		zpoller_t *p = zpoller_new(file, NULL);
-		(void) zpoller_wait(p, 10*1000);
-		assert(!zpoller_expired(p));
-		if (zpoller_terminated(p))
-			exit(-1);
-		rc = pkgfiles_msg_recv(file_msg, file);
-		assert(rc == 0);
-		assert(pkgfiles_msg_id(file_msg) == PKGFILES_MSG_ROGER);
-		zpoller_destroy(&p);
-	}
-	{
-		pkgfiles_msg_set_pkgname(file_msg, "foo");
-		pkgfiles_msg_set_version(file_msg, DXPB_VERSION);
-		pkgfiles_msg_set_arch(file_msg, "noarch");
-		pkgfiles_msg_set_id(file_msg, PKGFILES_MSG_ISPKGHERE);
-		rc = pkgfiles_msg_send(file_msg, file);
-		assert(rc == 0);
-	}
-	{
-		zpoller_t *p = zpoller_new(file, NULL);
-		(void) zpoller_wait(p, 120*1000);
-		assert(!zpoller_expired(p));
-		if (zpoller_terminated(p))
-			exit(-1);
-		rc = pkgfiles_msg_recv(file_msg, file);
-		assert(rc == 0);
-		assert(pkgfiles_msg_id(file_msg) == PKGFILES_MSG_PKGNOTHERE);
-		assert(strcmp(pkgfiles_msg_pkgname(file_msg), "foo") == 0);
-		assert(strcmp(pkgfiles_msg_version(file_msg), DXPB_VERSION) == 0);
-		assert(strcmp(pkgfiles_msg_arch(file_msg), "noarch") == 0);
-		zpoller_destroy(&p);
-	}
+	SEND(TOMSG(HELLO), file_msg, file);
+	GET(file_msg, file);
+	ASSERTMSG(id, file_msg, TOMSG(ROGER));
+	SETMSG(pkgname, file_msg, "foo");
+	SETMSG(version, file_msg, DXPB_VERSION);
+	SETMSG(arch, file_msg, "noarch");
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	GET(file_msg, file);
+	ASSERTMSG(id, file_msg, TOMSG(PKGNOTHERE));
+	ASSERTMSGSTR(pkgname, file_msg, "foo");
+	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
+	ASSERTMSGSTR(arch, file_msg, "noarch");
+
 	bfs_touch(pkgpath);
-	{
-		pkgfiles_msg_set_pkgname(file_msg, "foo");
-		pkgfiles_msg_set_version(file_msg, DXPB_VERSION);
-		pkgfiles_msg_set_arch(file_msg, "noarch");
-		pkgfiles_msg_set_id(file_msg, PKGFILES_MSG_ISPKGHERE);
-		rc = pkgfiles_msg_send(file_msg, file);
-		assert(rc == 0);
-	}
-	{
-		zpoller_t *p = zpoller_new(file, NULL);
-		(void) zpoller_wait(p, 120*1000);
-		assert(!zpoller_expired(p));
-		if (zpoller_terminated(p)) {
-			fprintf(stderr, "oops\n");
-			exit(-1);
-		}
-		rc = pkgfiles_msg_recv(file_msg, file);
-		assert(rc == 0);
-		assert(pkgfiles_msg_id(file_msg) == PKGFILES_MSG_PKGHERE);
-		assert(strcmp(pkgfiles_msg_pkgname(file_msg), "foo") == 0);
-		assert(strcmp(pkgfiles_msg_version(file_msg), DXPB_VERSION) == 0);
-		assert(strcmp(pkgfiles_msg_arch(file_msg), "noarch") == 0);
-		zpoller_destroy(&p);
-	}
-	{
-		pkgfiles_msg_set_pkgname(file_msg, "foo");
-		pkgfiles_msg_set_version(file_msg, DXPB_VERSION);
-		pkgfiles_msg_set_arch(file_msg, "x86_64");
-		pkgfiles_msg_set_id(file_msg, PKGFILES_MSG_ISPKGHERE);
-		rc = pkgfiles_msg_send(file_msg, file);
-		assert(rc == 0);
-	}
-	{
-		pkgfiles_msg_set_pkgname(file_msg, "foo");
-		pkgfiles_msg_set_version(file_msg, DXPB_VERSION);
-		pkgfiles_msg_set_arch(file_msg, "x86_64-musl");
-		pkgfiles_msg_set_id(file_msg, PKGFILES_MSG_ISPKGHERE);
-		rc = pkgfiles_msg_send(file_msg, file);
-		assert(rc == 0);
-	}
-	{
-		pkgfiles_msg_set_pkgname(file_msg, "foo");
-		pkgfiles_msg_set_version(file_msg, DXPB_VERSION);
-		pkgfiles_msg_set_arch(file_msg, "i686");
-		pkgfiles_msg_set_id(file_msg, PKGFILES_MSG_ISPKGHERE);
-		rc = pkgfiles_msg_send(file_msg, file);
-		assert(rc == 0);
-	}
+
+	SETMSG(pkgname, file_msg, "foo");
+	SETMSG(version, file_msg, DXPB_VERSION);
+	SETMSG(arch, file_msg, "noarch");
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	GET(file_msg, file);
+	ASSERTMSG(id, file_msg, TOMSG(PKGHERE));
+	ASSERTMSGSTR(pkgname, file_msg, "foo");
+	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
+	ASSERTMSGSTR(arch, file_msg, "noarch");
+	SETMSG(pkgname, file_msg, "foo");
+	SETMSG(version, file_msg, DXPB_VERSION);
+	SETMSG(arch, file_msg, "x86_64");
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	SETMSG(arch, file_msg, "x86_64-musl");
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	SETMSG(arch, file_msg, "i686");
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
 	for (int i = 0; i < 3; i++) {
-		zpoller_t *p = zpoller_new(file, NULL);
-		(void) zpoller_wait(p, 120*1000);
-		assert(!zpoller_expired(p));
-		if (zpoller_terminated(p))
-			exit(-1);
-		rc = pkgfiles_msg_recv(file_msg, file);
-		assert(rc == 0);
-		assert(pkgfiles_msg_id(file_msg) == PKGFILES_MSG_PKGNOTHERE);
-		assert(strcmp(pkgfiles_msg_pkgname(file_msg), "foo") == 0);
-		assert(strcmp(pkgfiles_msg_version(file_msg), DXPB_VERSION) == 0);
+		GET(file_msg, file);
+		ASSERTMSG(id, file_msg, TOMSG(PKGNOTHERE));
+		ASSERTMSGSTR(pkgname, file_msg, "foo");
+		ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
 		assert((strcmp(pkgfiles_msg_arch(file_msg), "x86_64") == 0) ||
 			(strcmp(pkgfiles_msg_arch(file_msg), "x86_64-musl") == 0) ||
 			(strcmp(pkgfiles_msg_arch(file_msg), "i686") == 0));
-		zpoller_destroy(&p);
 	}
+
+	SEND(TOMSG(HELLO), file_msg, file2);
+	GET(file_msg, file2);
+	ASSERTMSG(id, file_msg, TOMSG(ROGER));
+
+	for (int i = 0; i < 6; i++) {
+		sleep(10);
+		SEND(TOMSG(PING), file_msg, file);
+		GET(file_msg, file);
+		ASSERTMSG(id, file_msg, TOMSG(ROGER));
+	}
+
+	SETMSG(pkgname, file_msg, "foo");
+	SETMSG(version, file_msg, DXPB_VERSION);
+	SETMSG(arch, file_msg, "x86_64");
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	SETMSG(arch, file_msg, "x86_64-musl");
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	SETMSG(arch, file_msg, "i686");
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	for (int i = 0; i < 3; i++) {
+		GET(file_msg, file);
+		ASSERTMSG(id, file_msg, TOMSG(PKGNOTHERE));
+		ASSERTMSGSTR(pkgname, file_msg, "foo");
+		ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
+		assert((strcmp(pkgfiles_msg_arch(file_msg), "x86_64") == 0) ||
+			(strcmp(pkgfiles_msg_arch(file_msg), "x86_64-musl") == 0) ||
+			(strcmp(pkgfiles_msg_arch(file_msg), "i686") == 0));
+	}
+
+	SEND(TOMSG(HELLO), file_msg, file2);
+	GET(file_msg, file2);
+	ASSERTMSG(id, file_msg, TOMSG(ROGER));
+
 
 	/* Work over, let's clean up. */
 
@@ -190,6 +188,7 @@ run(const char *ssldir, const char *sdir, const char *rdir,
 	pkgfiles_msg_destroy(&file_msg);
 
 	zsock_destroy(&graph);
+	zsock_destroy(&file2);
 	zsock_destroy(&file);
 
 	return 0;
