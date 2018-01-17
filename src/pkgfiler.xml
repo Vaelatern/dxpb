@@ -95,6 +95,9 @@
 			<action name = "send" message = "ROGER" />
 		</event>
 		<event name = "INVALID" next = "start" />
+		<event name = "entered invalid state with remote" next = "start">
+			<action name = "send" message = "INVALID" />
+		</event>
 		<event name = "*" next = "start">
 			<action name = "send" message = "INVALID" />
 		</event>

@@ -34,7 +34,7 @@
 typedef struct _server_t server_t;
 typedef struct _client_t client_t;
 
-char *
+static char *
 pkgdef_to_str(const char *name, const char *ver, const char *arch)
 {
 	assert(name);
@@ -45,7 +45,7 @@ pkgdef_to_str(const char *name, const char *ver, const char *arch)
 				ver, &parA, &parB), arch, &parA, &parB);
 }
 
-char *
+static char *
 pkgmsg_to_str(pkgfiles_msg_t *message)
 {
 	return pkgdef_to_str(pkgfiles_msg_pkgname(message),
@@ -64,6 +64,14 @@ struct hunt {
 	zlist_t *responded;
 	zlist_t *pkg_here;
 	zlist_t *resp_pending;
+	enum fsm_state state; /* A: Broadcasting request for pkg
+			       * B: All hunt atoms have timed out or ended
+			       * C: Need to tell asker the bad needs
+			       * D: Need to ask for the package
+			       * E: Asked for package
+			       * F: Package in flight
+			       * G: Package here, tell asker the good news
+			       */
 };
 
 static struct hunt *
@@ -85,21 +93,17 @@ new_hunt(client_t *asker, const char *pkgname, const char *version, const char *
 	assert(hunt->responded);
 	assert(hunt->pkg_here);
 	assert(hunt->resp_pending);
+	hunt->state = FSM_STATE_A;
 	return hunt;
 }
 
-static void
-destroy_hunt(struct hunt **todie)
+static struct hunt *
+pkgmsg_to_hunt(client_t *self, pkgfiles_msg_t *message)
 {
-	struct hunt *hunt = *todie;
-	free(hunt->pkgname);
-	free(hunt->version);
-	free(hunt->arch);
-	zlist_destroy(&(hunt->responded));
-	zlist_destroy(&(hunt->pkg_here));
-	zlist_destroy(&(hunt->resp_pending));
-	free(hunt);
-	*todie = NULL;
+	return new_hunt(self,
+			pkgfiles_msg_pkgname(message),
+			pkgfiles_msg_version(message),
+			pkgfiles_msg_arch(message));
 }
 
 struct hunt_atom {
@@ -171,6 +175,34 @@ get_max_inflight(client_t *self)
 	return (self->server->max_fetch_slots / zhash_size(self->server->peering)) * self->numfetchs;
 }
 
+static void
+remove_hunt_from_all_refs(struct hunt *hunt, zlist_t *refs)
+{
+	struct hunt_atom *atom = NULL;
+	assert(refs);
+	for (atom = zlist_first(refs); atom; atom = zlist_next(refs)) {
+		zlist_remove(atom->client->refs, hunt);
+	}
+}
+
+static void
+destroy_hunt(struct hunt **todie)
+{
+	struct hunt *hunt = *todie;
+	free(hunt->pkgname);
+	free(hunt->version);
+	free(hunt->arch);
+	remove_hunt_from_all_refs(hunt, hunt->responded);
+	remove_hunt_from_all_refs(hunt, hunt->pkg_here);
+	remove_hunt_from_all_refs(hunt, hunt->resp_pending);
+	zlist_destroy(&(hunt->responded));
+	zlist_destroy(&(hunt->pkg_here));
+	zlist_destroy(&(hunt->resp_pending));
+	free(hunt);
+	*todie = NULL;
+}
+
+
 //  Include the generated server engine
 #include "pkgfiler_engine.inc"
 
@@ -188,8 +220,10 @@ generate_memos(server_t *self)
 	struct hunt_atom *curatom;
 	for (curhunt = zhash_first(self->hunts); curhunt;
 			curhunt = zhash_next(self->hunts)) {
-		if (zlist_size(curhunt->resp_pending) == 0 ||
-				curhunt->age > HUNT_AGE_MAX) {
+		if (curhunt->state == FSM_STATE_A &&
+				(zlist_size(curhunt->resp_pending) == 0 ||
+				curhunt->age > HUNT_AGE_MAX)) {
+			curhunt->state = FSM_STATE_B;
 			zlist_append(tmphunts, curhunt);
 		}
 	}
@@ -213,6 +247,7 @@ generate_memos(server_t *self)
 			printnote("We found a sharer");
 			/* We chose the source of the package */
 			/* Most common for noarch subpackages */
+			assert(curhunt->pkg_here);
 			curatom = zlist_first(curhunt->pkg_here);
 			client = curatom->client;
 			pkgfiles_msg_set_id(memo->msg, PKGFILES_MSG_WANNASHARE_);
@@ -343,6 +378,7 @@ static int
 client_initialize (client_t *self)
 {
 	self->fetch_slots_inflight = 0;
+	self->num_pings = 0;
 	self->refs = zlist_new();
 	self->numfetchs = 0;
 	return 0;
@@ -428,9 +464,7 @@ static void
 broadcast_pkg_locate_request (client_t *self)
 {
 	printnote("Broadcasting request for package");
-	struct hunt *hunt = new_hunt(self, pkgfiles_msg_pkgname(self->message),
-			pkgfiles_msg_version(self->message),
-			pkgfiles_msg_arch(self->message));
+	struct hunt *hunt = pkgmsg_to_hunt(self, self->message);
 	char *key = pkgmsg_to_str(self->message);
 	assert(key);
 	zhash_insert(self->server->hunts, key, hunt);
@@ -609,9 +643,18 @@ mark_pkg_at_remote_location (client_t *self)
 		engine_set_exception(self, invalid_event);
 		return;
 	}
-	zlist_append(hunt->pkg_here, self);
-	zlist_append(hunt->responded, self);
-	zlist_remove(hunt->resp_pending, self);
+	struct hunt_atom *togo = NULL;
+	assert(hunt->resp_pending);
+	for (struct hunt_atom *atom = zlist_first(hunt->resp_pending);
+			atom; atom = zlist_next(hunt->resp_pending)) {
+		if (atom->client == self)
+			togo = atom;
+	}
+	assert(togo);
+	zlist_append(hunt->pkg_here, togo);
+	zlist_append(hunt->responded, togo);
+	zlist_remove(hunt->resp_pending, togo);
+	togo = NULL;
 }
 
 
@@ -675,10 +718,19 @@ mark_pkg_not_at_remote_location (client_t *self)
 		engine_set_exception(self, invalid_event);
 		goto end;
 	}
+	struct hunt_atom *togo = NULL;
+	assert(hunt->resp_pending);
+	for (struct hunt_atom *atom = zlist_first(hunt->resp_pending);
+			atom; atom = zlist_next(hunt->resp_pending)) {
+		if (atom->client == self)
+			togo = atom;
+	}
+	assert(togo);
 	assert(hunt->responded);
 	assert(hunt->resp_pending);
-	zlist_append(hunt->responded, self);
-	zlist_remove(hunt->resp_pending, self);
+	zlist_append(hunt->responded, togo);
+	zlist_remove(hunt->resp_pending, togo);
+	togo = NULL;
 end:
 	free(key);
 	key = NULL;
@@ -693,7 +745,9 @@ static void
 mark_all_pkgs_not_at_this_remote_location (client_t *self)
 {
 	struct hunt_atom *togo = NULL;
+	assert(self->refs);
 	for (struct hunt *curhunt = zlist_first(self->refs); curhunt; curhunt = zlist_next(self->refs)) {
+		assert(curhunt->responded);
 		for (struct hunt_atom *atom = zlist_first(curhunt->responded);
 				atom; atom = zlist_next(curhunt->responded)) {
 			if (atom->client == self)
@@ -701,6 +755,7 @@ mark_all_pkgs_not_at_this_remote_location (client_t *self)
 		}
 		zlist_remove(curhunt->responded, togo);
 		togo = NULL;
+		assert(curhunt->pkg_here);
 		for (struct hunt_atom *atom = zlist_first(curhunt->pkg_here);
 				atom; atom = zlist_next(curhunt->pkg_here)) {
 			if (atom->client == self)
@@ -708,6 +763,7 @@ mark_all_pkgs_not_at_this_remote_location (client_t *self)
 		}
 		zlist_remove(curhunt->pkg_here, togo);
 		togo = NULL;
+		assert(curhunt->resp_pending);
 		for (struct hunt_atom *atom = zlist_first(curhunt->resp_pending);
 				atom; atom = zlist_next(curhunt->resp_pending)) {
 			if (atom->client == self)
@@ -758,9 +814,11 @@ static void
 end_hunt (client_t *self)
 {
 	char *key = pkgmsg_to_str(self->message);
-	printnote(key);
 	struct hunt *todie = zhash_lookup(self->server->hunts, key);
-	assert(todie);
+	if (todie == NULL) {
+		engine_set_exception(self, entered_invalid_state_with_remote_event);
+		return;
+	}
 	zhash_delete(self->server->hunts, key);
 	destroy_hunt(&todie);
 	free(key);

@@ -46,7 +46,8 @@ typedef enum {
     pkgdel_event = 15,
     ping_event = 16,
     invalid_event = 17,
-    expired_event = 18
+    entered_invalid_state_with_remote_event = 18,
+    expired_event = 19
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -77,6 +78,7 @@ s_event_name [] = {
     "PKGDEL",
     "PING",
     "INVALID",
+    "entered_invalid_state_with_remote",
     "expired"
 };
 
@@ -828,6 +830,22 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == invalid_event) {
+                    if (!self->exception)
+                        self->state = start_state;
+                }
+                else
+                if (self->event == entered_invalid_state_with_remote_event) {
+                    if (!self->exception) {
+                        //  send INVALID
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send INVALID",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_INVALID);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
                     if (!self->exception)
                         self->state = start_state;
                 }

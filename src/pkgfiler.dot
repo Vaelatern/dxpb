@@ -58,6 +58,9 @@ digraph "pkgfiler" {
  "file finding invalid" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
  "file finding" -> "file finding invalid";
  "file finding invalid" -> "start";
+ "file finding entered invalid state with remote" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">entered invalid state with remote</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "file finding" -> "file finding entered invalid state with remote";
+ "file finding entered invalid state with remote" -> "start";
  "file finding *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "file finding" -> "file finding *";
  "file finding *" -> "start";

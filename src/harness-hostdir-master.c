@@ -152,6 +152,53 @@ run(const char *ssldir, const char *sdir, const char *rdir,
 	GET(file_msg, file2);
 	ASSERTMSG(id, file_msg, TOMSG(ROGER));
 
+	SETMSG(pkgname, file_msg, "foo");
+	SETMSG(version, file_msg, DXPB_VERSION);
+	SETMSG(arch, file_msg, "armv6hf");
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	GET(file_msg, file2);
+	ASSERTMSG(id, file_msg, TOMSG(ISPKGHERE));
+	ASSERTMSGSTR(pkgname, file_msg, "foo");
+	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
+	ASSERTMSGSTR(arch, file_msg, "armv6hf");
+	SEND(TOMSG(PKGNOTHERE), file_msg, file2);
+	SETMSG(pkgname, file_msg, "foo");
+	SETMSG(version, file_msg, DXPB_VERSION);
+	SETMSG(arch, file_msg, "armv7hf-musl");
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	GET(file_msg, file2);
+	ASSERTMSG(id, file_msg, TOMSG(ISPKGHERE));
+	ASSERTMSGSTR(pkgname, file_msg, "foo");
+	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
+	ASSERTMSGSTR(arch, file_msg, "armv7hf-musl");
+	SEND(TOMSG(PKGNOTHERE), file_msg, file2);
+	SETMSG(pkgname, file_msg, "foo");
+	SETMSG(version, file_msg, DXPB_VERSION);
+	SETMSG(arch, file_msg, "aarch64");
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	GET(file_msg, file2);
+	ASSERTMSG(id, file_msg, TOMSG(ISPKGHERE));
+	ASSERTMSGSTR(pkgname, file_msg, "foo");
+	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
+	ASSERTMSGSTR(arch, file_msg, "aarch64");
+	SEND(TOMSG(PKGNOTHERE), file_msg, file2);
+
+	GET(file_msg, file);
+	ASSERTMSG(id, file_msg, TOMSG(PKGNOTHERE));
+	ASSERTMSGSTR(pkgname, file_msg, "foo");
+	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
+	ASSERTMSGSTR(arch, file_msg, "armv6hf");
+	GET(file_msg, file);
+	ASSERTMSG(id, file_msg, TOMSG(PKGNOTHERE));
+	ASSERTMSGSTR(pkgname, file_msg, "foo");
+	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
+	ASSERTMSGSTR(arch, file_msg, "armv7hf-musl");
+	GET(file_msg, file);
+	ASSERTMSG(id, file_msg, TOMSG(PKGNOTHERE));
+	ASSERTMSGSTR(pkgname, file_msg, "foo");
+	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
+	ASSERTMSGSTR(arch, file_msg, "aarch64");
+
 	for (int i = 0; i < 6; i++) {
 		sleep(10);
 		SEND(TOMSG(PING), file_msg, file);
