@@ -107,10 +107,9 @@ gimme_unix_socket()
 zsock_t *
 spawn_child(char *endpoint, char *masterdir, char *hostdir, char *xbps_src)
 {
-	pid_t pidfirst;
 	zsock_t *mypipe;
 
-	switch(pidfirst = fork()) {
+	switch(fork()) {
 	case -1:
 		perror("Ran into issue in first fork");
 		exit(ERR_CODE_NOFORK);
