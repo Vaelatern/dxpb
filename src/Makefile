@@ -53,13 +53,14 @@ HARNESS_OBJECTS = harness-grapher.o \
 	harness-hostdir-master.o \
 	harness-frontend.o \
 	harness-pkgimport-master.o
-TEST_BINARIES = check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps usebfs usebgit
-TEST_OBJECTS = check_bgraph.o check_bwords.o check_bstring.o check_btranslate.o check_bpkg.o check_bxbps.o
+TEST_BINARIES = check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps check_brepowatch usebfs usebgit
+TEST_OBJECTS = check_bgraph.o check_bwords.o check_bstring.o check_btranslate.o check_bpkg.o check_bxbps.o check_brepowatch.o
 OBJECTS = \
 	bbuilder.o \
 	bdb.o \
 	bdot.o \
 	bfs.o \
+	brepowatch.o \
 	bgit.o \
 	bgraph.o \
 	bpkg.o \
@@ -144,6 +145,11 @@ check_bxbps: check_bxbps.o bwords.o bstring.o bfs.o
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 	./$@
 
+check_brepowatch: LDLIBS += -lpthread
+check_brepowatch: check_brepowatch.o bwords.o bstring.o bfs.o
+	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
+	./$@
+
 valgrind_check_%: check_%
 	valgrind -q --leak-check=full ./$^
 
@@ -188,8 +194,8 @@ dxpb-builder: dxpb-builder.o bgit.o bbuilder.o bwords.o bxpkg.o bxsrc.o pkggraph
 dxpb-grapher: LDLIBS += -lbsd -lsqlite3 -larchive -lxbps
 dxpb-grapher: dxpb-grapher.o bwords.o bxsrc.o bxpkg.o bpkg.o bxbps.o bgraph.o bdb.o pkgimport_msg.o pkgimport_grapher.o pkggraph_msg.o pkggraph_grapher.o pkgfiles_msg.o pkgfiler_grapher.o bworker.o btranslate.o
 
-dxpb-hostdir-master: LDLIBS += -larchive -lxbps
-dxpb-hostdir-master: dxpb-hostdir-master.o bxbps.o pkggraph_msg.o pkggraph_filer.o pkgfiles_msg.o pkgfiler.o
+dxpb-hostdir-master: LDLIBS += -larchive -lxbps -lpthread
+dxpb-hostdir-master: dxpb-hostdir-master.o brepowatch.o bxbps.o pkggraph_msg.o pkggraph_filer.o pkgfiles_msg.o pkgfiler.o
 
 dxpb-hostdir-remote: LDLIBS += -larchive -lxbps
 dxpb-hostdir-remote: dxpb-hostdir-remote.o bxbps.o pkgfiles_msg.o pkgfiler_remote.o

@@ -27,6 +27,7 @@
 #include "bfs.h"
 #include "bstring.h"
 #include "bdebug.h"
+#include "brepowatch.h"
 
 //  ---------------------------------------------------------------------------
 //  Forward declarations for the two main classes we use here
@@ -138,6 +139,8 @@ struct _server_t {
 
 	//  Add any properties you need here
 	zsock_t *pub;
+	zsock_t *finder;
+	pthread_t *finder_thread;
 	char *pubpath;
 	struct hunt *curhunt;
 	client_t *grapher;
@@ -168,6 +171,17 @@ struct _client_t {
 	uint32_t numfetchs; // Safe reference counter due to no self-referencing
 	uint8_t fetch_slots_inflight;
 };
+
+inline int
+file_exists_in_repo(server_t *self, const char *filename)
+{
+	zstr_send(self->finder, filename);
+	char *in = zstr_recv(self->finder);
+	int rV = in[0] != '\0';
+	free(in);
+	in = NULL;
+	return rV;
+}
 
 inline static uint32_t
 get_max_inflight(client_t *self)
@@ -330,7 +344,8 @@ server_initialize (server_t *self)
 	self->stagingdir = NULL;
 	engine_configure(self, "server/timeout", "15000");
 	engine_set_monitor (self, 2000, regular_maintenance);
-	//  Construct properties here
+	self->finder = NULL;
+	self->finder_thread = NULL;
 	return 0;
 }
 
@@ -344,10 +359,15 @@ server_terminate (server_t *self)
 	if (self->pubpath)
 		free(self->pubpath);
 	self->pubpath = NULL;
+	if (self->finder_thread != NULL) {
+		zstr_send(self->finder, NULL);
+		void *given = NULL;
+		pthread_join(*(self->finder_thread), &given);
+		zsock_destroy(&(self->finder));
+	}
 	zhash_destroy(&(self->hunts));
 	zlist_destroy(&(self->followups));
 	zhash_destroy(&(self->peering));
-	//  Destroy properties here
 }
 
 //  Process server API method, return reply message if any
@@ -438,7 +458,7 @@ check_for_pkg_locally (client_t *self)
 			pkgfiles_msg_version(self->message),
 			pkgfiles_msg_arch(self->message));
 	assert(pkgfile);
-	int present = bfs_find_file_in_subdir(self->server->repodir, pkgfile, NULL);
+	int present = file_exists_in_repo(self->server, pkgfile);
 	if (present)
 		engine_set_exception(self, pkg_here_event);
 	free(pkgfile);
@@ -489,8 +509,7 @@ delete_package (client_t *self)
 			pkgfiles_msg_version(self->message),
 			pkgfiles_msg_arch(self->message));
 	uint32_t parA = 0, parB = 0;
-	char *subdir = NULL;
-	int rc = bfs_find_file_in_subdir(self->server->repodir, filename, &subdir);
+	int rc = file_exists_in_repo(self->server, filename);
 	if (rc == 0)
 		return; // Package doesn't exist to be deleted.
 	char *delfilename = bstring_add(bstring_add(bstring_add(bstring_add(
@@ -926,8 +945,17 @@ ensure_configuration_is_set (client_t *self)
 		self->server->stagingdir = zconfig_get(self->server->config, "dxpb/stagingdir", NULL);
 	if (!self->server->repodir)
 		self->server->repodir = zconfig_get(self->server->config, "dxpb/repodir", NULL);
+	if (!self->server->finder_thread)
+		self->server->finder_thread = brepowatch_filefinder_prepare(
+				&(self->server->finder),
+				self->server->repodir,
+				"/var/run/dxpb/repowatch-XXXXXX");
 	if (!self->server->stagingdir || !self->server->repodir) {
 		fprintf(stderr, "Caller neglected to set both staging and repo directory paths\n");
+		exit(ERR_CODE_BAD);
+	}
+	if (!self->server->finder_thread || !self->server->finder) {
+		fprintf(stderr, "We were unable to set up finding in the repo\n");
 		exit(ERR_CODE_BAD);
 	}
 	if (!self->server->pubpath) {

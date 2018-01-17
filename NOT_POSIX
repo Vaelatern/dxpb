@@ -7,6 +7,8 @@ not written to the POSIX spec
     removing the primary purpose of closefrom() as a way to abate the problems
     with forking and threading while playing with file descriptors.
 - arc4random() in bworker generating 32 bit "check" values, provided by libbsd.
+- There is inotify code, Linux specific, in `brepowatch.c`. This should be
+  expanded to support other systems as desired.
 
 All other parts of the codebase are deliberately written to only assume
 functionality as laid out in those specifications. If part of the code assumes
