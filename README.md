@@ -2,10 +2,6 @@
 
 Yo.
 
-# Due
-
-2017-October-14
-
 # List of packages necessary for build
 
 - zeromq-devel
@@ -14,6 +10,7 @@ Yo.
 - libgit2-devel
 - libbsd-devel
 - libxbps-devel
+- graphviz-devel
 
 # Information for development
 
