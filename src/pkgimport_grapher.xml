@@ -70,11 +70,11 @@
 	</state>
 	<state name = "stable" inherit = "working defaults">
 		<before>
+			<action name = "set expiry high" />
 			<action name = "write graph to db" />
 			<action name = "resolve graph" />
 			<action name = "get packages" />
 			<action name = "ask around for wanted pkgs" />
-			<action name = "set expiry high" />
 		</before>
 		<event name = "IFORGOTU" next = "start">
 			<action name = "send" message = "HELLO" />

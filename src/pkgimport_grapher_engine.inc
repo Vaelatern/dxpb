@@ -176,6 +176,8 @@ static void
 static void
     find_package_for_worker (client_t *self);
 static void
+    set_expiry_high (client_t *self);
+static void
     write_graph_to_db (client_t *self);
 static void
     resolve_graph (client_t *self);
@@ -183,8 +185,6 @@ static void
     get_packages (client_t *self);
 static void
     ask_around_for_wanted_pkgs (client_t *self);
-static void
-    set_expiry_high (client_t *self);
 static void
     create_pkg_from_info (client_t *self);
 static void
@@ -849,6 +849,12 @@ s_client_execute (s_client_t *self, event_t event)
                     if (!self->exception)
                         self->state = stable_state;
                     if (!self->exception) {
+                        //  set expiry high
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set expiry high", self->log_prefix);
+                        set_expiry_high (&self->client);
+                    }
+                    if (!self->exception) {
                         //  write graph to db
                         if (self->verbose)
                             zsys_debug ("%s:         $ write graph to db", self->log_prefix);
@@ -871,12 +877,6 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ ask around for wanted pkgs", self->log_prefix);
                         ask_around_for_wanted_pkgs (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  set expiry high
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ set expiry high", self->log_prefix);
-                        set_expiry_high (&self->client);
                     }
                 }
                 else
