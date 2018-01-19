@@ -27,9 +27,9 @@ help(void)
 
 enum ret_codes
 run(int flags, const char *ssldir, const char *sdir, const char *rdir,
-		const char *ldir, const char *file_endpoint,
-		const char *graph_endpoint, const char *file_pubpoint,
-		const char *graph_pubpoint)
+		const char *ldir, const char *varrundir,
+		const char *file_endpoint, const char *graph_endpoint,
+		const char *file_pubpoint, const char *graph_pubpoint)
 {
 	SSLDIR_UNUSED(ssldir);
 	assert((flags & ERR_FLAG) == 0);
@@ -48,6 +48,7 @@ run(int flags, const char *ssldir, const char *sdir, const char *rdir,
 		zstr_sendx(log_actor, "VERBOSE", NULL);
 
 	zstr_sendx(file_actor, "SET", "dxpb/stagingdir", sdir, NULL);
+	zstr_sendx(file_actor, "SET", "dxpb/varrundir", varrundir, NULL);
 	zstr_sendx(file_actor, "SET", "dxpb/repodir", rdir, NULL);
 	zstr_sendx(file_actor, "SET", "dxpb/pubpoint", file_pubpoint, NULL);
 	zstr_sendx(file_actor, "BIND", file_endpoint, NULL);
@@ -87,19 +88,20 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "Lhvk:s:r:l:f:F:g:G:";
+	const char *optstring = "LhvR:k:s:r:l:f:F:g:G:";
 	char *default_stagingdir = DEFAULT_STAGINGDIR;
 	char *default_repodir = DEFAULT_REPODIR;
 	char *default_logdir = DEFAULT_LOGDIR;
 	char *default_file_endpoint = DEFAULT_FILE_ENDPOINT;
 	char *default_graph_endpoint = DEFAULT_GRAPH_ENDPOINT;
 	char *default_ssldir = DEFAULT_SSLDIR;
+	char *default_varrundir = DEFAULT_VARRUNDIR;
 	char *default_graph_pubpoint = DEFAULT_DXPB_HOSTDIR_MASTER_GRAPHER_PUBPOINT;
 	char *default_file_pubpoint = DEFAULT_DXPB_HOSTDIR_MASTER_FILE_PUBPOINT;
 	char *stagingdir, *repodir, *logdir, *file_endpoint, *graph_endpoint,
-	     *ssldir, *graph_pubpoint, *file_pubpoint;
+	     *ssldir, *graph_pubpoint, *file_pubpoint, *varrundir;
 	stagingdir = repodir = logdir = file_pubpoint = graph_pubpoint = NULL;
-	file_endpoint = graph_endpoint = ssldir = NULL;
+	file_endpoint = graph_endpoint = ssldir = varrundir = NULL;
 
 	while ((c = getopt(argc, argv, optstring)) != -1) {
 		switch(c) {
@@ -133,6 +135,9 @@ main(int argc, char * const *argv)
 		case 'l':
 			logdir = optarg;
 			break;
+		case 'R':
+			varrundir = optarg;
+			break;
 		case 'v':
 			flags |= VERBOSE_FLAG;
 			break;
@@ -158,6 +163,8 @@ main(int argc, char * const *argv)
 		repodir = default_repodir;
 	if (!logdir)
 		logdir = default_logdir;
+	if (!varrundir)
+		varrundir = default_varrundir;
 	if (!file_endpoint)
 		file_endpoint = default_file_endpoint;
 	if (!graph_endpoint)
@@ -176,6 +183,7 @@ main(int argc, char * const *argv)
 	rc = ensure_sock_if_ipc(graph_pubpoint);
 	assert(rc == ERR_CODE_OK);
 
-	return run(flags, ssldir, stagingdir, repodir, logdir, file_endpoint,
-			graph_endpoint, file_pubpoint, graph_pubpoint);
+	return run(flags, ssldir, stagingdir, repodir, logdir, varrundir,
+			file_endpoint, graph_endpoint, file_pubpoint,
+			graph_pubpoint);
 }

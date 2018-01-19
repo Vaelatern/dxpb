@@ -942,14 +942,18 @@ static void
 ensure_configuration_is_set (client_t *self)
 {
 	if (!self->server->stagingdir)
-		self->server->stagingdir = zconfig_get(self->server->config, "dxpb/stagingdir", NULL);
+		self->server->stagingdir =
+			zconfig_get(self->server->config, "dxpb/stagingdir", NULL);
 	if (!self->server->repodir)
-		self->server->repodir = zconfig_get(self->server->config, "dxpb/repodir", NULL);
-	if (!self->server->finder_thread)
+		self->server->repodir =
+			zconfig_get(self->server->config, "dxpb/repodir", NULL);
+	if (!self->server->finder_thread) {
+		char *varrundir =
+			zconfig_get(self->server->config, "dxpb/varrundir", NULL);
+		assert(varrundir);
 		self->server->finder_thread = brepowatch_filefinder_prepare(
-				&(self->server->finder),
-				self->server->repodir,
-				"/var/run/dxpb/repowatch-XXXXXX");
+				&(self->server->finder), self->server->repodir, varrundir);
+	}
 	if (!self->server->stagingdir || !self->server->repodir) {
 		fprintf(stderr, "Caller neglected to set both staging and repo directory paths\n");
 		exit(ERR_CODE_BAD);
