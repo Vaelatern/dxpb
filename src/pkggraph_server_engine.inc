@@ -1194,12 +1194,6 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  assert is storage
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ assert is storage", self->log_prefix);
-                        assert_is_storage (&self->client);
-                    }
-                    if (!self->exception) {
                         //  send INVALID
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ send INVALID",

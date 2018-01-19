@@ -133,7 +133,6 @@
 			<action name = "post process sending log chunk" />
 		</event>
 		<event name = "*" next = "start">
-			<action name = "assert is storage" />
 			<action name = "send" message = "INVALID" />
 			<action name = "remove self as storage" />
 		</event>

@@ -130,7 +130,7 @@ digraph "pkggraph_server" {
  "i am storage send loghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">send loghere</font></td></tr><tr><td align="left" port="r3">assert is storage</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">post process sending log chunk</td></tr></table>>];
  "i am storage" -> "i am storage send loghere";
  "i am storage send loghere" -> "i am storage";
- "i am storage *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">assert is storage</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">remove self as storage</td></tr></table>>];
+ "i am storage *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">remove self as storage</td></tr></table>>];
  "i am storage" -> "i am storage *";
  "i am storage *" -> "start";
 

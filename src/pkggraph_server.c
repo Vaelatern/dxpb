@@ -722,6 +722,8 @@ remove_self_as_worker (client_t *self)
 static void
 remove_self_as_storage (client_t *self)
 {
+	if (self->server->storage == self)
+		self->server->storage = NULL;
 	if (self->server->pub) {
 		zstr_sendm(self->server->pub, "TRACE");
 		zstr_sendf(self->server->pub, "Removing storage");
@@ -748,6 +750,6 @@ assert_is_grapher (client_t *self)
 static void
 assert_is_storage (client_t *self)
 {
-	if (self->server->storage == self)
+	if (self->server->storage != self)
 		engine_set_exception(self, killmenow_event);
 }
