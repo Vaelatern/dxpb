@@ -17,8 +17,6 @@
 #include "bfs.h"
 #include "dxpb-common.h"
 
-#define VERSION "0.0.7"
-
 void
 prologue(const char *argv0)
 {
@@ -30,7 +28,7 @@ prologue(const char *argv0)
 			"This is free software with ABSOLUTELY NO WARRANTY.\n"
 			"For license details, pass the -L flag\n"
 			"Compiled: %s %s\n\n",
-			basename(arg), VERSION, __DATE__, __TIME__);
+			basename(arg), DXPB_VERSION, __DATE__, __TIME__);
 	free(arg);
 }
 

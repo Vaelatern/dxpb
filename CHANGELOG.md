@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.0.8 - 2018-01-19 - The one with better repository watching
+### Overview
+- Improve speed of confirming if a file is present in a directory.
+- Fixed repository watcher state to actually send PKGNOTHERE notices when
+  applicable.
+- Disable a particular testing-only library by default.
+- Slight state machine, code, and documentation cleanups.
+- Grapher now won't endlessly order rebuilds of packages.
+
 ## 0.0.7 - 2018-01-13 - The one without unhandled states
 ### Overview
 - State machines now handle every possible message.
