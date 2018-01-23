@@ -47,10 +47,12 @@ SUID_BINARIES = \
 	dxpb-certs-server
 HARNESSES = harness-grapher \
 	harness-hostdir-master \
+	harness-hostdir \
 	harness-frontend \
 	harness-pkgimport-master
 HARNESS_OBJECTS = harness-grapher.o \
 	harness-hostdir-master.o \
+	harness-hostdir.o \
 	harness-frontend.o \
 	harness-pkgimport-master.o
 TEST_BINARIES = check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps check_brepowatch usebfs usebgit
@@ -217,6 +219,9 @@ harness-grapher: bxpkg.o harness-grapher.o pkgimport_msg.o pkggraph_msg.o pkgfil
 
 harness-hostdir-master: LDLIBS += -larchive -lxbps
 harness-hostdir-master: bxbps.o harness-hostdir-master.o pkggraph_msg.o pkgfiles_msg.o
+
+harness-hostdir: LDLIBS += -larchive -lxbps -lbsd
+harness-hostdir: bxbps.o harness-hostdir.o pkggraph_msg.o pkgfiles_msg.o
 
 harness-frontend: harness-frontend.o pkggraph_msg.o
 
