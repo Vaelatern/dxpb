@@ -336,7 +336,8 @@ server_initialize (server_t *self)
 {
 	self->pub = NULL;
 	self->pubpath = NULL;
-	self->available_fetch_slots = 50;
+	self->max_fetch_slots = 50;
+	self->available_fetch_slots = self->max_fetch_slots;
 	self->followups = zlist_new();
 	self->hunts = zhash_new();
 	self->peering = zhash_new();
