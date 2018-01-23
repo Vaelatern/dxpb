@@ -83,7 +83,7 @@ client_terminate (client_t *self)
 	for (struct filefetch *fp = zhash_first(self->open_fds); fp;
 			fp = zhash_next(self->open_fds)) {
 		close(fp->fd);
-		fp->fd = 0;
+		fp->fd = -1;
 		free(fp);
 	}
 	zhash_destroy(&(self->open_fds));
@@ -259,11 +259,11 @@ prepare_chunk (client_t *self)
 	zchunk_t *tosend;
 	char *buf;
 	int64_t size = 1024*64; // 64 kilobytes at a time;
-	assert(self->curfetch->fd != 0 || self->curfetch->pos == self->curfetch->eofpos);
+	assert(self->curfetch->fd >= 0 || self->curfetch->pos == self->curfetch->eofpos);
 
 	pkgfiles_msg_set_validchunk(self->message, 1);
 
-	if (self->curfetch->fd != 0) {
+	if (self->curfetch->fd >= 0) {
 		buf = malloc(sizeof(char)*size);
 		size = read(self->curfetch->fd, buf, size);
 		tosend = zchunk_new(buf, size);
@@ -292,9 +292,9 @@ postprocess_chunk (client_t *self)
 	if (!self->curfetch)
 		return;
 
-	if (self->curfetch->fd && self->curfetch->pos == self->curfetch->eofpos) {
+	if (self->curfetch->fd >= 0 && self->curfetch->pos == self->curfetch->eofpos) {
 		close(self->curfetch->fd);
-		self->curfetch->fd = 0;
+		self->curfetch->fd = -1;
 	}
 }
 
