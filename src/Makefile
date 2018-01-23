@@ -197,8 +197,8 @@ dxpb-grapher: dxpb-grapher.o bwords.o bxsrc.o bxpkg.o bpkg.o bxbps.o bgraph.o bd
 dxpb-hostdir-master: LDLIBS += -larchive -lxbps -lpthread
 dxpb-hostdir-master: dxpb-hostdir-master.o brepowatch.o bxbps.o pkggraph_msg.o pkggraph_filer.o pkgfiles_msg.o pkgfiler.o
 
-dxpb-hostdir-remote: LDLIBS += -larchive -lxbps
-dxpb-hostdir-remote: dxpb-hostdir-remote.o bxbps.o pkgfiles_msg.o pkgfiler_remote.o
+dxpb-hostdir-remote: LDLIBS += -larchive -lxbps -lpthread
+dxpb-hostdir-remote: dxpb-hostdir-remote.o bxbps.o pkgfiles_msg.o pkgfiler_remote.o brepowatch.o
 
 dxpb-frontend: LDLIBS += -lbsd
 dxpb-frontend: dxpb-frontend.o pkggraph_msg.o bxpkg.o pkggraph_server.o bworker.o

@@ -25,6 +25,8 @@
 #include "bgraph.h"
 #include "bxbps.h"
 #include "bfs.h"
+#include "bstring.h"
+#include "brepowatch.h"
 
 //  Forward reference to method arguments structure
 typedef struct _client_args_t client_args_t;
@@ -50,6 +52,8 @@ typedef struct {
     client_args_t *args;        //  Arguments from methods
 
     //  Add specific properties for your application
+    zsock_t *finder;
+    pthread_t *finder_thread;
     char *hostdir;
     zhash_t *open_fds;
     struct filefetch *curfetch;
@@ -65,6 +69,8 @@ static int
 client_initialize (client_t *self)
 {
 	self->hostdir = NULL;
+	self->finder = NULL;
+	self->finder_thread = NULL;
 	self->open_fds = zhash_new();
 	return 0;
 }
@@ -83,6 +89,12 @@ client_terminate (client_t *self)
 	zhash_destroy(&(self->open_fds));
 	if (self->hostdir)
 		free(self->hostdir);
+	if (self->finder_thread != NULL) {
+		zstr_send(self->finder, NULL);
+		void *given = NULL;
+		pthread_join(*(self->finder_thread), &given);
+		zsock_destroy(&(self->finder));
+	}
 }
 
 
@@ -105,6 +117,31 @@ pkgfiler_remote_test (bool verbose)
     printf ("OK\n");
 }
 
+//  ---------------------------------------------------------------------------
+//  file_path_in_repo
+//  A way to quickly get the relative path to a file in our hostdir
+
+char *
+file_path_in_repo(client_t *self, const char *filename)
+{
+	zstr_send(self->finder, filename);
+	char *rV = zstr_recv(self->finder);
+	if (rV[0] == '\0') {
+		free(rV);
+		rV = NULL;
+	}
+	return rV;
+}
+
+int
+file_exists_in_repo(client_t *self, const char *filename)
+{
+	char *in = file_path_in_repo(self, filename);
+	int rV = in[0] != '\0';
+	free(in);
+	in = NULL;
+	return rV;
+}
 
 //  ---------------------------------------------------------------------------
 //  connect_to_server
@@ -148,7 +185,7 @@ check_for_pkg_locally (client_t *self)
 				pkgfiles_msg_pkgname(self->message),
 				pkgfiles_msg_version(self->message),
 				pkgfiles_msg_arch(self->message));
-	int present = bfs_find_file_in_subdir(self->hostdir, pkgfile, NULL);
+	int present = file_exists_in_repo(self, pkgfile);
 	if (present)
 		pkgfiles_msg_set_id(self->message, PKGFILES_MSG_PKGHERE);
 	else
@@ -177,12 +214,17 @@ open_file_for_sending (client_t *self)
 				pkgfiles_msg_pkgname(self->message),
 				pkgfiles_msg_version(self->message),
 				pkgfiles_msg_arch(self->message));
-	char *subdir = NULL;
-	fd->fd  = bfs_find_file_in_subdir(self->hostdir, pkgfile, &subdir);
-	fd->subpath = subdir;
+	fd->subpath = file_path_in_repo(self, pkgfile);
+	assert(fd->subpath);
+	char *fullpath = bstring_add(bstring_add(strdup(self->hostdir), fd->subpath,
+				NULL, NULL), pkgfile, NULL, NULL);
+	assert(fullpath);
+	fd->fd = open(fullpath, O_RDONLY | O_NONBLOCK);
 	fd->pos = 0;
 	fd->eofpos = bfs_size(fd->fd);
 	zhash_insert(self->open_fds, pkgfile, fd);
+	free(fullpath);
+	fullpath = NULL;
 	free(pkgfile);
 	pkgfile = NULL;
 }
@@ -270,7 +312,7 @@ confirm_pkg_is_local_and_want_to_share (client_t *self)
 				pkgfiles_msg_pkgname(self->message),
 				pkgfiles_msg_version(self->message),
 				pkgfiles_msg_arch(self->message));
-	int present = bfs_find_file_in_subdir(self->hostdir, pkgfile, NULL);
+	int present = file_exists_in_repo(self, pkgfile);
 	if (!present) {
 		pkgfiles_msg_set_id(self->message, PKGFILES_MSG_IDONTWANNASHARE);
 		pkgfiles_msg_send(self->message, self->dealer);
@@ -295,4 +337,12 @@ set_hostdir_location (client_t *self)
 		fprintf(stderr, "Couldn't set hostdir\n");
 		exit(ERR_CODE_NOMEM);
 	}
+	if (self->finder_thread != NULL) {
+		zstr_send(self->finder, NULL);
+		void *given = NULL;
+		pthread_join(*(self->finder_thread), &given);
+		zsock_destroy(&(self->finder));
+	}
+	self->finder_thread = brepowatch_filefinder_prepare(&(self->finder),
+			self->hostdir, "dxpb-hostdir-remote-finder");
 }
