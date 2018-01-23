@@ -578,15 +578,16 @@ write_file_chunk (client_t *self)
 		// We don't need the below variable, since we already saved it,
 		// but it would be nice to decide TODO: if we need to ensure
 		// the subpaths line up with what we want, to detect bad peers.
-		// const char *subpath = pkgfiles_msg_subpath(self->message);
+		fetch->subpath = strdup(pkgfiles_msg_subpath(self->message));
+		if (fetch->subpath == NULL || fetch->subpath[0] == '\0')
+			engine_set_exception(self, invalid_event);
 		uint32_t parA = 0, parB = 0;
 		char *filepath = bstring_add(NULL, self->server->stagingdir,
 				&parA, &parB);
 		if (filepath[parB] != '/')
 			filepath = bstring_add(filepath, "/", &parA, &parB);
-		if (fetch->subpath) {
+		if (fetch->subpath[1] != '\0') // strlen() != 1
 			filepath = bstring_add(filepath, fetch->subpath, &parA, &parB);
-		}
 		if (filepath[parB] != '/')
 			filepath = bstring_add(filepath, "/", &parA, &parB);
 		filepath = bstring_add(filepath, pkgfile, &parA, &parB);
@@ -700,6 +701,7 @@ establish_peer_agreement (client_t *self)
 	assert(peer->pkgname);
 	assert(peer->version);
 	assert(peer->arch);
+	peer->subpath = NULL;
 	peer->fp = NULL;
 	zhash_insert(self->server->peering, key, peer);
 
@@ -874,7 +876,7 @@ postprocess_chunk (client_t *self)
 				&parA, &parB);
 		if (newfilepath[parB] != '/')
 			newfilepath = bstring_add(newfilepath, "/", &parA, &parB);
-		if (fetch->subpath)
+		if (fetch->subpath[1] != '\0') // if length of 1, == "/"
 			newfilepath = bstring_add(newfilepath, fetch->subpath, &parA, &parB);
 		if (newfilepath[parB] != '/')
 			newfilepath = bstring_add(newfilepath, "/", &parA, &parB);
@@ -889,16 +891,17 @@ postprocess_chunk (client_t *self)
 		fetch->filepath = bstring_add(fetch->filepath, ".new", NULL, NULL);
 		bfs_touch(fetch->filepath);
 
-		free(newfilepath);
-		newfilepath = NULL;
-		free(fetch->filepath);
-		fetch->filepath = NULL;
+		FREE(newfilepath);
+		FREE(fetch->filepath);
+		FREE(fetch->subpath);
+		FREE(fetch->pkgname);
+		FREE(fetch->version);
+		FREE(fetch->arch);
 		zhash_freefn(self->server->peering, key, free);
 		zhash_delete(self->server->peering, key);
 		self->curfetch = NULL;
 		self->numfetchs--;
-		free(key);
-		key = NULL;
+		FREE(key);
 	}
 }
 
