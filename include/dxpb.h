@@ -41,3 +41,5 @@ enum fsm_state {
 	FSM_STATE_F,
 	FSM_STATE_G
 };
+
+#define FREE(x) do { if (x != NULL) free(x); x = NULL; } while (0)
