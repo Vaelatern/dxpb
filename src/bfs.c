@@ -194,7 +194,7 @@ bfs_size(int fd)
 {
 	struct stat sinfo = {0};
 	int rc = fstat(fd, &sinfo);
-	if (sinfo.st_mode != S_IFREG) {
+	if (!S_ISREG(sinfo.st_mode)) {
 		fprintf(stderr, "Wanted file is not regular\n");
 		return 0;
 	}
