@@ -11,7 +11,6 @@
 #include <czmq.h>
 #include "dxpb.h"
 #include "bstring.h"
-#include "bfs.h"
 
 /* Recursive because we don't expect very deep directories
  */
@@ -98,7 +97,7 @@ brepowatch_filefinder_actor(void *endpoint_in)
 	char *instr = NULL, *outstr = NULL;
 	zsock_t *mine = zsock_new(ZMQ_PAIR);
 	assert(mine);
-	int rc1 = zsock_connect(mine, "ipc://%s", endpoint);
+	int rc1 = zsock_connect(mine, "inproc://%s", endpoint);
 	assert(rc1 != -1);
 
 	int inotify_fd = inotify_init1(IN_NONBLOCK);
@@ -110,7 +109,7 @@ brepowatch_filefinder_actor(void *endpoint_in)
 	zhash_t *files = brepowatch_archive_dir(rootdir, inotify_fd);
 	assert(files);
 
-	// Need to have notify first, to give it priority.
+	// Need to have notify first in this argument list, to give it priority.
 	zpoller_t *poller = zpoller_new(&inotify_fd, mine, NULL);
 	assert(poller);
 
@@ -155,13 +154,13 @@ brepowatch_filefinder_actor(void *endpoint_in)
 }
 
 pthread_t *
-brepowatch_filefinder_prepare(zsock_t **sock, const char *rootdir, const char *tmppattern)
+brepowatch_filefinder_prepare(zsock_t **sock, const char *rootdir, const char *inprocpoint)
 {
-	char *endpoint = bfs_new_tmpsock(tmppattern, "bfs-handler-1");
+	char *endpoint = strdup(inprocpoint);
 	assert(endpoint);
 	pthread_t *thread = calloc(1, sizeof(pthread_t));
 	*sock = zsock_new(ZMQ_PAIR);
-	int rc1 = zsock_bind(*sock, "ipc://%s", endpoint);
+	int rc1 = zsock_bind(*sock, "inproc://%s", endpoint);
 	assert(rc1 != -1);
 
 	pthread_create(thread, NULL, brepowatch_filefinder_actor, endpoint);

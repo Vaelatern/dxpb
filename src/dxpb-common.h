@@ -21,8 +21,6 @@ enum ret_codes	ensure_sock_if_ipc(const char *);
 #define DEFAULT_DBPATH "/var/cache/dxpb/pkgs.db"
 #define DEFAULT_DOTGRAPHPATH "/var/cache/dxpb/pkgs.dot"
 
-#define DEFAULT_VARRUNDIR "/var/run/dxpb/tmpsock-XXXXXX"
-
 #define DEFAULT_STAGINGDIR "/var/lib/dxpb/staging/"
 #define DEFAULT_LOGDIR     "/var/lib/dxpb/logs/"
 #define DEFAULT_REPODIR    "/var/lib/dxpb/pkgs/"

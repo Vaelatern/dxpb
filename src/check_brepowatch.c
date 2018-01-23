@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "brepowatch.c"
+#include "bfs.h"
 #include "check_main.inc"
 
 #define MAKEFILE(x,y) { \
@@ -21,15 +22,13 @@ START_TEST(test_filefinder_basic)
 	char *tmppath = strdup("/tmp/dxpb-check_brepowatch-XXXXXX");
 	char *ourdir = mkdtemp(tmppath);
 	char *workdir = bstring_add(strdup(ourdir), "/work", NULL, NULL);
-	char *sockdirpatt = bstring_add(strdup(ourdir), "/sock", NULL, NULL);
 	ck_assert_ptr_nonnull(ourdir);
 	ck_assert_ptr_nonnull(workdir);
-	ck_assert_ptr_nonnull(sockdirpatt);
 	mkdir(ourdir, S_IRWXU);
 	mkdir(workdir, S_IRWXU);
 
 	zsock_t *sock = NULL;
-	pthread_t *thread = brepowatch_filefinder_prepare(&sock, workdir, sockdirpatt);
+	pthread_t *thread = brepowatch_filefinder_prepare(&sock, workdir, "check_brepowatch");
 	ck_assert_ptr_nonnull(sock);
 
 	zstr_send(sock, NULL);
@@ -38,7 +37,6 @@ START_TEST(test_filefinder_basic)
 	pthread_join(*thread, &threadRet);
 	free(thread); thread = NULL;
 	ck_assert_ptr_null(threadRet);
-	free(sockdirpatt);
 	free(workdir);
 	char *runcmd = bstring_add(strdup("rm -rf "), ourdir, NULL, NULL);
 	(void)system(runcmd);
@@ -54,10 +52,8 @@ START_TEST(test_filefinder_static_files_one_dir)
 	char *tmppath = strdup("/tmp/dxpb-check_brepowatch-XXXXXX");
 	char *ourdir = mkdtemp(tmppath);
 	char *workdir = bstring_add(strdup(ourdir), "/work", NULL, NULL);
-	char *sockdirpatt = bstring_add(strdup(ourdir), "/sock", NULL, NULL);
 	ck_assert_ptr_nonnull(ourdir);
 	ck_assert_ptr_nonnull(workdir);
-	ck_assert_ptr_nonnull(sockdirpatt);
 	mkdir(ourdir, S_IRWXU);
 	mkdir(workdir, S_IRWXU);
 
@@ -71,7 +67,7 @@ START_TEST(test_filefinder_static_files_one_dir)
 	MAKEFILE(workdir,"/vwx");
 
 	zsock_t *sock = NULL;
-	pthread_t *thread = brepowatch_filefinder_prepare(&sock, workdir, sockdirpatt);
+	pthread_t *thread = brepowatch_filefinder_prepare(&sock, workdir, "check_brepowatch");
 	ck_assert_ptr_nonnull(sock);
 
 	zstr_send(sock, "1");
@@ -92,7 +88,6 @@ START_TEST(test_filefinder_static_files_one_dir)
 	pthread_join(*thread, &threadRet);
 	free(thread); thread = NULL;
 	ck_assert_ptr_null(threadRet);
-	free(sockdirpatt);
 	free(workdir);
 	char *runcmd = bstring_add(strdup("rm -rf "), ourdir, NULL, NULL);
 	(void)system(runcmd);
@@ -110,10 +105,8 @@ START_TEST(test_filefinder_static_files_sub_dir)
 	char *workdir = bstring_add(strdup(ourdir), "/work", NULL, NULL);
 	char *subdir1 = bstring_add(strdup(ourdir), "/work/mno", NULL, NULL);
 	char *subdir2 = bstring_add(strdup(ourdir), "/work/mno/pqr", NULL, NULL);
-	char *sockdirpatt = bstring_add(strdup(ourdir), "/sock", NULL, NULL);
 	ck_assert_ptr_nonnull(ourdir);
 	ck_assert_ptr_nonnull(workdir);
-	ck_assert_ptr_nonnull(sockdirpatt);
 	mkdir(ourdir, S_IRWXU);
 	mkdir(workdir, S_IRWXU);
 	mkdir(subdir1, S_IRWXU);
@@ -128,7 +121,7 @@ START_TEST(test_filefinder_static_files_sub_dir)
 	MAKEFILE(workdir,"/vwx");
 
 	zsock_t *sock = NULL;
-	pthread_t *thread = brepowatch_filefinder_prepare(&sock, workdir, sockdirpatt);
+	pthread_t *thread = brepowatch_filefinder_prepare(&sock, workdir, "check_brepowatch");
 	ck_assert_ptr_nonnull(sock);
 
 	zstr_send(sock, "1");
@@ -154,7 +147,6 @@ START_TEST(test_filefinder_static_files_sub_dir)
 	ck_assert_ptr_null(threadRet);
 	free(subdir1);
 	free(subdir2);
-	free(sockdirpatt);
 	free(workdir);
 	char *runcmd = bstring_add(strdup("rm -rf "), ourdir, NULL, NULL);
 	(void)system(runcmd);
@@ -170,10 +162,8 @@ START_TEST(test_filefinder_dynamic_files)
 	char *tmppath = strdup("/tmp/dxpb-check_brepowatch-XXXXXX");
 	char *ourdir = mkdtemp(tmppath);
 	char *workdir = bstring_add(strdup(ourdir), "/work", NULL, NULL);
-	char *sockdirpatt = bstring_add(strdup(ourdir), "/sock", NULL, NULL);
 	ck_assert_ptr_nonnull(ourdir);
 	ck_assert_ptr_nonnull(workdir);
-	ck_assert_ptr_nonnull(sockdirpatt);
 	mkdir(ourdir, S_IRWXU);
 	mkdir(workdir, S_IRWXU);
 
@@ -187,7 +177,7 @@ START_TEST(test_filefinder_dynamic_files)
 	MAKEFILE(workdir,"/vwx");
 
 	zsock_t *sock = NULL;
-	pthread_t *thread = brepowatch_filefinder_prepare(&sock, workdir, sockdirpatt);
+	pthread_t *thread = brepowatch_filefinder_prepare(&sock, workdir, "check_brepowatch");
 	ck_assert_ptr_nonnull(sock);
 
 	zstr_send(sock, "1");
@@ -218,7 +208,6 @@ START_TEST(test_filefinder_dynamic_files)
 	pthread_join(*thread, &threadRet);
 	free(thread); thread = NULL;
 	ck_assert_ptr_null(threadRet);
-	free(sockdirpatt);
 	free(workdir);
 	char *runcmd = bstring_add(strdup("rm -rf "), ourdir, NULL, NULL);
 	(void)system(runcmd);
@@ -236,10 +225,8 @@ START_TEST(test_filefinder_dynamic_files_sub_dir)
 	char *workdir = bstring_add(strdup(ourdir), "/work", NULL, NULL);
 	char *subdir1 = bstring_add(strdup(ourdir), "/work/mno", NULL, NULL);
 	char *subdir2 = bstring_add(strdup(ourdir), "/work/mno/pqr", NULL, NULL);
-	char *sockdirpatt = bstring_add(strdup(ourdir), "/sock", NULL, NULL);
 	ck_assert_ptr_nonnull(ourdir);
 	ck_assert_ptr_nonnull(workdir);
-	ck_assert_ptr_nonnull(sockdirpatt);
 	mkdir(ourdir, S_IRWXU);
 	mkdir(workdir, S_IRWXU);
 	mkdir(subdir1, S_IRWXU);
@@ -254,7 +241,7 @@ START_TEST(test_filefinder_dynamic_files_sub_dir)
 	MAKEFILE(workdir,"/vwx");
 
 	zsock_t *sock = NULL;
-	pthread_t *thread = brepowatch_filefinder_prepare(&sock, workdir, sockdirpatt);
+	pthread_t *thread = brepowatch_filefinder_prepare(&sock, workdir, "check_brepowatch");
 	ck_assert_ptr_nonnull(sock);
 
 	zstr_send(sock, "1");
@@ -292,7 +279,6 @@ START_TEST(test_filefinder_dynamic_files_sub_dir)
 	ck_assert_ptr_null(threadRet);
 	free(subdir1);
 	free(subdir2);
-	free(sockdirpatt);
 	free(workdir);
 	char *runcmd = bstring_add(strdup("rm -rf "), ourdir, NULL, NULL);
 	(void)system(runcmd);

@@ -24,14 +24,14 @@
 
 void
 forkoff(const char *ssldir, const char *sdir, const char *rdir,
-		const char *ldir, const char *tmppath, const char *file_end,
+		const char *ldir, const char *file_end,
 		const char *graph_end, const char *file_pub,
 		const char *graph_pub)
 {
 	switch(fork()) {
 	case 0:
 		execlp("./dxpb-hostdir-master", "dxpb-hostdir-master",
-				"-R", tmppath, "-r", rdir, "-l", ldir,
+				"-r", rdir, "-l", ldir,
 				"-s", sdir, "-g", graph_end, "-G", graph_pub,
 				"-f", file_end, "-F", file_pub, "-k", ssldir,
 				NULL);
@@ -276,7 +276,7 @@ main(int argc, char * const *argv)
 
 	puts("\n\nThis is a test harness.\nConducting tests....\n\n");
 
-	forkoff(ssldir, stagepath, repopath, logpath, tmppath,
+	forkoff(ssldir, stagepath, repopath, logpath,
 		file_endpoint, graph_endpoint, file_pubpoint, graph_pubpoint);
 	return run(ssldir, stagepath, repopath, logpath,
 		file_endpoint, graph_endpoint, file_pubpoint, graph_pubpoint);

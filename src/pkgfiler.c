@@ -948,11 +948,8 @@ ensure_configuration_is_set (client_t *self)
 		self->server->repodir =
 			zconfig_get(self->server->config, "dxpb/repodir", NULL);
 	if (!self->server->finder_thread) {
-		char *varrundir =
-			zconfig_get(self->server->config, "dxpb/varrundir", NULL);
-		assert(varrundir);
 		self->server->finder_thread = brepowatch_filefinder_prepare(
-				&(self->server->finder), self->server->repodir, varrundir);
+				&(self->server->finder), self->server->repodir, "dxpb-pkgfile-repowatcher");
 	}
 	if (!self->server->stagingdir || !self->server->repodir) {
 		fprintf(stderr, "Caller neglected to set both staging and repo directory paths\n");
