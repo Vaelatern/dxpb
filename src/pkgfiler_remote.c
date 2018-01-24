@@ -72,6 +72,7 @@ client_initialize (client_t *self)
 	self->finder = NULL;
 	self->finder_thread = NULL;
 	self->open_fds = zhash_new();
+	engine_set_expiry(self, 10000);
 	return 0;
 }
 
@@ -270,12 +271,11 @@ prepare_chunk (client_t *self)
 
 		pkgfiles_msg_set_position(self->message, self->curfetch->pos);
 		pkgfiles_msg_set_data(self->message, &tosend);
-		pkgfiles_msg_set_eof(self->message,
-					self->curfetch->pos == self->curfetch->eofpos);
 		pkgfiles_msg_set_subpath(self->message, self->curfetch->subpath);
 		self->curfetch->pos += size;
-		free(buf);
-		buf = NULL;
+		pkgfiles_msg_set_eof(self->message,
+					self->curfetch->pos == self->curfetch->eofpos);
+		FREE(buf);
 	}
 	assert(size != 0 || self->curfetch->pos == self->curfetch->eofpos);
 	assert(self->curfetch->pos <= self->curfetch->eofpos);
@@ -293,8 +293,16 @@ postprocess_chunk (client_t *self)
 		return;
 
 	if (self->curfetch->fd >= 0 && self->curfetch->pos == self->curfetch->eofpos) {
+		char *pkgfile = bxbps_pkg_to_filename(
+				pkgfiles_msg_pkgname(self->message),
+				pkgfiles_msg_version(self->message),
+				pkgfiles_msg_arch(self->message));
 		close(self->curfetch->fd);
 		self->curfetch->fd = -1;
+		FREE(self->curfetch->subpath);
+		zhash_delete(self->open_fds, pkgfile);
+		FREE(pkgfile);
+		FREE(self->curfetch);
 	}
 }
 
