@@ -31,23 +31,24 @@ typedef enum {
     NULL_event = 0,
     terminate_event = 1,
     hello_event = 2,
-    ispkghere_event = 3,
-    iwannashare_event = 4,
-    chunk_event = 5,
-    trigger_job_hunt_event = 6,
-    idontwannashare_event = 7,
-    we_couldn_t_find_it_event = 8,
-    pkghere_event = 9,
-    pkgnothere_event = 10,
-    i_have_the_hunted_event = 11,
-    pkg_here_event = 12,
-    pkg_not_here_event = 13,
-    i_might_want_to_share_event = 14,
-    pkgdel_event = 15,
-    ping_event = 16,
-    invalid_event = 17,
-    entered_invalid_state_with_remote_event = 18,
-    expired_event = 19
+    pkgdel_event = 3,
+    ping_event = 4,
+    invalid_event = 5,
+    entered_invalid_state_with_remote_event = 6,
+    expired_event = 7,
+    ispkghere_event = 8,
+    trigger_job_hunt_event = 9,
+    pkghere_event = 10,
+    pkgnothere_event = 11,
+    we_couldn_t_find_it_event = 12,
+    pkg_here_event = 13,
+    pkg_not_here_event = 14,
+    i_have_the_hunted_event = 15,
+    i_might_want_to_share_event = 16,
+    iwannashare_event = 17,
+    idontwannashare_event = 18,
+    i_want_more_event = 19,
+    chunk_event = 20
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -63,23 +64,24 @@ s_event_name [] = {
     "(NONE)",
     "terminate",
     "HELLO",
-    "ISPKGHERE",
-    "IWANNASHARE",
-    "CHUNK",
-    "trigger_job_hunt",
-    "IDONTWANNASHARE",
-    "we_couldn_t_find_it",
-    "PKGHERE",
-    "PKGNOTHERE",
-    "i_have_the_hunted",
-    "pkg_here",
-    "pkg_not_here",
-    "i_might_want_to_share",
     "PKGDEL",
     "PING",
     "INVALID",
     "entered_invalid_state_with_remote",
-    "expired"
+    "expired",
+    "ISPKGHERE",
+    "trigger_job_hunt",
+    "PKGHERE",
+    "PKGNOTHERE",
+    "we_couldn_t_find_it",
+    "pkg_here",
+    "pkg_not_here",
+    "i_have_the_hunted",
+    "i_might_want_to_share",
+    "IWANNASHARE",
+    "IDONTWANNASHARE",
+    "i_want_more",
+    "CHUNK"
 };
 
 //  ---------------------------------------------------------------------------
@@ -147,41 +149,43 @@ static int
 static void
     ensure_configuration_is_set (client_t *self);
 static void
+    delete_package (client_t *self);
+static void
+    mark_all_pkgs_not_at_this_remote_location (client_t *self);
+static void
+    act_if_all_remotes_returned_or_expired (client_t *self);
+static void
     check_for_pkg_locally (client_t *self);
 static void
     broadcast_pkg_locate_request (client_t *self);
 static void
-    establish_peer_agreement (client_t *self);
+    curhunt_to_my_own_message (client_t *self);
+static void
+    set_myself_response_pending (client_t *self);
+static void
+    mark_pkg_at_remote_location (client_t *self);
+static void
+    mark_pkg_not_at_remote_location (client_t *self);
+static void
+    tell_asker_pkg_not_here (client_t *self);
+static void
+    parse_memos (client_t *self);
 static void
     end_hunt (client_t *self);
 static void
+    establish_peer_agreement (client_t *self);
+static void
     ask_for_more (client_t *self);
+static void
+    obsolete_peer_agreement (client_t *self);
+static void
+    say_we_want_more_if_we_do (client_t *self);
 static void
     verify_this_remote_is_the_right_peer (client_t *self);
 static void
     write_file_chunk (client_t *self);
 static void
     postprocess_chunk (client_t *self);
-static void
-    curhunt_to_my_own_message (client_t *self);
-static void
-    set_myself_response_pending (client_t *self);
-static void
-    obsolete_peer_agreement (client_t *self);
-static void
-    tell_asker_pkg_not_here (client_t *self);
-static void
-    mark_pkg_at_remote_location (client_t *self);
-static void
-    act_if_all_remotes_returned_or_expired (client_t *self);
-static void
-    mark_pkg_not_at_remote_location (client_t *self);
-static void
-    parse_memos (client_t *self);
-static void
-    delete_package (client_t *self);
-static void
-    mark_all_pkgs_not_at_this_remote_location (client_t *self);
 
 //  ---------------------------------------------------------------------------
 //  These methods are an internal API for actions
@@ -554,6 +558,93 @@ s_client_execute (s_client_t *self, event_t event)
                         self->state = file_finding_state;
                 }
                 else
+                if (self->event == pkgdel_event) {
+                    if (!self->exception) {
+                        //  delete package
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ delete package", self->log_prefix);
+                        delete_package (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_ROGER);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
+                if (self->event == ping_event) {
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_ROGER);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
+                if (self->event == invalid_event) {
+                    if (!self->exception) {
+                        //  send INVALID
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send INVALID",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_INVALID);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception)
+                        self->state = start_state;
+                }
+                else
+                if (self->event == entered_invalid_state_with_remote_event) {
+                    if (!self->exception) {
+                        //  send INVALID
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send INVALID",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_INVALID);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                    if (!self->exception)
+                        self->state = start_state;
+                }
+                else
+                if (self->event == expired_event) {
+                    if (!self->exception) {
+                        //  mark all pkgs not at this remote location
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ mark all pkgs not at this remote location", self->log_prefix);
+                        mark_all_pkgs_not_at_this_remote_location (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  act if all remotes returned or expired
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ act if all remotes returned or expired", self->log_prefix);
+                        act_if_all_remotes_returned_or_expired (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  terminate
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ terminate", self->log_prefix);
+                        self->next_event = terminate_event;
+                    }
+                }
+                else
                 if (self->event == ispkghere_event) {
                     if (!self->exception) {
                         //  check for pkg locally
@@ -566,54 +657,6 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ broadcast pkg locate request", self->log_prefix);
                         broadcast_pkg_locate_request (&self->client);
-                    }
-                }
-                else
-                if (self->event == iwannashare_event) {
-                    if (!self->exception) {
-                        //  establish peer agreement
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ establish peer agreement", self->log_prefix);
-                        establish_peer_agreement (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  end hunt
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ end hunt", self->log_prefix);
-                        end_hunt (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  ask for more
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ ask for more", self->log_prefix);
-                        ask_for_more (&self->client);
-                    }
-                }
-                else
-                if (self->event == chunk_event) {
-                    if (!self->exception) {
-                        //  verify this remote is the right peer
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ verify this remote is the right peer", self->log_prefix);
-                        verify_this_remote_is_the_right_peer (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  write file chunk
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ write file chunk", self->log_prefix);
-                        write_file_chunk (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  postprocess chunk
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ postprocess chunk", self->log_prefix);
-                        postprocess_chunk (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  ask for more
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ ask for more", self->log_prefix);
-                        ask_for_more (&self->client);
                     }
                 }
                 else
@@ -640,36 +683,6 @@ s_client_execute (s_client_t *self, event_t event)
                         pkgfiles_msg_print (self->server->message);
                         pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
                         pkgfiles_msg_send (self->server->message, self->server->router);
-                    }
-                }
-                else
-                if (self->event == idontwannashare_event) {
-                    if (!self->exception) {
-                        //  obsolete peer agreement
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ obsolete peer agreement", self->log_prefix);
-                        obsolete_peer_agreement (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  tell asker pkg not here
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ tell asker pkg not here", self->log_prefix);
-                        tell_asker_pkg_not_here (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  end hunt
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ end hunt", self->log_prefix);
-                        end_hunt (&self->client);
-                    }
-                }
-                else
-                if (self->event == we_couldn_t_find_it_event) {
-                    if (!self->exception) {
-                        //  tell asker pkg not here
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ tell asker pkg not here", self->log_prefix);
-                        tell_asker_pkg_not_here (&self->client);
                     }
                 }
                 else
@@ -703,29 +716,12 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
-                if (self->event == i_have_the_hunted_event) {
+                if (self->event == we_couldn_t_find_it_event) {
                     if (!self->exception) {
-                        //  curhunt to my own message
+                        //  tell asker pkg not here
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ curhunt to my own message", self->log_prefix);
-                        curhunt_to_my_own_message (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  end hunt
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ end hunt", self->log_prefix);
-                        end_hunt (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  send WANNASHARE_
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ send WANNASHARE_",
-                                self->log_prefix);
-                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_WANNASHARE_);
-                        zsys_debug ("%s: Send message to client", self->log_prefix);
-                        pkgfiles_msg_print (self->server->message);
-                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
-                        pkgfiles_msg_send (self->server->message, self->server->router);
+                            zsys_debug ("%s:         $ tell asker pkg not here", self->log_prefix);
+                        tell_asker_pkg_not_here (&self->client);
                     }
                 }
                 else
@@ -775,6 +771,26 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == i_have_the_hunted_event) {
+                    if (!self->exception) {
+                        //  curhunt to my own message
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ curhunt to my own message", self->log_prefix);
+                        curhunt_to_my_own_message (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send WANNASHARE_
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send WANNASHARE_",
+                                self->log_prefix);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_WANNASHARE_);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgfiles_msg_print (self->server->message);
+                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgfiles_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
                 if (self->event == i_might_want_to_share_event) {
                     if (!self->exception) {
                         //  send WANNASHARE_
@@ -795,79 +811,92 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
-                if (self->event == pkgdel_event) {
+                if (self->event == iwannashare_event) {
                     if (!self->exception) {
-                        //  delete package
+                        //  establish peer agreement
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ delete package", self->log_prefix);
-                        delete_package (&self->client);
+                            zsys_debug ("%s:         $ establish peer agreement", self->log_prefix);
+                        establish_peer_agreement (&self->client);
                     }
                     if (!self->exception) {
-                        //  send ROGER
+                        //  end hunt
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send ROGER",
+                            zsys_debug ("%s:         $ end hunt", self->log_prefix);
+                        end_hunt (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  ask for more
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ ask for more", self->log_prefix);
+                        ask_for_more (&self->client);
+                    }
+                }
+                else
+                if (self->event == idontwannashare_event) {
+                    if (!self->exception) {
+                        //  obsolete peer agreement
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ obsolete peer agreement", self->log_prefix);
+                        obsolete_peer_agreement (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  tell asker pkg not here
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ tell asker pkg not here", self->log_prefix);
+                        tell_asker_pkg_not_here (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  end hunt
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ end hunt", self->log_prefix);
+                        end_hunt (&self->client);
+                    }
+                }
+                else
+                if (self->event == i_want_more_event) {
+                    if (!self->exception) {
+                        //  send GIMMEGIMMEGIMME
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send GIMMEGIMMEGIMME",
                                 self->log_prefix);
-                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_ROGER);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_GIMMEGIMMEGIMME);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkgfiles_msg_print (self->server->message);
                         pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
                         pkgfiles_msg_send (self->server->message, self->server->router);
                     }
-                }
-                else
-                if (self->event == ping_event) {
                     if (!self->exception) {
-                        //  send ROGER
+                        //  say we want more if we do
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send ROGER",
-                                self->log_prefix);
-                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_ROGER);
-                        zsys_debug ("%s: Send message to client", self->log_prefix);
-                        pkgfiles_msg_print (self->server->message);
-                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
-                        pkgfiles_msg_send (self->server->message, self->server->router);
+                            zsys_debug ("%s:         $ say we want more if we do", self->log_prefix);
+                        say_we_want_more_if_we_do (&self->client);
                     }
                 }
                 else
-                if (self->event == invalid_event) {
-                    if (!self->exception)
-                        self->state = start_state;
-                }
-                else
-                if (self->event == entered_invalid_state_with_remote_event) {
+                if (self->event == chunk_event) {
                     if (!self->exception) {
-                        //  send INVALID
+                        //  verify this remote is the right peer
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
-                                self->log_prefix);
-                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_INVALID);
-                        zsys_debug ("%s: Send message to client", self->log_prefix);
-                        pkgfiles_msg_print (self->server->message);
-                        pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);
-                        pkgfiles_msg_send (self->server->message, self->server->router);
-                    }
-                    if (!self->exception)
-                        self->state = start_state;
-                }
-                else
-                if (self->event == expired_event) {
-                    if (!self->exception) {
-                        //  mark all pkgs not at this remote location
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ mark all pkgs not at this remote location", self->log_prefix);
-                        mark_all_pkgs_not_at_this_remote_location (&self->client);
+                            zsys_debug ("%s:         $ verify this remote is the right peer", self->log_prefix);
+                        verify_this_remote_is_the_right_peer (&self->client);
                     }
                     if (!self->exception) {
-                        //  act if all remotes returned or expired
+                        //  write file chunk
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ act if all remotes returned or expired", self->log_prefix);
-                        act_if_all_remotes_returned_or_expired (&self->client);
+                            zsys_debug ("%s:         $ write file chunk", self->log_prefix);
+                        write_file_chunk (&self->client);
                     }
                     if (!self->exception) {
-                        //  terminate
+                        //  postprocess chunk
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ terminate", self->log_prefix);
-                        self->next_event = terminate_event;
+                            zsys_debug ("%s:         $ postprocess chunk", self->log_prefix);
+                        postprocess_chunk (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  ask for more
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ ask for more", self->log_prefix);
+                        ask_for_more (&self->client);
                     }
                 }
                 else {

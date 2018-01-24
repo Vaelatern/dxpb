@@ -619,7 +619,6 @@ static void
 obsolete_peer_agreement (client_t *self)
 {
 	char *key = pkgmsg_to_str(self->message);
-	self->numfetchs--;
 	struct hunt *hunt = zhash_lookup(self->server->hunts, key);
 	if (!hunt)
 		engine_set_exception(self, invalid_event);
@@ -634,6 +633,7 @@ obsolete_peer_agreement (client_t *self)
 	todie = NULL;
 	zhash_freefn(self->server->peering, key, free);
 	zhash_delete(self->server->peering, key);
+	self->numfetchs--;
 
 	free(key);
 	key = NULL;
@@ -913,17 +913,7 @@ postprocess_chunk (client_t *self)
 static void
 ask_for_more (client_t *self)
 {
-	if (!pkgfiles_msg_validchunk(self->message))
-		return;
-
-	if (self->curfetch == NULL)
-		return;
-
-	for (; get_max_inflight(self) > self->fetch_slots_inflight;
-			self->fetch_slots_inflight++, self->server->available_fetch_slots--) {
-		// noop
-	}
-
+	say_we_want_more_if_we_do(self);
 }
 
 
@@ -967,5 +957,19 @@ ensure_configuration_is_set (client_t *self)
 		self->server->pubpath = zconfig_get(self->server->config, "dxpb/pubpoint", NULL);
 		self->server->pub = zsock_new_pub(self->server->pubpath);
 		bfs_ensure_sock_perms(self->server->pubpath);
+	}
+}
+
+//  ---------------------------------------------------------------------------
+//  say_we_want_more_if_we_do
+//
+
+static void
+say_we_want_more_if_we_do (client_t *self)
+{
+	if (get_max_inflight(self) > self->fetch_slots_inflight) {
+		self->fetch_slots_inflight++;
+		self->server->available_fetch_slots--;
+		engine_set_next_event(self, i_want_more_event);
 	}
 }

@@ -28,65 +28,8 @@
 		<event name = "HELLO" next = "file finding">
 			<action name = "send" message = "ROGER" />
 		</event>
-		<event name = "ISPKGHERE">
-			Step 1 of locating a file
-			<action name = "check for pkg locally">
-				If locally found, set an exception to pkg here
-			</action>
-			<action name = "broadcast pkg locate request" />
-		</event>
-		<event name = "IWANNASHARE">
-			The remote wants to share the file. It's in our records as being there and the remote agrees.
-			<action name = "establish peer agreement" />
-			<action name = "end hunt" />
-			<action name = "ask for more" />
-		</event>
-		<event name = "CHUNK">
-			<action name = "verify this remote is the right peer" />
-			<action name = "write file chunk" />
-			<action name = "postprocess chunk" />
-			<action name = "ask for more" />
-		</event>
-		<event name = "trigger job hunt">
-			<action name = "curhunt to my own message" />
-			<action name = "set myself response pending" />
-			<action name = "send" message = "ISPKGHERE" />
-		</event>
-		<event name = "IDONTWANNASHARE">
-			It's in our records as being there and the remote disagrees.
-			<action name = "obsolete peer agreement" />
-			<action name = "tell asker pkg not here" />
-			<action name = "end hunt" />
-		</event>
-		<event name = "we couldn't find it">
-			<action name = "tell asker pkg not here" />
-		</event>
-		<event name = "PKGHERE">
-			<action name = "mark pkg at remote location" />
-			<action name = "act if all remotes returned or expired" />
-		</event>
-		<event name = "PKGNOTHERE">
-			<action name = "mark pkg not at remote location" />
-			<action name = "act if all remotes returned or expired" />
-		</event>
-		<event name = "I have the hunted">
-			<action name = "curhunt to my own message" />
-			<action name = "end hunt" />
-			<action name = "send" message = "WANNASHARE?" />
-		</event>
-		<event name = "pkg here">
-			<action name = "send" message= "PKGHERE" />
-			<action name = "parse memos" />
-		</event>
-		<event name = "pkg not here">
-			<action name = "send" message= "PKGNOTHERE" />
-			<action name = "end hunt" />
-			<action name = "parse memos" />
-		</event>
-		<event name = "I might want to share">
-			<action name = "send" message= "WANNASHARE?" />
-			<action name = "parse memos" />
-		</event>
+
+		<!-- stage zero -->
 		<event name = "PKGDEL">
 			<action name = "delete package" />
 			<action name = "send" message = "ROGER" />
@@ -94,7 +37,9 @@
 		<event name = "PING">
 			<action name = "send" message = "ROGER" />
 		</event>
-		<event name = "INVALID" next = "start" />
+		<event name = "INVALID" next = "start">
+			<action name = "send" message = "INVALID" />
+		</event>
 		<event name = "entered invalid state with remote" next = "start">
 			<action name = "send" message = "INVALID" />
 		</event>
@@ -106,6 +51,80 @@
 			<action name = "mark all pkgs not at this remote location" />
 			<action name = "act if all remotes returned or expired" />
 			<action name = "terminate" />
+		</event>
+
+		<!-- stage one -->
+		<event name = "ISPKGHERE">
+			Step 1 of locating a file
+			<action name = "check for pkg locally">
+				If locally found, set an exception to pkg here
+			</action>
+			<action name = "broadcast pkg locate request" />
+		</event>
+		<event name = "trigger job hunt">
+			<action name = "curhunt to my own message" />
+			<action name = "set myself response pending" />
+			<action name = "send" message = "ISPKGHERE" />
+		</event>
+
+		<!-- stage two -->
+		<event name = "PKGHERE">
+			<action name = "mark pkg at remote location" />
+			<action name = "act if all remotes returned or expired" />
+		</event>
+		<event name = "PKGNOTHERE">
+			<action name = "mark pkg not at remote location" />
+			<action name = "act if all remotes returned or expired" />
+		</event>
+		<event name = "we couldn't find it">
+			<action name = "tell asker pkg not here" />
+		</event>
+
+		<!-- final stage -->
+		<event name = "pkg here">
+			<action name = "send" message= "PKGHERE" />
+			<action name = "parse memos" />
+		</event>
+		<event name = "pkg not here">
+			<action name = "send" message= "PKGNOTHERE" />
+			<action name = "end hunt" />
+			<action name = "parse memos" />
+		</event>
+
+		<!-- stage three -->
+		<event name = "I have the hunted">
+			<action name = "curhunt to my own message" />
+			<action name = "send" message = "WANNASHARE?" />
+		</event>
+		<event name = "I might want to share">
+			<action name = "send" message= "WANNASHARE?" />
+			<action name = "parse memos" />
+		</event>
+
+		<!-- stage four -->
+		<event name = "IWANNASHARE">
+			The remote wants to share the file. It's in our records as being there and the remote agrees.
+			<action name = "establish peer agreement" />
+			<action name = "end hunt" />
+			<action name = "ask for more" />
+		</event>
+		<event name = "IDONTWANNASHARE">
+			It's in our records as being there and the remote disagrees.
+			<action name = "obsolete peer agreement" />
+			<action name = "tell asker pkg not here" />
+			<action name = "end hunt" />
+		</event>
+
+		<!-- stage five -->
+		<event name = "I want more">
+			<action name = "send" message = "GIMMEGIMMEGIMME" />
+			<action name = "say we want more if we do"> Recurse </action>
+		</event>
+		<event name = "CHUNK">
+			<action name = "verify this remote is the right peer" />
+			<action name = "write file chunk" />
+			<action name = "postprocess chunk" />
+			<action name = "ask for more" />
 		</event>
 	</state>
 </class>
