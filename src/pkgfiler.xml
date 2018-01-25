@@ -124,7 +124,7 @@
 			<action name = "verify this remote is the right peer" />
 			<action name = "write file chunk" />
 			<action name = "postprocess chunk" />
-			<action name = "ask for more" />
+			<action name = "say we want more if we do" />
 		</event>
 	</state>
 </class>

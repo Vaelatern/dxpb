@@ -122,25 +122,23 @@ pkgfiler_remote_test (bool verbose)
 //  file_path_in_repo
 //  A way to quickly get the relative path to a file in our hostdir
 
-char *
+inline static char *
 file_path_in_repo(client_t *self, const char *filename)
 {
 	zstr_send(self->finder, filename);
 	char *rV = zstr_recv(self->finder);
 	if (rV[0] == '\0') {
-		free(rV);
-		rV = NULL;
+		FREE(rV);
 	}
 	return rV;
 }
 
-int
+inline static int
 file_exists_in_repo(client_t *self, const char *filename)
 {
 	char *in = file_path_in_repo(self, filename);
-	int rV = in[0] != '\0';
-	free(in);
-	in = NULL;
+	int rV = in != NULL;
+	FREE(in);
 	return rV;
 }
 

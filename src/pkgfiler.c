@@ -14,6 +14,8 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#define MAX_CHUNKS_INFLIGHT 3
+
 #include "pkgfiler.h"
 //  TODO: Change these to match your project's needs
 #include "../include/pkgfiles_msg.h"
@@ -172,7 +174,7 @@ struct _client_t {
 	uint8_t fetch_slots_inflight;
 };
 
-inline int
+inline static int
 file_exists_in_repo(server_t *self, const char *filename)
 {
 	zstr_send(self->finder, filename);
@@ -186,7 +188,11 @@ file_exists_in_repo(server_t *self, const char *filename)
 inline static uint32_t
 get_max_inflight(client_t *self)
 {
-	return (self->server->max_fetch_slots / zhash_size(self->server->peering)) * self->numfetchs;
+	int peers = zhash_size(self->server->peering);
+	if (peers == 0)
+		return 0;
+	else
+		return (self->server->max_fetch_slots * self->numfetchs) / peers;
 }
 
 static void
@@ -287,6 +293,9 @@ server_parse_memos(server_t *self)
 		pkgfiles_msg_set_version(memo->client->message, pkgfiles_msg_version(memo->msg));
 		pkgfiles_msg_set_arch(memo->client->message, pkgfiles_msg_arch(memo->msg));
 		switch(pkgfiles_msg_id(memo->msg)) {
+		case PKGFILES_MSG_PKGHERE:
+			engine_send_event(memo->client, pkg_here_event);
+			break;
 		case PKGFILES_MSG_PKGNOTHERE:
 			engine_send_event(memo->client, pkg_not_here_event);
 			break;
@@ -336,14 +345,14 @@ server_initialize (server_t *self)
 {
 	self->pub = NULL;
 	self->pubpath = NULL;
-	self->max_fetch_slots = 50;
+	self->max_fetch_slots = MAX_CHUNKS_INFLIGHT;
 	self->available_fetch_slots = self->max_fetch_slots;
 	self->followups = zlist_new();
 	self->hunts = zhash_new();
 	self->peering = zhash_new();
 	self->repodir = NULL;
 	self->stagingdir = NULL;
-	engine_configure(self, "server/timeout", "15000");
+	engine_configure(self, "server/timeout", "30000");
 	engine_set_monitor (self, 2000, regular_maintenance);
 	self->finder = NULL;
 	self->finder_thread = NULL;
@@ -549,7 +558,8 @@ verify_this_remote_is_the_right_peer (client_t *self)
 	struct filefetch *fetch = zhash_lookup(self->server->peering, key);
 	if (fetch->provider != self)
 		engine_set_exception(self, invalid_event);
-	if (!strcmp(fetch->subpath, pkgfiles_msg_subpath(self->message)))
+	if (fetch->subpath != NULL &&
+			strcmp(fetch->subpath, pkgfiles_msg_subpath(self->message)) != 0)
 		engine_set_exception(self, invalid_event);
 
 	self->curfetch = fetch;
@@ -576,9 +586,6 @@ write_file_chunk (client_t *self)
 				pkgfiles_msg_pkgname(self->message),
 				pkgfiles_msg_version(self->message),
 				pkgfiles_msg_arch(self->message));
-		// We don't need the below variable, since we already saved it,
-		// but it would be nice to decide TODO: if we need to ensure
-		// the subpaths line up with what we want, to detect bad peers.
 		fetch->subpath = strdup(pkgfiles_msg_subpath(self->message));
 		if (fetch->subpath == NULL || fetch->subpath[0] == '\0')
 			engine_set_exception(self, invalid_event);
@@ -891,6 +898,19 @@ postprocess_chunk (client_t *self)
 
 		fetch->filepath = bstring_add(fetch->filepath, ".new", NULL, NULL);
 		bfs_touch(fetch->filepath);
+
+		struct memo *memo = calloc(1, sizeof(struct memo));
+		assert(fetch->pkgname);
+		assert(fetch->version);
+		assert(fetch->arch);
+		memo->client = fetch->asker;
+		memo->msg = pkgfiles_msg_new();
+		pkgfiles_msg_set_id(memo->msg, PKGFILES_MSG_PKGHERE);
+		pkgfiles_msg_set_pkgname(memo->msg, fetch->pkgname);
+		pkgfiles_msg_set_version(memo->msg, fetch->version);
+		pkgfiles_msg_set_arch(memo->msg, fetch->arch);
+		zlist_append(self->server->followups, memo);
+		memo = NULL; // not free!
 
 		FREE(newfilepath);
 		FREE(fetch->filepath);

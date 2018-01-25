@@ -26,7 +26,7 @@
 // This is the largest number of 4-byte integers we can expect in a file.
 // The lucky package that is this massive is `ceph-dbg`. Since this is 2.5 GB,
 // this may not be desireable for tests, but is necessary just to be sure.
-#define LARGEST_SIZE 5000000000
+#define LARGEST_SIZE 5100000000
 
 void
 forkoff_master(const char *ssldir, const char *sdir, const char *rdir,
@@ -92,9 +92,11 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 	char *pkgfile1 = bxbps_pkg_to_filename("foo", DXPB_VERSION, "noarch");
 	char *pkgfile2 = bxbps_pkg_to_filename("bar", DXPB_VERSION, "x86_64");
 	char *pkgfile3 = bxbps_pkg_to_filename("bar", DXPB_VERSION, "x86_64-musl");
+	char *pkgfile4 = bxbps_pkg_to_filename("bar", DXPB_VERSION, "aarch64");
 	char *pkgpath1 = bstring_add(strdup(repopath1), pkgfile1, NULL, NULL);
 	char *pkgpath2 = bstring_add(strdup(repopath2), pkgfile2, NULL, NULL);
 	char *pkgpath3 = bstring_add(strdup(repopath1), pkgfile3, NULL, NULL);
+	char *pkgpath4 = bstring_add(strdup(repopath2), pkgfile4, NULL, NULL);
 
 	int rc;
 
@@ -144,7 +146,7 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 						PRINTUP; \
 						printf("Writing to path: %s\n", path); \
 						FILE *fp = fopen(path, "wb"); \
-						for (int i = 0; i < iterations; i++) { \
+						for (uint64_t i = 0; i < iterations; i++) { \
 							fprintf(fp, "%uld", arc4random()); \
 						} \
 						fclose(fp); \
@@ -156,6 +158,7 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 #define ASSERTMSG(what, msg, eq)     assert(pkgfiles_msg_##what(msg) == eq)
 #define ASSERTMSGOR(what, msg, eq, eq2)     assert(pkgfiles_msg_##what(msg) == eq || pkgfiles_msg_##what(msg) == eq2)
 #define ASSERTMSGSTR(what, msg, eq)     assert(strcmp(pkgfiles_msg_##what(msg), eq) == 0)
+#define ASSERTMSGSTROR(what, msg, eq, eq2)     assert(strcmp(pkgfiles_msg_##what(msg), eq) == 0 || strcmp(pkgfiles_msg_##what(msg), eq2) == 0)
 
 	/* And now we get to work */
 
@@ -175,7 +178,7 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 
 	DOPING(file_msg, file);
 
-	WRITEFILE(pkgpath1, 10);
+	WRITEFILE(pkgpath1, 1000);
 	SETMSG(pkgname, file_msg, "");
 	SETMSG(version, file_msg, "");
 	SETMSG(arch, file_msg, "");
@@ -195,22 +198,26 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
 	ASSERTMSGSTR(arch, file_msg, "noarch");
 
-	WRITEFILE(pkgpath2, 1000);
+	WRITEFILE(pkgpath3, 10000000);
+	WRITEFILE(pkgpath2, 10);
+	SEND(TOMSG(HELLO), file_msg, file);
+	GET(file_msg, file);
+	ASSERTMSG(id, file_msg, TOMSG(ROGER));
+
 	SETMSG(pkgname, file_msg, "");
 	SETMSG(version, file_msg, "");
 	SETMSG(arch, file_msg, "");
 
-	SETMSG(pkgname, file_msg, "foo");
+	SETMSG(pkgname, file_msg, "bar");
 	SETMSG(version, file_msg, DXPB_VERSION);
 	SETMSG(arch, file_msg, "x86_64");
 	SEND(TOMSG(ISPKGHERE), file_msg, file);
 
-	WRITEFILE(pkgpath3, 100000000);
 	SETMSG(pkgname, file_msg, "");
 	SETMSG(version, file_msg, "");
 	SETMSG(arch, file_msg, "");
 
-	SETMSG(pkgname, file_msg, "foo");
+	SETMSG(pkgname, file_msg, "bar");
 	SETMSG(version, file_msg, DXPB_VERSION);
 	SETMSG(arch, file_msg, "x86_64-musl");
 	SEND(TOMSG(ISPKGHERE), file_msg, file);
@@ -221,6 +228,34 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 	DOPINGRACE(file_msg, file);
 	DOPINGRACE(file_msg, file);
 	DOPINGRACE(file_msg, file);
+
+	GET(file_msg, file);
+	ASSERTMSG(id, file_msg, TOMSG(ROGER));
+	ASSERTMSGSTR(pkgname, file_msg, "bar");
+	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
+	ASSERTMSGSTROR(arch, file_msg, "x86_64", "x86_64-musl");
+
+	DOPINGRACE(file_msg, file);
+	DOPINGRACE(file_msg, file);
+	DOPINGRACE(file_msg, file);
+
+	GET(file_msg, file);
+	ASSERTMSG(id, file_msg, TOMSG(ROGER));
+	ASSERTMSGSTR(pkgname, file_msg, "bar");
+	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
+	ASSERTMSGSTROR(arch, file_msg, "x86_64-musl", "x86_64");
+
+	WRITEFILE(pkgpath4, LARGEST_SIZE);
+	SETMSG(pkgname, file_msg, "bar");
+	SETMSG(version, file_msg, DXPB_VERSION);
+	SETMSG(arch, file_msg, "aarch64");
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	SETMSG(pkgname, file_msg, "");
+	SETMSG(version, file_msg, "");
+	SETMSG(arch, file_msg, "");
+
+	DOPINGRACE(file_msg, file);
+	DOPINGRACE(file_msg, file);
 	DOPINGRACE(file_msg, file);
 	DOPINGRACE(file_msg, file);
 	DOPINGRACE(file_msg, file);
@@ -228,28 +263,9 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 
 	GET(file_msg, file);
 	ASSERTMSG(id, file_msg, TOMSG(ROGER));
-	ASSERTMSGSTR(pkgname, file_msg, "foo");
+	ASSERTMSGSTR(pkgname, file_msg, "bar");
 	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
-	ASSERTMSGSTR(arch, file_msg, "x86_64");
-
-	DOPINGRACE(file_msg, file);
-	DOPINGRACE(file_msg, file);
-	DOPINGRACE(file_msg, file);
-	DOPINGRACE(file_msg, file);
-	DOPINGRACE(file_msg, file);
-	DOPINGRACE(file_msg, file);
-	DOPINGRACE(file_msg, file);
-	DOPINGRACE(file_msg, file);
-	DOPINGRACE(file_msg, file);
-	DOPINGRACE(file_msg, file);
-	DOPINGRACE(file_msg, file);
-	DOPINGRACE(file_msg, file);
-
-	GET(file_msg, file);
-	ASSERTMSG(id, file_msg, TOMSG(ROGER));
-	ASSERTMSGSTR(pkgname, file_msg, "foo");
-	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
-	ASSERTMSGSTR(arch, file_msg, "x86_64-musl");
+	ASSERTMSGSTR(arch, file_msg, "aarch64");
 
 	/* Work over, let's clean up. */
 
@@ -274,22 +290,12 @@ main(int argc, char * const *argv)
 	char *remotepath2 = bstring_add(bstring_add(NULL, ourdir, NULL, NULL), "/remote2/", NULL, NULL);
 	char *ssldir = "/var/empty/";
 
-	char *file_endpoint = bstring_add(bstring_add(NULL, "ipc://", NULL, NULL), bfs_new_tmpsock(ourdir, "file"), NULL, NULL);
-	char *file_pubpoint = bstring_add(bstring_add(NULL, "ipc://", NULL, NULL), bfs_new_tmpsock(ourdir, "pubFile"), NULL, NULL);
-	char *graph_endpoint = bstring_add(bstring_add(NULL, "ipc://", NULL, NULL), bfs_new_tmpsock(ourdir, "graph"), NULL, NULL);
-	char *graph_pubpoint = bstring_add(bstring_add(NULL, "ipc://", NULL, NULL), bfs_new_tmpsock(ourdir, "pubGraph"), NULL, NULL);
+	char *file_endpoint = "tcp://127.0.0.1:95953";
+	char *file_pubpoint = "tcp://127.0.0.1:95954";
+	char *graph_endpoint = "tcp://127.0.0.1:95955";
+	char *graph_pubpoint = "tcp://127.0.0.1:95956";
 
-	int rc;
-	rc = bfs_ensure_sock_perms(file_endpoint);
-	assert(rc == ERR_CODE_OK);
-	rc = bfs_ensure_sock_perms(graph_endpoint);
-	assert(rc == ERR_CODE_OK);
-	rc = bfs_ensure_sock_perms(file_pubpoint);
-	assert(rc == ERR_CODE_OK);
-	rc = bfs_ensure_sock_perms(graph_pubpoint);
-	assert(rc == ERR_CODE_OK);
-
-	rc = mkdir(logpath, S_IRWXU);
+	int rc = mkdir(logpath, S_IRWXU);
 	rc = mkdir(stagepath, S_IRWXU);
 	rc = mkdir(repopath, S_IRWXU);
 	rc = mkdir(remotepath1, S_IRWXU);
@@ -301,9 +307,11 @@ main(int argc, char * const *argv)
 
 	forkoff_master(ssldir, stagepath, repopath, logpath,
 		file_endpoint, graph_endpoint, file_pubpoint, graph_pubpoint);
+	sleep(1);
 	forkoff_remote(ssldir, remotepath1, file_endpoint);
+	sleep(1);
 	forkoff_remote(ssldir, remotepath2, file_endpoint);
-	sleep(10);
+	sleep(5);
 	return run(ssldir, stagepath, repopath, logpath, remotepath1, remotepath2,
 		file_endpoint, graph_endpoint, file_pubpoint, graph_pubpoint);
 }
