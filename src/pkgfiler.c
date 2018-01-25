@@ -14,7 +14,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#define MAX_CHUNKS_INFLIGHT 3
+#define MAX_CHUNKS_INFLIGHT 50
 
 #include "pkgfiler.h"
 //  TODO: Change these to match your project's needs
