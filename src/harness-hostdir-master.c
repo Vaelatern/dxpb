@@ -21,6 +21,7 @@
 #include "pkgfiler.h"
 
 #include "dxpb-common.h"
+#include "dxpb-version.h"
 
 void
 forkoff(const char *ssldir, const char *sdir, const char *rdir,

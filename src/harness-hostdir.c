@@ -22,6 +22,7 @@
 #include "pkgfiler.h"
 
 #include "dxpb-common.h"
+#include "dxpb-version.h"
 
 // This is the largest number of 4-byte integers we can expect in a file.
 // The lucky package that is this massive is `ceph-dbg`. Since this is 2.5 GB,
