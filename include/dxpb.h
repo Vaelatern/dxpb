@@ -7,7 +7,6 @@
 #endif
 #define DXPB_DXPB_H
 
-#define DXPB_VERSION "0.0.8"
 #define _POSIX_C_SOURCE 200809L
 
 enum ret_codes {

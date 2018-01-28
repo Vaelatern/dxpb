@@ -16,6 +16,7 @@
 #include "dxpb.h"
 #include "bfs.h"
 #include "dxpb-common.h"
+#include "dxpb-version.h"
 
 void
 prologue(const char *argv0)

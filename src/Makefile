@@ -113,6 +113,9 @@ license.inc: ../COPYING
 %-help.inc: ../doc/%-help.txt
 	xxd -i $< $@
 
+dxpb-version.h: ../CHANGELOG.md
+	awk '/## .\..\.. -/ { print "#define DXPB_VERSION \"" $$2 "\""; exit }' ../CHANGELOG.md >dxpb-version.h
+
 #############################
 ######  Testing targets #####
 #############################
@@ -205,7 +208,7 @@ dxpb-hostdir-remote: dxpb-hostdir-remote.o bxbps.o pkgfiles_msg.o pkgfiler_remot
 dxpb-frontend: LDLIBS += -lbsd
 dxpb-frontend: dxpb-frontend.o pkggraph_msg.o bxpkg.o pkggraph_server.o bworker.o
 
-dxpb-common.c: license.inc
+dxpb-common.c: license.inc dxpb-version.h
 
 $(BINARIES): dxpb-common.o ptrace.o
 
