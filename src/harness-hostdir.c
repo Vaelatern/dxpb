@@ -26,7 +26,10 @@
 // This is the largest number of 4-byte integers we can expect in a file.
 // The lucky package that is this massive is `ceph-dbg`. Since this is 2.5 GB,
 // this may not be desireable for tests, but is necessary just to be sure.
-#define LARGEST_SIZE 5100000000
+// But we have now shrunk the size to something we can put under a 4 GB tmp
+// 510000000
+// Now shrunk by 2
+#define LARGEST_SIZE 51000000
 
 void
 forkoff_master(const char *ssldir, const char *sdir, const char *rdir,
@@ -200,6 +203,7 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 
 	WRITEFILE(pkgpath3, 10000000);
 	WRITEFILE(pkgpath2, 10);
+	WRITEFILE(pkgpath4, LARGEST_SIZE);
 	SEND(TOMSG(HELLO), file_msg, file);
 	GET(file_msg, file);
 	ASSERTMSG(id, file_msg, TOMSG(ROGER));
@@ -245,7 +249,6 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
 	ASSERTMSGSTROR(arch, file_msg, "x86_64-musl", "x86_64");
 
-	WRITEFILE(pkgpath4, LARGEST_SIZE);
 	SETMSG(pkgname, file_msg, "bar");
 	SETMSG(version, file_msg, DXPB_VERSION);
 	SETMSG(arch, file_msg, "aarch64");
@@ -254,9 +257,6 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 	SETMSG(version, file_msg, "");
 	SETMSG(arch, file_msg, "");
 
-	DOPINGRACE(file_msg, file);
-	DOPINGRACE(file_msg, file);
-	DOPINGRACE(file_msg, file);
 	DOPINGRACE(file_msg, file);
 	DOPINGRACE(file_msg, file);
 	DOPINGRACE(file_msg, file);
