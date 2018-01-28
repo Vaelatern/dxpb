@@ -67,7 +67,7 @@ digraph "pkgfiler" {
  "file finding i want more" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">i want more</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">say we want more if we do</td></tr></table>>];
  "file finding" -> "file finding i want more";
  "file finding i want more" -> "file finding";
- "file finding chunk" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">chunk</font></td></tr><tr><td align="left" port="r3">verify this remote is the right peer</td></tr><tr><td align="left" port="r3">write file chunk</td></tr><tr><td align="left" port="r3">postprocess chunk</td></tr><tr><td align="left" port="r3">ask for more</td></tr></table>>];
+ "file finding chunk" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">chunk</font></td></tr><tr><td align="left" port="r3">verify this remote is the right peer</td></tr><tr><td align="left" port="r3">write file chunk</td></tr><tr><td align="left" port="r3">postprocess chunk</td></tr><tr><td align="left" port="r3">say we want more if we do</td></tr></table>>];
  "file finding" -> "file finding chunk";
  "file finding chunk" -> "file finding";
 }

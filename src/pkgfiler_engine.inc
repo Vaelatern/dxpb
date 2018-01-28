@@ -893,10 +893,10 @@ s_client_execute (s_client_t *self, event_t event)
                         postprocess_chunk (&self->client);
                     }
                     if (!self->exception) {
-                        //  ask for more
+                        //  say we want more if we do
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ ask for more", self->log_prefix);
-                        ask_for_more (&self->client);
+                            zsys_debug ("%s:         $ say we want more if we do", self->log_prefix);
+                        say_we_want_more_if_we_do (&self->client);
                     }
                 }
                 else {
