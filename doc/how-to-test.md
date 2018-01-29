@@ -42,11 +42,9 @@ Beware that TRACE on the import master, or on the grapher, will be very verbose
 and beyond the permitted resources of most public IRC servers.
 
 We will now configure a builder. This requires a git packages repo checkout,
-for which I like using `/var/cache/dxpb/void-packages/`. It will also need
-a hostdir directory where `hostdir/binpkgs` refers to the directory we previous
-set for `/var/lib/dxpb/pkgs/`.
-Whether by symlink or by mount shouldn't matter,
-this is a detail for xbps-src to care about. Next, we need configuration for
+for which I like using `/var/cache/dxpb/void-packages/`.
+
+Next, we need configuration for
 our builder. Please `mkdir /etc/sv/dxpb-x86_64`, `ln -rs
 /etc/sv/dxpb-builder/run /etc/sv/dxpb-x86_64/run`. Then please put the
 following in `/etc/sv/dxpb-x86_64/conf`:
@@ -60,11 +58,10 @@ LOGFILE=/tmp/dxpb-x86_64
 The owner:group for `/var/cache/dxpb/void-packages/` should, recursively,
 be `_dxpb_build:_dxpb`. Otherwise xbps-src will complain.
 
-The only reason I do not use `dxpb-hostdir-remote` in this setup is
-convenience. It's faster and involves fewer moving parts to have the hostdir
-directory refer directly. This is obviously unsuitable for production use, but
-first I'd like to see everything up until the package return path work before
-I make sure that works perfectly.
+Now, we want to be able to get packages from our builder back to the main
+hostdir. For this we will set up a `/etc/sv/dxpb-hostdir-remote/conf` with the
+variable `$HOSTDIR` set to the `hostdir/binpkgs` for the repo we specified
+earlier, perhaps `/var/cache/dxpb/void-packages/hostdir/binpkgs`.
 
 ### Go Time
 
@@ -74,6 +71,8 @@ Now, make the symlinks! You will want to symlink everything matching
 If issues occur, save the problematic daemon's LOGFILE to a gist, send it to
 Vaelatern, and `pkill dxpb` to kill everything and start over. This will not
 remove files on disk, which is good. If you don't know which daemon is
-problematic, just gist all of them and Vaelatern can sort it out. Or you can,
-and tell Vaelatern what broke so he can fix it faster and we can carry on to
-the next bug.
+problematic, just gist all of them and Vaelatern can sort it out. Or you can
+debug it yourself, and tell Vaelatern what broke so he can fix it faster and we
+can carry on to the next bug.
+
+I encourage contributions and others trying to be familiar with the codebase.
