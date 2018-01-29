@@ -79,6 +79,24 @@ client_terminate (client_t *self)
 	self->repopath = NULL;
 }
 
+static int
+handle_bootstrap_resp(zloop_t *loop, zsock_t *sock, void *arg)
+{
+	(void) loop;
+	engine_handle_socket(arg, sock, NULL);
+	zframe_t *frame = zframe_recv(sock);
+	zsock_flush(sock);
+
+	switch(*(zframe_data(frame))) {
+	case BBUILDER_BOOTSTRAP_DONE:
+		s_client_execute(arg, bootstrap_done_event);
+		break;
+	default:
+		return -1;
+	}
+	zframe_destroy(&frame);
+	return 0;
+}
 
 //  ---------------------------------------------------------------------------
 //  Selftest
@@ -99,7 +117,6 @@ pkggraph_worker_test (bool verbose)
 	printf ("OK\n");
 }
 
-
 //  ---------------------------------------------------------------------------
 //  connect_to_server
 //
@@ -118,7 +135,6 @@ connect_to_server (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  complain_about_connection_error
 //
@@ -130,7 +146,6 @@ complain_about_connection_error (client_t *self)
 	fprintf(stderr, "Could not connect to pkggraph server\n");
 }
 
-
 //  ---------------------------------------------------------------------------
 //  set_timeout_high
 //
@@ -138,9 +153,8 @@ complain_about_connection_error (client_t *self)
 static void
 set_timeout_high (client_t *self)
 {
-	engine_set_expiry(self, 15000);
+	engine_set_expiry(self, 10000);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  act_if_bootstrap_is_wanted
@@ -152,7 +166,6 @@ act_if_bootstrap_is_wanted (client_t *self)
 	if (self->bootstrap_wanted)
 		do_bootstrap_update(self);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  begin_building_pkg
@@ -177,6 +190,7 @@ begin_building_pkg (client_t *self)
 	switch(*(zframe_data(frame))) {
 	case BBUILDER_NOT_BUILDING:
 		pkggraph_msg_set_cause(self->message, END_STATUS_OBSOLETE);
+		engine_set_next_event(self, job_ended_event);
 		break;
 	case BBUILDER_BUILDING:
 		break;
@@ -184,7 +198,6 @@ begin_building_pkg (client_t *self)
 		exit(ERR_CODE_BAD);
 	}
 }
-
 
 //  ---------------------------------------------------------------------------
 //  flag_bootstrap_wanted
@@ -195,7 +208,6 @@ flag_bootstrap_wanted (client_t *self)
 {
 	self->bootstrap_wanted = 1;
 }
-
 
 //  ---------------------------------------------------------------------------
 //  get_log_data
@@ -208,58 +220,45 @@ get_log_data (client_t *self)
 	zframe_t *frame = zframe_new(&action, sizeof(action));
 	zframe_send(&frame, self->provided_pipe, ZMQ_MORE);
 	zsock_bsend(self->provided_pipe, bbuilder_actions_picture[action], 0);
-	uint8_t more;
+	uint8_t more = 0, reason = 0;
 	zchunk_t *logs, *tmplogs;
-	char *pkgname, *version, *arch;
 	char *tmppkgname, *tmpversion, *tmparch;
-	pkgname = version = arch = NULL;
+	tmppkgname = tmpversion = tmparch = NULL;
 	logs = zchunk_new(NULL, 0);
 
 	do {
 		frame = zframe_recv(self->provided_pipe);
 		assert(zframe_size(frame) == sizeof(enum bbuilder_actions));
 		assert(zsock_rcvmore(self->provided_pipe));
-		assert(*(zframe_data(frame)) == BBUILDER_LOG);
 
-		zsock_brecv(self->provided_pipe, "sssc1", &tmppkgname,
-				&tmpversion, &tmparch, &tmplogs, &more);
-		zchunk_extend(logs, zchunk_data(tmplogs), zchunk_size(tmplogs));
-		if (!pkgname)
-			pkgname = tmppkgname;
-		else {
-			assert(strcmp(pkgname, tmppkgname) == 0);
-			free(tmppkgname);
+		action = *(zframe_data(frame));
+		switch(*(zframe_data(frame))) {
+		case BBUILDER_LOG:
+			action = BBUILDER_GIVE_LOG;
+			zsock_brecv(self->provided_pipe, "sssc1", &tmppkgname,
+					&tmpversion, &tmparch, &tmplogs, &more);
+			// must not free tmp* as they belong to zsock_brecv()
+			zchunk_extend(logs, zchunk_data(tmplogs), zchunk_size(tmplogs));
+			break;
+		case BBUILDER_BUILD_FAIL:
+			goto fallA;
+		case BBUILDER_BUILT:
+fallA:			zsock_brecv(self->provided_pipe, "sss1", &tmppkgname,
+					&tmpversion, &tmparch, &reason);
+			more = 0;
+			pkggraph_msg_set_cause(self->message, reason);
+			engine_set_next_event(self, job_ended_event);
+			break;
+		default:
+			exit(ERR_CODE_BAD);
 		}
-		tmppkgname = NULL;
-		if (!version)
-			version = tmpversion;
-		else {
-			assert(strcmp(version, tmpversion) == 0);
-			free(tmpversion);
-		}
-		tmpversion = NULL;
-		if (!arch)
-			arch = tmparch;
-		else {
-			assert(strcmp(arch, tmparch) == 0);
-			free(tmparch);
-		}
-		tmparch = NULL;
 	} while (more);
 
-	pkggraph_msg_set_pkgname(self->message, pkgname);
-	pkggraph_msg_set_version(self->message, version);
-	pkggraph_msg_set_arch(self->message, arch);
+	pkggraph_msg_set_pkgname(self->message, tmppkgname);
+	pkggraph_msg_set_version(self->message, tmpversion);
+	pkggraph_msg_set_arch(self->message, tmparch);
 	pkggraph_msg_set_logs(self->message, &logs);
-
-	free(pkgname);
-	pkgname = NULL;
-	free(version);
-	version = NULL;
-	free(arch);
-	arch = NULL;
 }
-
 
 //  ---------------------------------------------------------------------------
 //  set_timeout_low
@@ -272,7 +271,6 @@ set_timeout_low (client_t *self)
 	engine_set_expiry(self, 1000);
 }
 
-
 //  ---------------------------------------------------------------------------
 //  do_git_ff
 //
@@ -282,7 +280,6 @@ do_git_ff (client_t *self)
 {
 	bgit_just_ff(self->repopath);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  cease_all_operations
@@ -294,7 +291,6 @@ cease_all_operations (client_t *self)
 	(void) self;
 }
 
-
 //  ---------------------------------------------------------------------------
 //  do_bootstrap_update
 //
@@ -302,9 +298,16 @@ cease_all_operations (client_t *self)
 static void
 do_bootstrap_update (client_t *self)
 {
+	enum bbuilder_actions action = BBUILDER_BOOTSTRAP;
+	zframe_t *frame = zframe_new(&action, sizeof(action));
+	zframe_send(&frame, self->provided_pipe, ZMQ_MORE);
+	zsock_bsend(self->provided_pipe, bbuilder_actions_picture[action],
+			pkg_archs_str[self->hostarch]);
+
+	engine_handle_socket(self, self->provided_pipe, handle_bootstrap_resp);
+
 	self->bootstrap_wanted = 0;
 }
-
 
 //  ---------------------------------------------------------------------------
 //  set_repopath_to_provided
@@ -317,7 +320,6 @@ set_repopath_to_provided (client_t *self)
 	self->repopath = strdup(self->args->repopath);
 	assert(self->repopath);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  prepare_icanhelp
@@ -335,7 +337,6 @@ prepare_icanhelp (client_t *self)
 	pkggraph_msg_set_addr(self->message, 0);
 	pkggraph_msg_set_check(self->message, 0);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  set_build_params

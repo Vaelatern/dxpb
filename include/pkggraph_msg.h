@@ -97,7 +97,7 @@ also marking a package as done using a PKGDONE.
         proto_version       string      Package Graph Protocol Version 00
         addr                number 2
         check               number 4
-        cause               number 1    These are enumerated in bworker_exit_status.h
+        cause               number 1    These are enumerated in bworker_end_status.h
         pkgname             string
         version             string
         arch                string

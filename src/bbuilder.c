@@ -12,6 +12,7 @@
 #include "bxpkg.h"
 #include "bxsrc.h"
 #include "bbuilder.h"
+#include "bworker_end_status.h"
 #include "dxpb.h"
 
 // I use this variable only to enforce a single point of lookup for what gets
@@ -22,12 +23,14 @@ const char *bbuilder_actions_picture[] = {
 	"1", // status
 	"1", // 0
 	"1", // 0
+	"s", // hostarch
+	"1", // 0
 	"sss1", // pkg ver arch iscross
 	"1", // 0 until future usage
 	"1", // 0 until future usage
 	"sssc1", // pkg ver arch log more
-	"1", // 0 until future usage
-	"1", // failure_reason
+	"sss1", // 0 until future usage
+	"sss1", // failure_reason
 	"1", // failure_reason
 	NULL
 };
@@ -65,7 +68,7 @@ bbuilder_handle_log_request(zsock_t *pipe, struct builder *bd)
 		frame = zframe_new(&action, sizeof(action));
 		zframe_send(&frame, pipe, ZMQ_MORE);
 		rc = zsock_bsend(pipe, bbuilder_actions_picture[action],
-				log, &more);
+				bd->name, bd->ver, bd->arch, log, more);
 		zchunk_destroy(&log);
 		if (rc != 0)
 			return ERR_CODE_SADSOCK;
@@ -81,36 +84,59 @@ bbuilder_handle_build(zsock_t *pipe, struct builder *bd, const char *masterdir,
 		const char *hostdir, const char *xbps_src)
 {
 	pid_t retVal = 0;
-	char *pkgname = NULL;
-	char *version = NULL;
 	char *checkver = NULL;
-	enum pkg_archs arch;
 	int rc;
 	int iscross;
+	char *pkgname, *version, *arch;
+	pkgname = version = arch = NULL;
 
 	rc = zsock_brecv(pipe, bbuilder_actions_picture[BBUILDER_BUILD],
 			&pkgname, &version, &arch, &iscross);
 	if (rc != 0)
 		goto abort;
 
+	bd->name = strdup(pkgname);
+	bd->ver = strdup(version);
+	bd->arch = strdup(arch);
+	assert(bd->name);
+	assert(bd->ver);
+	assert(bd->arch);
+
 	/* Because git upstream changes sometimes, and we don't live
 	 * in a lag-proof world
 	 */
-	checkver = bxsrc_pkg_version(xbps_src, pkgname);
-	if (strcmp(version, checkver) != 0)
+	checkver = bxsrc_pkg_version(xbps_src, bd->name);
+	if (strcmp(bd->ver, checkver) != 0)
 		goto abort;
 
-	retVal = bxsrc_init_build(xbps_src, pkgname, bd->fds, masterdir,
-			hostdir, iscross? arch : ARCH_NUM_MAX);
+	retVal = bxsrc_init_build(xbps_src, bd->name, bd->fds, masterdir,
+			hostdir, iscross? bpkg_enum_lookup(bd->arch) : ARCH_NUM_MAX);
 
 	goto end;
 abort:
-	if (pkgname)
-		free(pkgname);
-	if (version)
-		free(version);
-	if (checkver)
-		free(checkver);
+end:
+	FREE(checkver);
+	return retVal;
+}
+
+static int
+bbuilder_bootstrap(zsock_t *pipe, const char *masterdir, const char *xbps_src, int iscross)
+{
+	pid_t retVal = 0;
+	char rc;
+	char *arch;
+
+	rc = zsock_brecv(pipe, bbuilder_actions_picture[BBUILDER_BOOTSTRAP],
+			&arch);
+	if (rc != 0)
+		goto end;
+
+	retVal = bxsrc_run_bootstrap(xbps_src, masterdir, arch, iscross);
+	if (retVal != 0) {
+		fprintf(stderr, "Bootstrap set failed!\n");
+		exit(-1);
+	}
+
 end:
 	return retVal;
 }
@@ -123,6 +149,7 @@ bbuilder_agent(zsock_t *pipe, char *masterdir, char *hostdir, char *xbps_src)
 	struct builder bd;
 	pid_t srcinstance = 0;
 	int quit = 0;
+	int iscross = 0; // XXX: Currently unused
 
 	while (!quit && (frame = zframe_recv(pipe)) && /* that is the blocking call */
 			zframe_size(frame) == sizeof(enum bbuilder_actions) &&
@@ -133,18 +160,18 @@ bbuilder_agent(zsock_t *pipe, char *masterdir, char *hostdir, char *xbps_src)
 			break;
 		case BBUILDER_QUIT:
 			quit = 1;
-			if (srcinstance != 0) {
+			goto fallA;
+		case BBUILDER_STOP:
+fallA:			if (srcinstance != 0) {
 				(void)bxsrc_build_end(bd.fds, srcinstance);
 				bbuilder_send(pipe, BBUILDER_ROGER, 0);
 			}
 			srcinstance = 0;
 			break;
-		case BBUILDER_STOP:
-			if (srcinstance != 0) {
-				(void)bxsrc_build_end(bd.fds, srcinstance);
-				bbuilder_send(pipe, BBUILDER_ROGER, 0);
-			}
-			srcinstance = 0;
+		case BBUILDER_BOOTSTRAP:
+			assert(srcinstance == 0);
+			bbuilder_bootstrap(pipe, masterdir, xbps_src, iscross);
+			bbuilder_send(pipe, BBUILDER_BOOTSTRAP_DONE, 0);
 			break;
 		case BBUILDER_BUILD:
 			srcinstance = bbuilder_handle_build(pipe, &bd, masterdir,
@@ -160,10 +187,19 @@ bbuilder_agent(zsock_t *pipe, char *masterdir, char *hostdir, char *xbps_src)
 			switch(rc) {
 			case ERR_CODE_DONE:
 				rc = bxsrc_build_end(bd.fds, srcinstance);
-				if (rc == 0)
-					bbuilder_send(pipe, BBUILDER_BUILT, 0);
+				zframe_t *frame = NULL;
+				enum bbuilder_actions action;
+				if (rc == 0 && 0 == END_STATUS_OK)
+					action = BBUILDER_BUILT;
 				else
-					bbuilder_send(pipe, BBUILDER_BUILD_FAIL, rc);
+					action = BBUILDER_BUILD_FAIL;
+				frame = zframe_new(&action, sizeof(action));
+				zframe_send(&frame, pipe, ZMQ_MORE);
+				rc = zsock_bsend(pipe, bbuilder_actions_picture[action],
+						bd.name, bd.ver, bd.arch, rc);
+				FREE(bd.name);
+				FREE(bd.ver);
+				FREE(bd.arch);
 				break;
 			default:
 				break;
@@ -180,6 +216,8 @@ bbuilder_agent(zsock_t *pipe, char *masterdir, char *hostdir, char *xbps_src)
 			break;
 		}
 		zframe_destroy(&frame);
+		zsock_flush(pipe);
 	}
+	fprintf(stderr, "**** This is the builder agent, bugging out\n");
 	return ERR_CODE_OK;
 }

@@ -20,6 +20,9 @@
 		<event name = "connect error" next = "die">
 			<action name = "complain about connection error" />
 		</event>
+		<after>
+			<action name = "flag bootstrap wanted" />
+		</after>
 	</state>
 	<state name = "negotiate" inherit = "defaults">
 		<event name = "ROGER" next = "hesitate">

@@ -108,6 +108,7 @@
 		</event>
 		<event name = "LOGHERE">
 			<action name = "route log" />
+			<action name = "send" message = "ROGER" />
 		</event>
 		<event name = "*" next = "start">
 			killmenow should find this state.

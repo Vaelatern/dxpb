@@ -1037,6 +1037,17 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ route log", self->log_prefix);
                         route_log (&self->client);
                     }
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_ROGER);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
                 }
                 else
                 if (self->event == ping_event) {

@@ -101,7 +101,7 @@ digraph "pkggraph_server" {
  "i am a worker job ended" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">job ended</font></td></tr><tr><td align="left" port="r3">act on job return</td></tr><tr><td align="left" port="r3">notify grapher if he's around</td></tr><tr><td align="left" port="r3">remove worker</td></tr></table>>];
  "i am a worker" -> "i am a worker job ended";
  "i am a worker job ended" -> "i am a worker";
- "i am a worker loghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">loghere</font></td></tr><tr><td align="left" port="r3">route log</td></tr></table>>];
+ "i am a worker loghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">loghere</font></td></tr><tr><td align="left" port="r3">route log</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "i am a worker" -> "i am a worker loghere";
  "i am a worker loghere" -> "i am a worker";
  "i am a worker *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">remove all workers</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">remove self as worker</td></tr></table>>];

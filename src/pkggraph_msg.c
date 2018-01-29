@@ -45,7 +45,7 @@ struct _pkggraph_msg_t {
     uint16_t addr;                      //  addr
     uint32_t check;                     //  check
     zchunk_t *logs;                     //  Arbitrary text field to append to appropiate log file.
-    byte cause;                         //  These are enumerated in bworker_exit_status.h
+    byte cause;                         //  These are enumerated in bworker_end_status.h
 };
 
 //  --------------------------------------------------------------------------

@@ -144,6 +144,8 @@ static void
 static void
     complain_about_connection_error (client_t *self);
 static void
+    flag_bootstrap_wanted (client_t *self);
+static void
     prepare_icanhelp (client_t *self);
 static void
     set_timeout_high (client_t *self);
@@ -153,8 +155,6 @@ static void
     do_bootstrap_update (client_t *self);
 static void
     begin_building_pkg (client_t *self);
-static void
-    flag_bootstrap_wanted (client_t *self);
 static void
     get_log_data (client_t *self);
 static void
@@ -445,6 +445,12 @@ s_client_execute (s_client_t *self, event_t event)
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
                     }
+                    if (!self->exception) {
+                        //  flag bootstrap wanted
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ flag bootstrap wanted", self->log_prefix);
+                        flag_bootstrap_wanted (&self->client);
+                    }
                     if (!self->exception)
                         self->state = negotiate_state;
                 }
@@ -455,6 +461,12 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ complain about connection error", self->log_prefix);
                         complain_about_connection_error (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  flag bootstrap wanted
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ flag bootstrap wanted", self->log_prefix);
+                        flag_bootstrap_wanted (&self->client);
                     }
                     if (!self->exception)
                         self->state = die_state;
@@ -483,11 +495,23 @@ s_client_execute (s_client_t *self, event_t event)
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
                     }
+                    if (!self->exception) {
+                        //  flag bootstrap wanted
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ flag bootstrap wanted", self->log_prefix);
+                        flag_bootstrap_wanted (&self->client);
+                    }
                     if (!self->exception)
                         self->state = negotiate_state;
                 }
                 else
                 if (self->event == invalid_event) {
+                    if (!self->exception) {
+                        //  flag bootstrap wanted
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ flag bootstrap wanted", self->log_prefix);
+                        flag_bootstrap_wanted (&self->client);
+                    }
                     if (!self->exception)
                         self->state = die_state;
                     if (!self->exception) {
@@ -505,6 +529,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == kthnksbye_event) {
+                    if (!self->exception) {
+                        //  flag bootstrap wanted
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ flag bootstrap wanted", self->log_prefix);
+                        flag_bootstrap_wanted (&self->client);
+                    }
                     if (!self->exception)
                         self->state = die_state;
                     if (!self->exception) {
@@ -556,6 +586,12 @@ s_client_execute (s_client_t *self, event_t event)
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception) {
+                        //  flag bootstrap wanted
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ flag bootstrap wanted", self->log_prefix);
+                        flag_bootstrap_wanted (&self->client);
                     }
                     if (!self->exception)
                         self->state = negotiate_state;

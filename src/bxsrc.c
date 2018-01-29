@@ -4,7 +4,6 @@
  * Module for dealing with bxsrc instances, which are integer file descriptors
  * desribing one end of a set of pipes, the other side connected to a call to
  * xbps-src, used for reading calls.
- * TODO: Add ability to build packages using this module.
  */
 #define _POSIX_C_SOURCE 200809L
 
@@ -122,7 +121,7 @@ zchunk_t *
 bxsrc_get_log(int fds[], uint32_t max_size, int *logDone)
 {
 	assert(*logDone == 0);
-	zchunk_t *retVal = zchunk_new(NULL, 80);
+	zchunk_t *retVal = zchunk_new(NULL, max_size);
 	uint32_t size = 0;
 
 	char inbuf[80];
@@ -133,7 +132,8 @@ bxsrc_get_log(int fds[], uint32_t max_size, int *logDone)
 		if (max_size - insize <= size)
 			insize = max_size - size;
 		inread = read(fds[0], inbuf, insize);
-		size = zchunk_extend(retVal, inbuf, inread);
+		if (inread > 0)
+			size = zchunk_extend(retVal, inbuf, inread);
 	} while (inread > 0 && size < max_size);
 
 	if (inread == 0) // EOF
@@ -283,18 +283,76 @@ bxsrc_init_build(const char *xbps_src, const char *pkg_name, int *fds,
 {
 	assert(pkg_name[0]);
 	char *const args_with_cross[] = {(char *)xbps_src, "-1",
-			"-a", pkg_archs_str[target_arch],
-			"-H", (char *)hostdir, "-m", (char *)masterdir,
-			"pkg", (char *)pkg_name, NULL};
+		"-a", pkg_archs_str[target_arch], "-H", (char *)hostdir,
+		"-m", (char *)masterdir, "pkg", (char *)pkg_name, NULL};
 	char *const args_sans_cross[] = {(char *)xbps_src, "-1",
-			"-H", (char *)hostdir, "-m", (char *)masterdir,
-			"pkg", (char *)pkg_name, NULL};
+		"-H", (char *)hostdir, "-m", (char *)masterdir,
+		"pkg", (char *)pkg_name, NULL};
 	char xbps_arch[30];
-	snprintf(xbps_arch, 30, "XBPS_ARCH=%s", pkg_archs_str[target_arch]);
+	xbps_arch[0] = '\0';
+	if (pkg_archs_str[target_arch] != NULL)
+		snprintf(xbps_arch, 30, "XBPS_ARCH=%s", pkg_archs_str[target_arch]);
+	puts(xbps_arch);
 	char *env[] = {xbps_arch, NULL};
 	char *const *args = (target_arch != ARCH_NUM_MAX ? args_with_cross : args_sans_cross);
 
 	return bxsrc_init(xbps_src, fds, args, env, 1);
+}
+
+int
+bxsrc_bootstrap_end(const int fds[], const pid_t c_pid)
+{
+	assert(fds[0] > 2 && fds[1] > 2);
+	char buf[800];
+	/* Close writing pipe */
+	close(fds[1]);
+	/* Wait for process to end */
+	int retVal = 0;
+	waitpid(c_pid, &retVal, 0);
+	/* Close reading pipe */
+	unset_fd_o_nonblock(fds[0]);
+	while (read(fds[0], buf, 799)) {
+		;
+	}
+	close(fds[0]);
+	return retVal;
+}
+
+
+int
+bxsrc_run_bootstrap(const char *xbps_src, const char *masterdir,
+		const char *host_arch, int iscross)
+{
+	int fds[3];
+	fds[0] = -1;
+	fds[1] = -1;
+	fds[2] = -1;
+	char *const args_bootstrap[] = {(char *)xbps_src,
+			"-a", (char *)host_arch,
+			 "-m", (char *)masterdir, "binary-bootstrap", NULL};
+	char *const args_bootstrap_update_cross[] = {(char *)xbps_src,
+			"-a", (char *)host_arch,
+			 "-m", (char *)masterdir, "bootstrap-update", NULL};
+	char *const args_bootstrap_update[] = {(char *)xbps_src,
+			 "-m", (char *)masterdir, "bootstrap-update", NULL};
+	char xbps_arch[30];
+	snprintf(xbps_arch, 30, "XBPS_ARCH=%s", host_arch);
+	char *env[] = {xbps_arch, NULL};
+
+	pid_t c_pid = bxsrc_init(xbps_src, fds, args_bootstrap, env, 1);
+	assert(fds[2] == -1);
+	int rV = bxsrc_bootstrap_end(fds, c_pid);
+	if (rV != 0)
+		return rV;
+
+	if (iscross)
+		c_pid = bxsrc_init(xbps_src, fds, args_bootstrap_update_cross,
+				env, 1);
+	else
+		c_pid = bxsrc_init(xbps_src, fds, args_bootstrap_update, env, 1);
+	assert(fds[2] == -1);
+	rV = bxsrc_bootstrap_end(fds, c_pid);
+	return rV;
 }
 
 pid_t

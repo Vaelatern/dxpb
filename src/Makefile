@@ -48,11 +48,13 @@ SUID_BINARIES = \
 HARNESSES = harness-grapher \
 	harness-hostdir-master \
 	harness-hostdir \
+	harness-builder \
 	harness-frontend \
 	harness-pkgimport-master
 HARNESS_OBJECTS = harness-grapher.o \
 	harness-hostdir-master.o \
 	harness-hostdir.o \
+	harness-builder.o \
 	harness-frontend.o \
 	harness-pkgimport-master.o
 TEST_BINARIES = check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps check_brepowatch usebfs usebgit
@@ -225,6 +227,8 @@ harness-hostdir-master: bxbps.o harness-hostdir-master.o pkggraph_msg.o pkgfiles
 
 harness-hostdir: LDLIBS += -larchive -lxbps -lbsd
 harness-hostdir: bxbps.o harness-hostdir.o pkggraph_msg.o pkgfiles_msg.o
+
+harness-builder: harness-builder.o pkggraph_msg.o
 
 harness-frontend: harness-frontend.o pkggraph_msg.o
 

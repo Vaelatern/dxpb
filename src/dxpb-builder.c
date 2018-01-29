@@ -80,10 +80,8 @@ parse_workerspec(const char *argv)
 		atom = strtok_r(NULL, ":", &strtok_val);
 	}
 	if (read_state != FSM_STATE_D && read_state != FSM_STATE_E) {
-		free(retVal);
-		free(newargv);
-		newargv = NULL;
-		retVal = NULL;
+		FREE(retVal);
+		FREE(newargv);
 	}
 	return retVal;
 }
@@ -96,9 +94,11 @@ help(void)
 }
 
 char *
-gimme_unix_socket()
+gimme_unix_socket(const char *varrundir)
 {
-	char *retVal = bfs_new_tmpsock("/var/run/dxpb/dxpb-XXXXXX", "builder-1");
+	char *endpoint = bstring_add(strdup(varrundir), "dxpb-XXXXXX", NULL, NULL);
+	char *retVal = bfs_new_tmpsock((const char *)endpoint, "builder-1");
+	FREE(endpoint);
 	if (!retVal)
 		exit(ERR_CODE_BAD);
 	return retVal;
@@ -133,9 +133,10 @@ spawn_child(char *endpoint, char *masterdir, char *hostdir, char *xbps_src)
 
 int
 run(int flags, char *masterdir, char *hostdir,  char *ssldir, char *endpoint,
-		char *repopath, struct workerspec *wrkr)
+		char *repopath, struct workerspec *wrkr, const char *varrundir)
 {
 	SSLDIR_UNUSED(ssldir);
+	assert(varrundir);
 	assert((flags & ERR_FLAG) == 0);
 	enum ret_codes retVal = ERR_CODE_BAD;
 	pkggraph_worker_t *client;
@@ -144,7 +145,7 @@ run(int flags, char *masterdir, char *hostdir,  char *ssldir, char *endpoint,
 	char *xbps_src = bstring_add(bstring_add(NULL, repopath,
 					NULL, NULL), "/xbps-src", NULL, NULL);
 
-	char *child_endpoint = gimme_unix_socket();
+	char *child_endpoint = gimme_unix_socket(varrundir);
 	zsock_t *child = spawn_child(child_endpoint, masterdir, hostdir, xbps_src);
 
 	if (flags & VERBOSE_FLAG)
@@ -197,12 +198,14 @@ main(int argc, char * const *argv)
 	char *default_ssldir = DEFAULT_SSLDIR;
 	char *default_endpoint = DEFAULT_GRAPH_ENDPOINT;
 	char *default_repopath = DEFAULT_REPOPATH;
+	char *default_varrundir = DEFAULT_VARRUNDIR;
 	char *masterdir = NULL;
 	char *hostdir = NULL;
 	char *ssldir = NULL;
 	char *endpoint = NULL;
 	char *repopath = NULL;
-	const char *optstring = "hvLg:k:H:m:W:r:";
+	char *varrundir = NULL;
+	const char *optstring = "hvLg:k:H:m:W:r:R:";
 
 	while ((ch = getopt(argc, argv, optstring)) != -1) {
 		switch(ch) {
@@ -217,6 +220,9 @@ main(int argc, char * const *argv)
 			break;
 		case 'r':
 			repopath = optarg;
+			break;
+		case 'R':
+			varrundir = optarg;
 			break;
 		case 'k':
 			ssldir = optarg;
@@ -264,6 +270,8 @@ main(int argc, char * const *argv)
 		endpoint = default_endpoint;
 	if (!repopath)
 		repopath = default_repopath;
+	if (!varrundir)
+		varrundir = default_varrundir;
 	if (!wrkr)
 		fprintf(stderr, "Need a worker specification (-W)\n");
 	assert(wrkr);
@@ -271,5 +279,5 @@ main(int argc, char * const *argv)
 	enum ret_codes rc = ensure_sock_if_ipc(endpoint);
 	assert(rc == ERR_CODE_OK);
 
-	return run(flags, masterdir, hostdir, ssldir, endpoint, repopath, wrkr);
+	return run(flags, masterdir, hostdir, ssldir, endpoint, repopath, wrkr, varrundir);
 }
