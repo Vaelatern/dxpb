@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.9 - 2018-01-29 - The one where remote operations are possible
+### Overview
+- Hostdir-remote now works with hostdir-master to faithfully send files.
+- Most instances of communication with ipc:// sockets have been changed to
+  tcp:// endpoints by default, avoiding permissions issues
+- Add harness for and fix build remote (including bootstrap functionality)
+
 ## 0.0.8 - 2018-01-19 - The one with better repository watching
 ### Overview
 - Improve speed of confirming if a file is present in a directory.
@@ -51,5 +58,3 @@
 ### Overview
 - It runs. It's some lines of code. It might work, but we have not fully
   tested that functionality just yet.
-
-
