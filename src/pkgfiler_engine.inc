@@ -93,6 +93,7 @@ typedef struct {
     server_t server;            //  Application-level server context
     zsock_t *pipe;              //  Socket to back to caller API
     zsock_t *router;            //  Socket to talk to clients
+    zactor_t *auth;             //  Actor responsible for authentication
     int port;                   //  Server port bound to
     zloop_t *loop;              //  Reactor for server sockets
     pkgfiles_msg_t *message;    //  Message received or sent
@@ -1005,6 +1006,7 @@ s_server_new (zsock_t *pipe)
     zsock_set_unbounded (self->router);
     self->message = pkgfiles_msg_new ();
     self->clients = zhash_new ();
+    self->auth = NULL;
     self->config = zconfig_new ("root", NULL);
     self->loop = zloop_new ();
     srandom ((unsigned int) zclock_time ());
@@ -1034,6 +1036,7 @@ s_server_destroy (s_server_t **self_p)
         zsock_destroy (&self->router);
         zconfig_destroy (&self->config);
         zloop_destroy (&self->loop);
+	zactor_destroy (&self->auth);
         free (self);
         *self_p = NULL;
     }
@@ -1121,6 +1124,28 @@ s_server_handle_pipe (zloop_t *loop, zsock_t *reader, void *argument)
         if (self->port == -1)
             zsys_warning ("could not bind to %s", endpoint);
         zstr_free (&endpoint);
+    }
+    else
+    if (streq (method, "START AUTH")) {
+        //  Begin the auth actor
+	self->auth = zactor_new (zauth, NULL);
+    }
+    else
+    if (streq (method, "AUTH")) {
+        //  Send arguments to the auth actor
+        zmsg_send (&msg, self->auth);
+    }
+    else
+    if (streq (method, "CURVE")) {
+        //  Given a private-public set of keys, set the server socket
+	//  Auth needs to be created separately
+        char *private_key = zmsg_popstr (msg);
+        char *public_key = zmsg_popstr (msg);
+	zsock_set_curve_secretkey (self->router, private_key);
+	zsock_set_curve_publickey (self->router, public_key);
+	zsock_set_curve_server (self->router, 1);
+        zstr_free (&public_key);
+        zstr_free (&private_key);
     }
     else
     if (streq (method, "PORT")) {
