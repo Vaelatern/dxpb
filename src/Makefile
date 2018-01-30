@@ -81,6 +81,7 @@ OBJECTS = \
 	dxpb-certs-remote.o \
 	dxpb-certs-server.o \
 	dxpb-common.o \
+	dxpb-client.o \
 	dxpb-frontend.o \
 	dxpb-graph-to-dot.o \
 	dxpb-grapher.o \
@@ -193,28 +194,28 @@ testdb: pkgimport_msg.o bxsrc.o bxbps.o bstring.o bwords.o bgraph.o bxpkg.o bdb.
 
 $(BINARIES): bstring.o bfs.o
 
-dxpb-poke: dxpb-poke.o pkgimport_poke.o pkgimport_msg.o
+dxpb-poke: dxpb-poke.o pkgimport_poke.o pkgimport_msg.o dxpb-client.o
 
 dxpb-graph-to-dot: LDLIBS += -lsqlite3 -larchive -lxbps -lcgraph
 dxpb-graph-to-dot: dxpb-graph-to-dot.o bdb.o bwords.o bgraph.o bxpkg.o bpkg.o bxsrc.o pkgimport_msg.o bxbps.o bdot.o
 
 dxpb-pkgimport-agent: LDLIBS += -lbsd
-dxpb-pkgimport-agent: dxpb-pkgimport-agent.o bxpkg.o bpkg.o bwords.o bxsrc.o pkgimport_client.o pkgimport_msg.o
+dxpb-pkgimport-agent: dxpb-pkgimport-agent.o dxpb-client.o bxpkg.o bpkg.o bwords.o bxsrc.o pkgimport_client.o pkgimport_msg.o
 
 dxpb-pkgimport-master: LDLIBS += -lbsd -lgit2
 dxpb-pkgimport-master: dxpb-pkgimport-master.o bxpkg.o bwords.o bxsrc.o bgit.o pkgimport_server.o pkgimport_msg.o
 
 dxpb-builder: LDLIBS += -lgit2
-dxpb-builder: dxpb-builder.o bgit.o bbuilder.o bwords.o bxpkg.o bxsrc.o pkggraph_worker.o pkggraph_msg.o
+dxpb-builder: dxpb-builder.o dxpb-client.o bgit.o bbuilder.o bwords.o bxpkg.o bxsrc.o pkggraph_worker.o pkggraph_msg.o
 
 dxpb-grapher: LDLIBS += -lbsd -lsqlite3 -larchive -lxbps
-dxpb-grapher: dxpb-grapher.o bwords.o bxsrc.o bxpkg.o bpkg.o bxbps.o bgraph.o bdb.o pkgimport_msg.o pkgimport_grapher.o pkggraph_msg.o pkggraph_grapher.o pkgfiles_msg.o pkgfiler_grapher.o bworker.o btranslate.o
+dxpb-grapher: dxpb-grapher.o dxpb-client.o bwords.o bxsrc.o bxpkg.o bpkg.o bxbps.o bgraph.o bdb.o pkgimport_msg.o pkgimport_grapher.o pkggraph_msg.o pkggraph_grapher.o pkgfiles_msg.o pkgfiler_grapher.o bworker.o btranslate.o
 
 dxpb-hostdir-master: LDLIBS += -larchive -lxbps -lpthread
 dxpb-hostdir-master: dxpb-hostdir-master.o brepowatch.o bxbps.o pkggraph_msg.o pkggraph_filer.o pkgfiles_msg.o pkgfiler.o
 
 dxpb-hostdir-remote: LDLIBS += -larchive -lxbps -lpthread
-dxpb-hostdir-remote: dxpb-hostdir-remote.o bxbps.o pkgfiles_msg.o pkgfiler_remote.o brepowatch.o
+dxpb-hostdir-remote: dxpb-hostdir-remote.o dxpb-client.o bxbps.o pkgfiles_msg.o pkgfiler_remote.o brepowatch.o
 
 dxpb-frontend: LDLIBS += -lbsd
 dxpb-frontend: dxpb-frontend.o pkggraph_msg.o bxpkg.o pkggraph_server.o bworker.o

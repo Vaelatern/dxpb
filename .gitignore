@@ -7,7 +7,8 @@ src/use*.c
 !check_*.c
 !runsv/dxpb*
 !dxpb-*.c
-!dxpb-common.h
+!dxpb-*.h
+dxpb-version.h
 !*.txt
 !*.inc
 !harness-*.c

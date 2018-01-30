@@ -17,6 +17,7 @@
 #include "bfs.h"
 #include "dxpb-common.h"
 #include "dxpb-version.h"
+#include "dxpb-client.h"
 
 void
 prologue(const char *argv0)
@@ -59,12 +60,4 @@ ensure_sock_if_ipc(const char *arg)
                return rc;
        rc = bfs_ensure_sock_perms(arg);
        return rc;
-}
-
-int
-setup_ssl(const char *argv0, const char *ssldir)
-{
-	(void) argv0;
-	(void) ssldir;
-	return 0;
 }

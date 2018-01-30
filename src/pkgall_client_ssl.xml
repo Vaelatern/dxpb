@@ -1,4 +1,5 @@
 <header>
+<!-- This header is duplicated in dxpb-client.c --->
 //  Takes privkey, pubkey, and serverkey, and sets them on the socket
 void	pkgall_client_ssl_setcurve(void *, const char *, const char *, const char *);
 </header>
@@ -11,6 +12,11 @@ pkgall_client_ssl_setcurve(void *client, const char *privkey,
 			const char *pubkey, const char *serverkey)
 {
 	client_t *self = client;
+	assert(privkey);
+	assert(pubkey);
+	assert(serverkey);
+	assert(self);
+	assert(self->dealer);
 	zsock_set_curve_secretkey(self->dealer, privkey);
 	zsock_set_curve_publickey(self->dealer, pubkey);
 	zsock_set_curve_serverkey(self->dealer, serverkey);
