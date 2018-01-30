@@ -216,7 +216,7 @@ digraph "pkggraph_worker" {
  "working expired" -> "working";
  "working job ended" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">job ended</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "working" -> "working job ended";
- "working job ended" -> "working";
+ "working job ended" -> "preparing";
 
  "die" [shape = "doublecircle"];
  "die *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];

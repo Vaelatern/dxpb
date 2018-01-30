@@ -1304,6 +1304,20 @@ s_client_execute (s_client_t *self, event_t event)
                         pkggraph_msg_print (self->message);
                         pkggraph_msg_send (self->message, self->dealer);
                     }
+                    if (!self->exception)
+                        self->state = preparing_state;
+                    if (!self->exception) {
+                        //  set timeout high
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set timeout high", self->log_prefix);
+                        set_timeout_high (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  act if bootstrap is wanted
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ act if bootstrap is wanted", self->log_prefix);
+                        act_if_bootstrap_is_wanted (&self->client);
+                    }
                 }
                 else
                 if (self->event == iforgotu_event) {

@@ -150,6 +150,7 @@ bbuilder_agent(zsock_t *pipe, char *masterdir, char *hostdir, char *xbps_src)
 	pid_t srcinstance = 0;
 	int quit = 0;
 	int iscross = 0; // XXX: Currently unused
+	enum bbuilder_actions action;
 
 	while (!quit && (frame = zframe_recv(pipe)) && /* that is the blocking call */
 			zframe_size(frame) == sizeof(enum bbuilder_actions) &&
@@ -160,12 +161,15 @@ bbuilder_agent(zsock_t *pipe, char *masterdir, char *hostdir, char *xbps_src)
 			break;
 		case BBUILDER_QUIT:
 			quit = 1;
-			goto fallA;
+			goto jobstop;
 		case BBUILDER_STOP:
-fallA:			if (srcinstance != 0) {
+jobstop:		 if (srcinstance != 0) {
 				(void)bxsrc_build_end(bd.fds, srcinstance);
 				bbuilder_send(pipe, BBUILDER_ROGER, 0);
 			}
+			FREE(bd.name);
+			FREE(bd.ver);
+			FREE(bd.arch);
 			srcinstance = 0;
 			break;
 		case BBUILDER_BOOTSTRAP:
@@ -182,25 +186,26 @@ fallA:			if (srcinstance != 0) {
 				bbuilder_send(pipe, BBUILDER_BUILDING, 0);
 			break;
 		case BBUILDER_GIVE_LOG:
-			assert(srcinstance != 0);
+			if (srcinstance == 0) {
+				fprintf(stderr, "*** STATE WARNING *****\nRequest to give log when no build active\n**********\n");
+				break;
+			}
 			rc = bbuilder_handle_log_request(pipe, &bd);
 			switch(rc) {
 			case ERR_CODE_DONE:
 				rc = bxsrc_build_end(bd.fds, srcinstance);
 				zframe_t *frame = NULL;
-				enum bbuilder_actions action;
 				if (rc == 0 && 0 == END_STATUS_OK)
 					action = BBUILDER_BUILT;
 				else
 					action = BBUILDER_BUILD_FAIL;
+				srcinstance = 0;
 				frame = zframe_new(&action, sizeof(action));
 				zframe_send(&frame, pipe, ZMQ_MORE);
 				rc = zsock_bsend(pipe, bbuilder_actions_picture[action],
 						bd.name, bd.ver, bd.arch, rc);
-				FREE(bd.name);
-				FREE(bd.ver);
-				FREE(bd.arch);
-				break;
+				assert(rc == 0);
+				goto jobstop;
 			default:
 				break;
 			}

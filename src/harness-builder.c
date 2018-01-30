@@ -8,6 +8,8 @@
 
 #define HARNESS_BUILD_PKGNAME "ucl"
 #define HARNESS_BUILD_VERSION "1.03_5"
+#define HARNESS_BUILD_PKGNAME2 "zsync"
+#define HARNESS_BUILD_VERSION2 "0.6.2_3"
 #define HARNESS_BUILD_ARCH "x86_64"
 
 #include <czmq.h>
@@ -43,7 +45,8 @@ int
 run(const char *endpoint, const char *hostdir, const char *masterdir,
 		const char *repopath, const char *workspec, const char *ssldir,
 		const char *varrundir,
-		const char *pkgname, const char *version, const char *arch)
+		const char *pkgname, const char *version, const char *arch,
+		const char *pkgname2, const char *version2)
 {
 	SSLDIR_UNUSED(ssldir);
 	(void)varrundir;
@@ -122,6 +125,33 @@ run(const char *endpoint, const char *hostdir, const char *masterdir,
 	ASSERTMSGSTR(version, msg, version);
 	ASSERTMSGSTR(arch, msg, arch);
 
+	do {
+		SEND(ROGER, msg, graph);
+		GET(msg, graph);
+	} while (pkggraph_msg_id(msg) == TOMSG(PING));
+	ASSERTMSG(id, msg, TOMSG(ICANHELP));
+	ASSERTMSGSTR(hostarch, msg, arch);
+	ASSERTMSGSTR(targetarch, msg, arch);
+	//int addr = pkggraph_msg_addr(msg);
+	//int check = pkggraph_msg_check(msg);
+	//int cost = pkggraph_msg_cost(msg);
+
+	SETMSG(pkgname, msg, pkgname2);
+	SETMSG(version, msg, version2);
+	SETMSG(arch, msg, arch);
+	SEND(NEEDPKG, msg, graph);
+
+	do {
+		SEND(ROGER, msg, graph);
+		GET(msg, graph);
+		fprintf(stderr, (char *)zchunk_data(pkggraph_msg_logs(msg)));
+	} while (pkggraph_msg_id(msg) == TOMSG(LOGHERE));
+
+	assert(pkggraph_msg_id(msg) == TOMSG(JOB_ENDED));
+	ASSERTMSGSTR(pkgname, msg, pkgname2);
+	ASSERTMSGSTR(version, msg, version2);
+	ASSERTMSGSTR(arch, msg, arch);
+
 	/* Work over, let's clean up. */
 
 	pkggraph_msg_destroy(&msg);
@@ -170,5 +200,7 @@ main(int argc, char * const *argv)
 	char *pkgname = HARNESS_BUILD_PKGNAME;
 	char *version = HARNESS_BUILD_VERSION;
 	char *arch = HARNESS_BUILD_ARCH;
-	return run(endpoint, hostdir, masterdir, repopath, workspec, ssldir, varrundir, pkgname, version, arch);
+	char *pkgname2 = HARNESS_BUILD_PKGNAME2;
+	char *version2 = HARNESS_BUILD_VERSION2;
+	return run(endpoint, hostdir, masterdir, repopath, workspec, ssldir, varrundir, pkgname, version, arch, pkgname2, version2);
 }

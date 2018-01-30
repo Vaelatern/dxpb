@@ -81,7 +81,7 @@
 			<action name = "get log data" />
 			<action name = "send" message = "LOGHERE" />
 		</event>
-		<event name = "job ended">
+		<event name = "job ended" next = "preparing">
 			<action name = "send" message = "JOB ENDED" />
 		</event>
 	</state>

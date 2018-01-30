@@ -165,6 +165,8 @@ act_if_bootstrap_is_wanted (client_t *self)
 {
 	if (self->bootstrap_wanted)
 		do_bootstrap_update(self);
+	else
+		engine_set_next_event(self, bootstrap_done_event);
 }
 
 //  ---------------------------------------------------------------------------
@@ -267,8 +269,8 @@ fallA:			zsock_brecv(self->provided_pipe, "sss1", &tmppkgname,
 static void
 set_timeout_low (client_t *self)
 {
-	// 1 second
-	engine_set_expiry(self, 1000);
+	// 2 seconds
+	engine_set_expiry(self, 2000);
 }
 
 //  ---------------------------------------------------------------------------
