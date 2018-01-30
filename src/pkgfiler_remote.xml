@@ -68,4 +68,6 @@
 		Used to connect to the server.
 		<field name = "hostdir" type = "string" />
 	</method>
+
+	<custom filename = "pkgall_client_ssl.xml" language = "C" />
 </class>

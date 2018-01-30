@@ -76,6 +76,10 @@ uint32_t
 uint32_t
     pkggraph_worker_ok (pkggraph_worker_t *self);
 
+
+//  Takes privkey, pubkey, and serverkey, and sets them on the socket
+void    pkgall_client_ssl_setcurve(void *, const char *, const char *, const char *);
+
 //  Enable verbose tracing (animation) of state machine activity.
 void
     pkggraph_worker_set_verbose (pkggraph_worker_t *self, bool verbose);

@@ -104,4 +104,6 @@
 	<method name = "do pkgdel">
 		<field name = "pkgname" type = "string" />
 	</method>
+
+	<custom filename = "pkgall_client_ssl.xml" language = "C" />
 </class>

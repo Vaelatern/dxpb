@@ -63,6 +63,10 @@ bool
 int
     pkgimport_poke_connect_now (pkgimport_poke_t *self, const char *endpoint);
 
+
+//  Takes privkey, pubkey, and serverkey, and sets them on the socket
+void    pkgall_client_ssl_setcurve(void *, const char *, const char *, const char *);
+
 //  Enable verbose tracing (animation) of state machine activity.
 void
     pkgimport_poke_set_verbose (pkgimport_poke_t *self, bool verbose);

@@ -136,4 +136,6 @@
 	<reply name = "STATUS">
 		<field name = "ok" type = "number" />
 	</reply>
+
+	<custom filename = "pkgall_client_ssl.xml" language = "C" />
 </class>

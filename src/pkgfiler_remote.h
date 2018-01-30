@@ -67,6 +67,10 @@ int
 int
     pkgfiler_remote_set_hostdir (pkgfiler_remote_t *self, const char *hostdir);
 
+
+//  Takes privkey, pubkey, and serverkey, and sets them on the socket
+void    pkgall_client_ssl_setcurve(void *, const char *, const char *, const char *);
+
 //  Enable verbose tracing (animation) of state machine activity.
 void
     pkgfiler_remote_set_verbose (pkgfiler_remote_t *self, bool verbose);

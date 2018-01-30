@@ -71,6 +71,10 @@ int
 int
     pkgfiler_grapher_do_pkgdel (pkgfiler_grapher_t *self, const char *pkgname);
 
+
+//  Takes privkey, pubkey, and serverkey, and sets them on the socket
+void    pkgall_client_ssl_setcurve(void *, const char *, const char *, const char *);
+
 //  Enable verbose tracing (animation) of state machine activity.
 void
     pkgfiler_grapher_set_verbose (pkgfiler_grapher_t *self, bool verbose);

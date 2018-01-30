@@ -1902,3 +1902,19 @@ pkggraph_worker_set_verbose (pkggraph_worker_t *self, bool verbose)
     assert (self);
     zsock_send (self->actor, "si", "SET VERBOSE", verbose);
 }
+
+
+//  -------------------------------------------------------------------
+//  Takes privkey, pubkey, and serverkey, and sets them on the socket
+
+void
+pkgall_client_ssl_setcurve(void *client, const char *privkey,
+                        const char *pubkey, const char *serverkey)
+{
+        client_t *self = client;
+        zsock_set_curve_secretkey(self->dealer, privkey);
+        zsock_set_curve_publickey(self->dealer, pubkey);
+        zsock_set_curve_serverkey(self->dealer, serverkey);
+        zsock_set_curve_server(self->dealer, 0);
+}
+

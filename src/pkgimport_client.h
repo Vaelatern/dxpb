@@ -67,6 +67,10 @@ int
 int
     pkgimport_client_set_xbps_src_path (pkgimport_client_t *self, const char *xbps_src_path);
 
+
+//  Takes privkey, pubkey, and serverkey, and sets them on the socket
+void    pkgall_client_ssl_setcurve(void *, const char *, const char *, const char *);
+
 //  Enable verbose tracing (animation) of state machine activity.
 void
     pkgimport_client_set_verbose (pkgimport_client_t *self, bool verbose);

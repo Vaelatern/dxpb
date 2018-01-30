@@ -41,4 +41,6 @@
 		Used to connect to the server.
 		<field name = "endpoint" type = "string" />
 	</method>
+
+	<custom filename = "pkgall_client_ssl.xml" language = "C" />
 </class>

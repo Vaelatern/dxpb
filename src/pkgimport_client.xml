@@ -90,4 +90,6 @@
 		Used to connect to the server.
 		<field name = "xbps_src_path" type = "string" />
 	</method>
+
+	<custom filename = "pkgall_client_ssl.xml" language = "C" />
 </class>

@@ -83,4 +83,6 @@
 	<method name = "set pubpath">
 		<field name = "pubpath" type = "string" />
 	</method>
+
+	<custom filename = "pkgall_client_ssl.xml" language = "C" />
 </class>
