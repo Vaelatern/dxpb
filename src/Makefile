@@ -116,7 +116,7 @@ license.inc: ../COPYING
 	xxd -i $< $@
 
 dxpb-version.h: ../CHANGELOG.md
-	awk '/## .\..\.. -/ { print "#define DXPB_VERSION \"" $$2 "\""; exit }' ../CHANGELOG.md >dxpb-version.h
+	awk '/## [0-9]+\.[0-9]+\.[0-9]+ -/ { print "#define DXPB_VERSION \"" $$2 "\""; exit }' ../CHANGELOG.md >dxpb-version.h
 
 #############################
 ######  Testing targets #####
@@ -256,6 +256,7 @@ test: $(TEST_BINARIES) $(HARNESSES)
 check: test
 
 mostlyclean:
+	rm -f dxpb-version.h
 	rm -f $(OBJECTS)
 	rm -f $(TEST_OBJECTS)
 	rm -f $(TEST_BINARIES)
