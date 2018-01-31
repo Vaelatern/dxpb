@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.0.11 - 2018-02-08 - The one where we are not a cookie monster
+### Overview
+- ALL BINARIES ARE INCOMPATIBLE WITH PREVIOUS VERSIONS - message signatures
+  changed to make sure a mistyped port number is obvious at runtime.
+- Binaries will now actually print 0.0.11 as their version, instead of 0.0.9
+- Documentation was fixed, and now is copied with a `make install`.
+- Grapher no longer has a failure mode which involves replicating and eating up
+  memory.
+- Git fast forwards got better and less-crashy on freshly cloned repos.
+
 ## 0.0.10 - 2018-01-30 - The one where the builder works more than once
 ### Overview
 - Builder now properly resets after a build, and can be instructed to build
