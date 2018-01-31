@@ -285,7 +285,7 @@ install-runit-scripts: install-bin
 	mkdir -p $(DESTDIR)$(SVDIR)
 	cp -r ../runsv/* $(DESTDIR)$(SVDIR)
 
-install: install-bin install-license install-runit-scripts
+install: install-bin install-doc install-license install-runit-scripts
 
 
 ##################################
