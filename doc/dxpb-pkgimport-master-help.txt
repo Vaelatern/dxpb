@@ -11,6 +11,6 @@ Arguments:
 
 The following flags have defaults.
   -r: ./
-  -i: ipc:///var/run/dxpb/pkgimport.sock
+  -i: tcp://127.0.0.1:5197
   -I: ipc:///var/run/dxpb/log-pkgimport-master.sock
   -x: ./xbps-src

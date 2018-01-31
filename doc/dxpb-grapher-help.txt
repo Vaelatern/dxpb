@@ -17,6 +17,6 @@ The following flags have defaults.
   -d: /var/cache/dxpb/pkgs.db
   -f: tcp://127.0.0.1:5196
   -g: tcp://127.0.0.1:5195
-  -i: ipc:///var/run/dxpb/pkgimport.sock
+  -i: tcp://127.0.0.1:5197
   -I: ipc:///var/run/dxpb/log-dxpb-grapher.sock
   -k: /etc/dxpb/curve/

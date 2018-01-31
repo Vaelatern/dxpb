@@ -6,4 +6,4 @@ Arguments:
   -i <endpoint>	ZeroMQ endpoint for connecting to the import agent
 
 The following flags have defaults.
-  -i: ipc:///var/run/dxpb/pkgimport.sock
+  -i: tcp://127.0.0.1:5197

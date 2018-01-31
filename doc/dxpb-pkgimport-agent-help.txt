@@ -7,5 +7,5 @@ Arguments:
   -x <path>	Path to xbps-src executable in a non-bare void-packages checkout.
 
 The following flags have defaults.
-  -i: ipc:///var/run/dxpb/pkgimport.sock
+  -i: tcp://127.0.0.1:5197
   -x: ./xbps-src
