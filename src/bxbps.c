@@ -97,3 +97,10 @@ bxbps_pkg_to_filename(const char *pkgname, const char *version, const char *arch
 	assert(filename);
 	return filename;
 }
+
+char *
+bxbps_file_hash(const char *filename)
+{
+	assert(filename);
+	return xbps_file_hash(filename);
+}

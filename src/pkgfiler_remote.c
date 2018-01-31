@@ -190,8 +190,7 @@ check_for_pkg_locally (client_t *self)
 	else
 		pkgfiles_msg_set_id(self->message, PKGFILES_MSG_PKGNOTHERE);
 	pkgfiles_msg_send(self->message, self->dealer);
-	free(pkgfile);
-	pkgfile = NULL;
+	FREE(pkgfile);
 }
 
 
@@ -314,18 +313,28 @@ confirm_pkg_is_local_and_want_to_share (client_t *self)
 {
 	assert(self);
 	assert(self->hostdir);
+	char *tmp = NULL;
 	char *pkgfile = bxbps_pkg_to_filename(
 				pkgfiles_msg_pkgname(self->message),
 				pkgfiles_msg_version(self->message),
 				pkgfiles_msg_arch(self->message));
-	int present = file_exists_in_repo(self, pkgfile);
-	if (!present) {
+	char *pkgpath = file_path_in_repo(self, pkgfile);
+	if (pkgpath == NULL) {
 		pkgfiles_msg_set_id(self->message, PKGFILES_MSG_IDONTWANNASHARE);
 		pkgfiles_msg_send(self->message, self->dealer);
 		engine_set_exception(self, NULL_event);
+	} else {
+		char *fullpath = bstring_add(bstring_add(strdup(self->hostdir),
+					pkgpath, NULL, NULL), pkgfile, NULL, NULL);
+		printf("Hashing file: %s\n", fullpath);
+		tmp = bxbps_file_hash(fullpath);
+		assert(tmp);
+		pkgfiles_msg_set_checksum(self->message, tmp);
+		FREE(fullpath);
 	}
-	free(pkgfile);
-	pkgfile = NULL;
+	FREE(tmp);
+	FREE(pkgfile);
+	FREE(pkgpath);
 }
 
 

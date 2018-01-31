@@ -50,6 +50,7 @@
         pkgname             string
         version             string
         arch                string
+        checksum            string
 
     IDONTWANNASHARE -
         proto_version       string      DXPB PKG Management Protocol Version 00
@@ -177,6 +178,12 @@ const char *
     pkgfiles_msg_arch (pkgfiles_msg_t *self);
 void
     pkgfiles_msg_set_arch (pkgfiles_msg_t *self, const char *value);
+
+//  Get/set the checksum field
+const char *
+    pkgfiles_msg_checksum (pkgfiles_msg_t *self);
+void
+    pkgfiles_msg_set_checksum (pkgfiles_msg_t *self, const char *value);
 
 //  Get/set the validchunk field
 byte

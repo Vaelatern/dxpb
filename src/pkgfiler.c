@@ -122,6 +122,7 @@ struct filefetch {
 	char *version;
 	char *arch;
 	char *filepath;
+	char *checksum;
 	FILE *fp;
 };
 
@@ -293,6 +294,9 @@ server_parse_memos(server_t *self)
 		pkgfiles_msg_set_version(memo->client->message, pkgfiles_msg_version(memo->msg));
 		pkgfiles_msg_set_arch(memo->client->message, pkgfiles_msg_arch(memo->msg));
 		switch(pkgfiles_msg_id(memo->msg)) {
+		case PKGFILES_MSG_ISPKGHERE:
+			engine_send_event(memo->client, ispkghere_event);
+			break;
 		case PKGFILES_MSG_PKGHERE:
 			engine_send_event(memo->client, pkg_here_event);
 			break;
@@ -706,9 +710,11 @@ establish_peer_agreement (client_t *self)
 	peer->pkgname = strdup(hunt->pkgname);
 	peer->version = strdup(hunt->version);
 	peer->arch = strdup(hunt->arch);
+	peer->checksum = strdup(pkgfiles_msg_checksum(self->message));
 	assert(peer->pkgname);
 	assert(peer->version);
 	assert(peer->arch);
+	assert(peer->checksum);
 	peer->subpath = NULL;
 	peer->fp = NULL;
 	zhash_insert(self->server->peering, key, peer);
@@ -717,8 +723,7 @@ establish_peer_agreement (client_t *self)
 	self->numfetchs++;
 
 end:
-	free(key);
-	key = NULL;
+	FREE(key);
 }
 
 
@@ -862,6 +867,7 @@ end_hunt (client_t *self)
 static void
 postprocess_chunk (client_t *self)
 {
+	int memoid = PKGFILES_MSG_PKGHERE;
 	if (!pkgfiles_msg_validchunk(self->message))
 		return;
 
@@ -878,6 +884,14 @@ postprocess_chunk (client_t *self)
 			exit(ERR_CODE_BAD);
 		}
 		fetch->fp = NULL;
+
+		char *checksum = bxbps_file_hash(fetch->filepath);
+		if (strcmp(checksum, fetch->checksum) != 0) {
+			engine_send_event(fetch->asker, ispkghere_event);
+			memoid = PKGFILES_MSG_ISPKGHERE;
+			bfs_unlink(fetch->filepath);
+			goto sendmemo;
+		}
 
 		uint32_t parA = 0, parB = 0;
 		char *newfilepath = bstring_add(NULL, self->server->repodir,
@@ -899,13 +913,15 @@ postprocess_chunk (client_t *self)
 		fetch->filepath = bstring_add(fetch->filepath, ".new", NULL, NULL);
 		bfs_touch(fetch->filepath);
 
+sendmemo:	FREE(checksum); // located here because C wants a statement here.
+
 		struct memo *memo = calloc(1, sizeof(struct memo));
 		assert(fetch->pkgname);
 		assert(fetch->version);
 		assert(fetch->arch);
 		memo->client = fetch->asker;
 		memo->msg = pkgfiles_msg_new();
-		pkgfiles_msg_set_id(memo->msg, PKGFILES_MSG_PKGHERE);
+		pkgfiles_msg_set_id(memo->msg, memoid);
 		pkgfiles_msg_set_pkgname(memo->msg, fetch->pkgname);
 		pkgfiles_msg_set_version(memo->msg, fetch->version);
 		pkgfiles_msg_set_arch(memo->msg, fetch->arch);
@@ -918,6 +934,7 @@ postprocess_chunk (client_t *self)
 		FREE(fetch->pkgname);
 		FREE(fetch->version);
 		FREE(fetch->arch);
+		FREE(fetch->checksum);
 		zhash_freefn(self->server->peering, key, free);
 		zhash_delete(self->server->peering, key);
 		self->curfetch = NULL;

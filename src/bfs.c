@@ -221,7 +221,16 @@ bfs_set_shared_sock_perms(const char *sockpath)
 int
 bfs_rename(const char *a, const char *b)
 {
+	errno = 0;
 	return rename(a, b);
+}
+
+// This is short. It is only here so stdio need not be included everywhere.
+int
+bfs_unlink(const char *a)
+{
+	errno = 0;
+	return unlink(a);
 }
 
 enum ret_codes

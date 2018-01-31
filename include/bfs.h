@@ -13,3 +13,4 @@ int	 bfs_rename(const char *, const char *);
 void	 bfs_touch(const char *);
 int	 bfs_setup_sock(const char *);
 enum	 ret_codes bfs_ensure_sock_perms(const char *);
+int	 bfs_unlink(const char *);

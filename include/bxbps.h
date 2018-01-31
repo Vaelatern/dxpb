@@ -11,3 +11,4 @@
 char	*bxbps_get_pkgname(const char *, bgraph);
 int	 bxbps_spec_match(const char *, const char *, const char *);
 char	*bxbps_pkg_to_filename(const char *, const char *, const char *);
+char 	*bxbps_file_hash(const char *);

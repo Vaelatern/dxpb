@@ -38,6 +38,7 @@ struct _pkgfiles_msg_t {
     char pkgname [256];                 //  pkgname
     char version [256];                 //  version
     char arch [256];                    //  arch
+    char checksum [256];                //  checksum
     byte validchunk;                    //  validchunk
     char subpath [256];                 //  Subdir of hostdir where the pkg can be found
     uint64_t position;                  //  position
@@ -244,6 +245,7 @@ pkgfiles_msg_dup (pkgfiles_msg_t *other)
     pkgfiles_msg_set_pkgname (copy, pkgfiles_msg_pkgname (other));
     pkgfiles_msg_set_version (copy, pkgfiles_msg_version (other));
     pkgfiles_msg_set_arch (copy, pkgfiles_msg_arch (other));
+    pkgfiles_msg_set_checksum (copy, pkgfiles_msg_checksum (other));
     pkgfiles_msg_set_validchunk (copy, pkgfiles_msg_validchunk (other));
     pkgfiles_msg_set_subpath (copy, pkgfiles_msg_subpath (other));
     pkgfiles_msg_set_position (copy, pkgfiles_msg_position (other));
@@ -401,6 +403,7 @@ pkgfiles_msg_recv (pkgfiles_msg_t *self, zsock_t *input)
             GET_STRING (self->pkgname);
             GET_STRING (self->version);
             GET_STRING (self->arch);
+            GET_STRING (self->checksum);
             break;
 
         case PKGFILES_MSG_IDONTWANNASHARE:
@@ -567,6 +570,7 @@ pkgfiles_msg_send (pkgfiles_msg_t *self, zsock_t *output)
             frame_size += 1 + strlen (self->pkgname);
             frame_size += 1 + strlen (self->version);
             frame_size += 1 + strlen (self->arch);
+            frame_size += 1 + strlen (self->checksum);
             break;
         case PKGFILES_MSG_IDONTWANNASHARE:
             frame_size += 1 + strlen ("DPKG00");
@@ -655,6 +659,7 @@ pkgfiles_msg_send (pkgfiles_msg_t *self, zsock_t *output)
             PUT_STRING (self->pkgname);
             PUT_STRING (self->version);
             PUT_STRING (self->arch);
+            PUT_STRING (self->checksum);
             break;
 
         case PKGFILES_MSG_IDONTWANNASHARE:
@@ -770,6 +775,7 @@ pkgfiles_msg_print (pkgfiles_msg_t *self)
             zsys_debug ("    pkgname='%s'", self->pkgname);
             zsys_debug ("    version='%s'", self->version);
             zsys_debug ("    arch='%s'", self->arch);
+            zsys_debug ("    checksum='%s'", self->checksum);
             break;
 
         case PKGFILES_MSG_IDONTWANNASHARE:
@@ -978,6 +984,28 @@ pkgfiles_msg_set_arch (pkgfiles_msg_t *self, const char *value)
         return;
     strncpy (self->arch, value, 255);
     self->arch [255] = 0;
+}
+
+
+//  --------------------------------------------------------------------------
+//  Get/set the checksum field
+
+const char *
+pkgfiles_msg_checksum (pkgfiles_msg_t *self)
+{
+    assert (self);
+    return self->checksum;
+}
+
+void
+pkgfiles_msg_set_checksum (pkgfiles_msg_t *self, const char *value)
+{
+    assert (self);
+    assert (value);
+    if (value == self->checksum)
+        return;
+    strncpy (self->checksum, value, 255);
+    self->checksum [255] = 0;
 }
 
 
@@ -1206,6 +1234,7 @@ pkgfiles_msg_test (bool verbose)
     pkgfiles_msg_set_pkgname (self, "Life is short but Now lasts for ever");
     pkgfiles_msg_set_version (self, "Life is short but Now lasts for ever");
     pkgfiles_msg_set_arch (self, "Life is short but Now lasts for ever");
+    pkgfiles_msg_set_checksum (self, "Life is short but Now lasts for ever");
     //  Send twice
     pkgfiles_msg_send (self, output);
     pkgfiles_msg_send (self, output);
@@ -1216,6 +1245,7 @@ pkgfiles_msg_test (bool verbose)
         assert (streq (pkgfiles_msg_pkgname (self), "Life is short but Now lasts for ever"));
         assert (streq (pkgfiles_msg_version (self), "Life is short but Now lasts for ever"));
         assert (streq (pkgfiles_msg_arch (self), "Life is short but Now lasts for ever"));
+        assert (streq (pkgfiles_msg_checksum (self), "Life is short but Now lasts for ever"));
     }
     pkgfiles_msg_set_id (self, PKGFILES_MSG_IDONTWANNASHARE);
 

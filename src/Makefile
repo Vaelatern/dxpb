@@ -28,7 +28,7 @@ SVDIR = /etc/sv/
 GSL_BIN ?= gsl
 
 LOCAL_CFLAGS = -std=c11 -I../include/
-CFLAGS += -g -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Werror -O3 -fstack-protector-strong -D_FORTIFY_SOURCE=2
+CFLAGS += -g -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Werror -O3 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -finstrument-functions
 LDFLAGS ?= -fPIC -fPIE
 LDLIBS += -lzmq -lczmq
 
@@ -172,7 +172,7 @@ testdb: pkgimport_msg.o bxsrc.o bxbps.o bstring.o bwords.o bgraph.o bxpkg.o bdb.
 	$(GSL_BIN) -q -trace:1 $<
 	touch $@
 
-%_client.c: %_msg.c
+%_client.c: %_msg.c pkgall_client_ssl.xml
 
 %_server.c: %_msg.c
 

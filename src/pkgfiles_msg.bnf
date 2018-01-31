@@ -44,11 +44,12 @@ The following ABNF grammar defines the DXPB File Location and Management Protoco
 
     ;  No description
 
-    IWANNASHARE     = signature %d8 proto_version pkgname version arch
+    IWANNASHARE     = signature %d8 proto_version pkgname version arch checksum
     proto_version   = string                ; DXPB PKG Management Protocol Version 00
     pkgname         = string                ;
     version         = string                ;
     arch            = string                ;
+    checksum        = string                ;
 
     ;  No description
 
