@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.10 - 2018-01-30 - The one where the builder works more than once
+### Overview
+- Builder now properly resets after a build, and can be instructed to build
+  again.
+- Files are now checksummed by code, to ensure files have been sent faithfully.
+
 ## 0.0.9 - 2018-01-29 - The one where remote operations are possible
 ### Overview
 - Hostdir-remote now works with hostdir-master to faithfully send files.
