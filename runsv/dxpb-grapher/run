@@ -10,6 +10,6 @@ unset USER GROUP ETCDIR ARGS LOGFILE
 [ -f "${ETCDIR}/sv-common" ] && . "${ETCDIR}/sv-common"
 
 : ${USER:=_dxpb_grapher}
-: ${GROUP:=_dxpb:_dxpb_grapher:_dxpb_files:_dxpb_ssl}
+: ${GROUP:=_dxpb:_dxpb_grapher:_dxpb_filer:_dxpb_ssl}
 
 exec chpst -u $USER:$GROUP dxpb-grapher $ARGS >$LOGFILE 2>&1

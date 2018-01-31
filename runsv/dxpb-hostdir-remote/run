@@ -6,8 +6,8 @@ unset USER GROUP WRKDIR HOSTDIR SSLDIR ENDPOINT LOGFILE
 
 : ${LOGFILE:=/dev/null}
 
-: ${USER:=_dxpb_files}
-: ${GROUP:=_dxpb:_dxpb_files:_dxpb_ssl}
+: ${USER:=_dxpb_filer}
+: ${GROUP:=_dxpb:_dxpb_filer:_dxpb_ssl}
 
 [ -z "$WRKDIR" -a -z "$HOSTDIR" ] && echo "Will not start - need a hostdir to own" && exit 1
 
