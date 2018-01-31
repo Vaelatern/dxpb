@@ -16,6 +16,9 @@
 			<action name = "send" message = "HELLO" />
 		</event>
 		<event name = "ROGER" next = "pleasantries" />
+		<event name = "set ssl client keys">
+			<action name = "set ssl client keys" />
+		</event>
 		<event name = "connect error" next = "die">
 			<action name = "complain about connection error" />
 		</event>
@@ -91,5 +94,9 @@
 		<field name = "xbps_src_path" type = "string" />
 	</method>
 
-	<custom filename = "pkgall_client_ssl.xml" language = "C" />
+	<method name = "set ssl client keys">
+		<field name = "privkey" type = "string" />
+		<field name = "pubkey" type = "string" />
+		<field name = "serverkey" type = "string" />
+	</method>
 </class>

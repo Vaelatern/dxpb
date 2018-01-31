@@ -30,27 +30,28 @@ typedef enum {
 typedef enum {
     NULL_event = 0,
     set_publish_endpoint_event = 1,
-    set_db_path_event = 2,
-    construct_event = 3,
-    roger_event = 4,
-    connect_error_event = 5,
-    iforgotu_event = 6,
-    unstable_event = 7,
-    no_hash_found_event = 8,
-    confirm_hash_event = 9,
-    expired_event = 10,
-    worker_available_event = 11,
-    stable_event = 12,
-    invalid_event = 13,
-    kthnksbye_event = 14,
-    pkginfo_event = 15,
-    pkgdel_event = 16,
-    worker_gone_event = 17,
-    pkg_now_completed_event = 18,
-    pkg_not_here_event = 19,
-    pkg_here_event = 20,
-    pkg_failed_to_build_event = 21,
-    worker_not_appropiate_event = 22
+    set_ssl_client_keys_event = 2,
+    set_db_path_event = 3,
+    construct_event = 4,
+    roger_event = 5,
+    connect_error_event = 6,
+    iforgotu_event = 7,
+    unstable_event = 8,
+    no_hash_found_event = 9,
+    confirm_hash_event = 10,
+    expired_event = 11,
+    worker_available_event = 12,
+    stable_event = 13,
+    invalid_event = 14,
+    kthnksbye_event = 15,
+    pkginfo_event = 16,
+    pkgdel_event = 17,
+    worker_gone_event = 18,
+    pkg_now_completed_event = 19,
+    pkg_not_here_event = 20,
+    pkg_here_event = 21,
+    pkg_failed_to_build_event = 22,
+    worker_not_appropiate_event = 23
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -70,6 +71,7 @@ static char *
 s_event_name [] = {
     "(NONE)",
     "set_publish_endpoint",
+    "set_ssl_client_keys",
     "set_db_path",
     "construct",
     "ROGER",
@@ -113,6 +115,9 @@ struct _client_args_t {
     uint16_t cost;
     char *dbpath;
     char *pubpoint;
+    char *privkey;
+    char *pubkey;
+    char *serverkey;
 };
 
 typedef struct {
@@ -157,6 +162,8 @@ static void
     s_satisfy_pedantic_compilers (void);
 static void
     set_publish_endpoint_as_supplied (client_t *self);
+static void
+    set_ssl_client_keys (client_t *self);
 static void
     set_db_path_as_supplied (client_t *self);
 static void
@@ -266,6 +273,9 @@ s_client_destroy (s_client_t **self_p)
         zstr_free (&self->args.targetarch);
         zstr_free (&self->args.dbpath);
         zstr_free (&self->args.pubpoint);
+        zstr_free (&self->args.privkey);
+        zstr_free (&self->args.pubkey);
+        zstr_free (&self->args.serverkey);
         client_terminate (&self->client);
         pkgimport_msg_destroy (&self->message);
         zsock_destroy (&self->msgpipe);
@@ -481,6 +491,15 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ set publish endpoint as supplied", self->log_prefix);
                         set_publish_endpoint_as_supplied (&self->client);
+                    }
+                }
+                else
+                if (self->event == set_ssl_client_keys_event) {
+                    if (!self->exception) {
+                        //  set ssl client keys
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set ssl client keys", self->log_prefix);
+                        set_ssl_client_keys (&self->client);
                     }
                 }
                 else
@@ -1760,6 +1779,14 @@ s_client_handle_cmdpipe (zloop_t *loop, zsock_t *reader, void *argument)
         zsock_recv (self->cmdpipe, "s", &self->args.pubpoint);
         s_client_execute (self, set_publish_endpoint_event);
     }
+    else
+    if (streq (method, "SET SSL CLIENT KEYS")) {
+        zstr_free (&self->args.privkey);
+        zstr_free (&self->args.pubkey);
+        zstr_free (&self->args.serverkey);
+        zsock_recv (self->cmdpipe, "sss", &self->args.privkey, &self->args.pubkey, &self->args.serverkey);
+        s_client_execute (self, set_ssl_client_keys_event);
+    }
     //  Cleanup pipe if any argument frames are still waiting to be eaten
     if (zsock_rcvmore (self->cmdpipe)) {
         zsys_error ("%s: trailing API command frames (%s)",
@@ -2082,6 +2109,19 @@ pkgimport_grapher_set_publish_endpoint (pkgimport_grapher_t *self, const char *p
     assert (self);
 
     zsock_send (self->actor, "ss", "SET PUBLISH ENDPOINT", pubpoint);
+    return 0;
+}
+
+
+//  ---------------------------------------------------------------------------
+//  No explanation
+
+int
+pkgimport_grapher_set_ssl_client_keys (pkgimport_grapher_t *self, const char *privkey, const char *pubkey, const char *serverkey)
+{
+    assert (self);
+
+    zsock_send (self->actor, "ssss", "SET SSL CLIENT KEYS", privkey, pubkey, serverkey);
     return 0;
 }
 

@@ -11,6 +11,7 @@
 #include "pkgfiler_remote.h"
 #include "dxpb.h"
 #include "dxpb-common.h"
+#include "dxpb-client.h"
 
 #define VERBOSE_FLAG 1
 #define ERR_FLAG 2
@@ -25,7 +26,6 @@ help(void)
 int
 run(int flags, const char *endpoint, const char *hostdir, const char *ssldir)
 {
-	SSLDIR_UNUSED(ssldir);
 	assert((flags & ERR_FLAG) == 0);
 	enum ret_codes retVal = ERR_CODE_BAD;
 	pkgfiler_remote_t *client;
@@ -33,6 +33,9 @@ run(int flags, const char *endpoint, const char *hostdir, const char *ssldir)
 
 	client = pkgfiler_remote_new();
 	assert(client);
+
+	setup_ssl(client, (setssl_cb)pkgfiler_remote_set_ssl_client_keys, "dxpb-hostdir-remote", "dxpb-hostdir-master", ssldir);
+
 	actor = pkgfiler_remote_actor(client);
 	assert(actor);
 	if (flags & VERBOSE_FLAG)

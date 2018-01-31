@@ -75,7 +75,6 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 		const char *file_end, const char *graph_end,
 		const char *file_pub, const char *graph_pub)
 {
-	SSLDIR_UNUSED(ssldir);
 	(void) file_pub;
 	(void) graph_pub;
 	assert(sdir);

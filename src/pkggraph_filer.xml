@@ -15,6 +15,9 @@
 		<event name = "connect error" next = "die">
 			<action name = "complain about connection error" />
 		</event>
+		<event name = "set ssl client keys">
+			<action name = "set ssl client keys" />
+		</event>
 	</state>
 	<state name = "negotiate" inherit = "defaults">
 		<event name = "ROGER" next = "hesitate">
@@ -84,5 +87,9 @@
 		<field name = "pubpath" type = "string" />
 	</method>
 
-	<custom filename = "pkgall_client_ssl.xml" language = "C" />
+	<method name = "set ssl client keys">
+		<field name = "privkey" type = "string" />
+		<field name = "pubkey" type = "string" />
+		<field name = "serverkey" type = "string" />
+	</method>
 </class>

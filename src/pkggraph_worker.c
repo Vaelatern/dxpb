@@ -356,3 +356,14 @@ set_build_params (client_t *self)
 	else
 		zsock_send(self->cmdpipe, "si", "STATUS", 1, NULL);
 }
+
+
+//  ---------------------------------------------------------------------------
+//  set_ssl_client_keys
+//
+
+static void
+set_ssl_client_keys (client_t *self)
+{
+        #include "set_ssl_client_keys.inc"
+}

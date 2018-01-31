@@ -14,6 +14,9 @@
 		<event name = "set publish endpoint">
 			<action name = "set publish endpoint as supplied" />
 		</event>
+		<event name = "set ssl client keys">
+			<action name = "set ssl client keys" />
+		</event>
 		<event name = "set db path">
 			<action name = "set db path as supplied" />
 		</event>
@@ -220,5 +223,11 @@
 
 	<method name = "set publish endpoint">
 		<field name = "pubpoint" type = "string" />
+	</method>
+
+	<method name = "set ssl client keys">
+		<field name = "privkey" type = "string" />
+		<field name = "pubkey" type = "string" />
+		<field name = "serverkey" type = "string" />
 	</method>
 </class>

@@ -71,6 +71,10 @@ int
 int
     pkggraph_grapher_do_workercanhelp (pkggraph_grapher_t *self, uint16_t addr, uint32_t check, const char *pkgname, const char *version, const char *arch);
 
+//  No explanation
+int
+    pkggraph_grapher_set_ssl_client_keys (pkggraph_grapher_t *self, const char *privkey, const char *pubkey, const char *serverkey);
+
 //  Enable verbose tracing (animation) of state machine activity.
 void
     pkggraph_grapher_set_verbose (pkggraph_grapher_t *self, bool verbose);

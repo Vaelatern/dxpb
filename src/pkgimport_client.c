@@ -216,3 +216,14 @@ set_xbps_src_path (client_t *self)
 	if (!self->xbps_src)
 		exit(ERR_CODE_NOMEM);
 }
+
+
+//  ---------------------------------------------------------------------------
+//  set_ssl_client_keys
+//
+
+static void
+set_ssl_client_keys (client_t *self)
+{
+        #include "set_ssl_client_keys.inc"
+}

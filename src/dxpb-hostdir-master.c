@@ -17,6 +17,7 @@
 #define ERR_FLAG 2
 
 #include "dxpb-common.h"
+#include "dxpb-client.h"
 
 void
 help(void)
@@ -31,7 +32,6 @@ run(int flags, const char *ssldir, const char *sdir, const char *rdir,
 		const char *file_endpoint, const char *graph_endpoint,
 		const char *file_pubpoint, const char *graph_pubpoint)
 {
-	SSLDIR_UNUSED(ssldir);
 	assert((flags & ERR_FLAG) == 0);
 	zactor_t *file_actor, *log_actor;
 	pkggraph_filer_t *log_client;
@@ -43,6 +43,7 @@ run(int flags, const char *ssldir, const char *sdir, const char *rdir,
 
 	log_client = pkggraph_filer_new();
 	assert(log_client);
+	setup_ssl(log_client, (setssl_cb)pkggraph_filer_set_ssl_client_keys, "dxpb-hostdir-master", "dxpb-frontend", ssldir);
 	log_actor = pkggraph_filer_actor(log_client);
 	if (flags & VERBOSE_FLAG)
 		zstr_sendx(log_actor, "VERBOSE", NULL);

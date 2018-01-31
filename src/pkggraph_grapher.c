@@ -257,3 +257,14 @@ store_workercanhelp_for_later_sending (client_t *self)
 	tosave->arch = self->args->arch;
 	zlist_append(self->msgs_to_send, tosave);
 }
+
+
+//  ---------------------------------------------------------------------------
+//  set_ssl_client_keys
+//
+
+static void
+set_ssl_client_keys (client_t *self)
+{
+        #include "set_ssl_client_keys.inc"
+}

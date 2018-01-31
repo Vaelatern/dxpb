@@ -17,6 +17,9 @@ digraph "pkgimport_grapher" {
  "start set publish endpoint" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set publish endpoint</font></td></tr><tr><td align="left" port="r3">set publish endpoint as supplied</td></tr></table>>];
  "start" -> "start set publish endpoint";
  "start set publish endpoint" -> "start";
+ "start set ssl client keys" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set ssl client keys</font></td></tr><tr><td align="left" port="r3">set ssl client keys</td></tr></table>>];
+ "start" -> "start set ssl client keys";
+ "start set ssl client keys" -> "start";
  "start set db path" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set db path</font></td></tr><tr><td align="left" port="r3">set db path as supplied</td></tr></table>>];
  "start" -> "start set db path";
  "start set db path" -> "start";

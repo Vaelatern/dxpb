@@ -9,6 +9,7 @@
 #include <getopt.h>
 #include <string.h>
 #include <stdlib.h>
+#include <libgen.h>
 #include <czmq.h>
 #include "bstring.h"
 #include "dxpb.h"
@@ -20,6 +21,7 @@
 #define ERR_FLAG 2
 
 #include "dxpb-common.h"
+#include "dxpb-client.h"
 
 struct workerspec {
 	char *hostarch;
@@ -132,10 +134,10 @@ spawn_child(char *endpoint, char *masterdir, char *hostdir, char *xbps_src)
 }
 
 int
-run(int flags, char *masterdir, char *hostdir,  char *ssldir, char *endpoint,
-		char *repopath, struct workerspec *wrkr, const char *varrundir)
+run(int flags, char *argv0, char *masterdir, char *hostdir,  char *ssldir,
+		char *endpoint, char *repopath, struct workerspec *wrkr,
+		const char *varrundir)
 {
-	SSLDIR_UNUSED(ssldir);
 	assert(varrundir);
 	assert((flags & ERR_FLAG) == 0);
 	enum ret_codes retVal = ERR_CODE_BAD;
@@ -153,6 +155,9 @@ run(int flags, char *masterdir, char *hostdir,  char *ssldir, char *endpoint,
 
 	client = pkggraph_worker_new(child);
 	assert(client);
+
+	setup_ssl(client, (setssl_cb)pkggraph_worker_set_ssl_client_keys, argv0, "dxpb-frontend", ssldir);
+
 	actor = pkggraph_worker_actor(client);
 	assert(actor);
 	if (!pkggraph_worker_set_build_params(client, wrkr->hostarch, wrkr->targetarch, wrkr->iscross, wrkr->cost)) {
@@ -276,8 +281,13 @@ main(int argc, char * const *argv)
 		fprintf(stderr, "Need a worker specification (-W)\n");
 	assert(wrkr);
 
+	char *argv0 = strdup(argv[0]);
+	argv0 = basename(argv0);
+
 	enum ret_codes rc = ensure_sock_if_ipc(endpoint);
 	assert(rc == ERR_CODE_OK);
 
-	return run(flags, masterdir, hostdir, ssldir, endpoint, repopath, wrkr, varrundir);
+	int returnMe = run(flags, argv0, masterdir, hostdir, ssldir, endpoint, repopath, wrkr, varrundir);
+	FREE(argv0);
+	return returnMe;
 }

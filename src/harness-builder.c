@@ -48,7 +48,6 @@ run(const char *endpoint, const char *hostdir, const char *masterdir,
 		const char *pkgname, const char *version, const char *arch,
 		const char *pkgname2, const char *version2)
 {
-	SSLDIR_UNUSED(ssldir);
 	(void)varrundir;
 	assert(hostdir);
 	assert(masterdir);

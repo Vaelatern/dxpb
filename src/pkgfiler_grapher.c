@@ -349,3 +349,14 @@ prepare_pkgdel_from_pipe (client_t *self)
 	pkgfiles_msg_set_pkgname(self->message, tosend->pkgname);
 }
 
+
+
+//  ---------------------------------------------------------------------------
+//  set_ssl_client_keys
+//
+
+static void
+set_ssl_client_keys (client_t *self)
+{
+        #include "set_ssl_client_keys.inc"
+}

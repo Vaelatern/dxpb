@@ -31,17 +31,18 @@ typedef enum {
     set_xbps_src_path_event = 1,
     construct_event = 2,
     roger_event = 3,
-    connect_error_event = 4,
-    plzread_event = 5,
-    ready_event = 6,
-    no_pkg_found_event = 7,
-    move_on_event = 8,
-    invalid_event = 9,
-    iforgotu_event = 10,
-    reset_event = 11,
-    stop_event = 12,
-    kthnksbye_event = 13,
-    expired_event = 14
+    set_ssl_client_keys_event = 4,
+    connect_error_event = 5,
+    plzread_event = 6,
+    ready_event = 7,
+    no_pkg_found_event = 8,
+    move_on_event = 9,
+    invalid_event = 10,
+    iforgotu_event = 11,
+    reset_event = 12,
+    stop_event = 13,
+    kthnksbye_event = 14,
+    expired_event = 15
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -62,6 +63,7 @@ s_event_name [] = {
     "set_xbps_src_path",
     "construct",
     "ROGER",
+    "set_ssl_client_keys",
     "connect_error",
     "PLZREAD",
     "READY",
@@ -85,6 +87,9 @@ s_event_name [] = {
 struct _client_args_t {
     char *endpoint;
     char *xbps_src_path;
+    char *privkey;
+    char *pubkey;
+    char *serverkey;
 };
 
 typedef struct {
@@ -131,6 +136,8 @@ static void
     set_xbps_src_path (client_t *self);
 static void
     connect_to_server (client_t *self);
+static void
+    set_ssl_client_keys (client_t *self);
 static void
     complain_about_connection_error (client_t *self);
 static void
@@ -188,6 +195,9 @@ s_client_destroy (s_client_t **self_p)
         s_client_t *self = *self_p;
         zstr_free (&self->args.endpoint);
         zstr_free (&self->args.xbps_src_path);
+        zstr_free (&self->args.privkey);
+        zstr_free (&self->args.pubkey);
+        zstr_free (&self->args.serverkey);
         client_terminate (&self->client);
         pkgimport_msg_destroy (&self->message);
         zsock_destroy (&self->msgpipe);
@@ -437,6 +447,15 @@ s_client_execute (s_client_t *self, event_t event)
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkgimport_msg_print (self->message);
                         pkgimport_msg_send (self->message, self->dealer);
+                    }
+                }
+                else
+                if (self->event == set_ssl_client_keys_event) {
+                    if (!self->exception) {
+                        //  set ssl client keys
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set ssl client keys", self->log_prefix);
+                        set_ssl_client_keys (&self->client);
                     }
                 }
                 else
@@ -1153,6 +1172,14 @@ s_client_handle_cmdpipe (zloop_t *loop, zsock_t *reader, void *argument)
         zsock_recv (self->cmdpipe, "s", &self->args.xbps_src_path);
         s_client_execute (self, set_xbps_src_path_event);
     }
+    else
+    if (streq (method, "SET SSL CLIENT KEYS")) {
+        zstr_free (&self->args.privkey);
+        zstr_free (&self->args.pubkey);
+        zstr_free (&self->args.serverkey);
+        zsock_recv (self->cmdpipe, "sss", &self->args.privkey, &self->args.pubkey, &self->args.serverkey);
+        s_client_execute (self, set_ssl_client_keys_event);
+    }
     //  Cleanup pipe if any argument frames are still waiting to be eaten
     if (zsock_rcvmore (self->cmdpipe)) {
         zsys_error ("%s: trailing API command frames (%s)",
@@ -1376,6 +1403,19 @@ pkgimport_client_set_xbps_src_path (pkgimport_client_t *self, const char *xbps_s
 
 
 //  ---------------------------------------------------------------------------
+//  No explanation
+
+int
+pkgimport_client_set_ssl_client_keys (pkgimport_client_t *self, const char *privkey, const char *pubkey, const char *serverkey)
+{
+    assert (self);
+
+    zsock_send (self->actor, "ssss", "SET SSL CLIENT KEYS", privkey, pubkey, serverkey);
+    return 0;
+}
+
+
+//  ---------------------------------------------------------------------------
 //  Enable verbose tracing (animation) of state machine activity.
 
 void
@@ -1384,24 +1424,3 @@ pkgimport_client_set_verbose (pkgimport_client_t *self, bool verbose)
     assert (self);
     zsock_send (self->actor, "si", "SET VERBOSE", verbose);
 }
-
-
-//  -------------------------------------------------------------------
-//  Takes privkey, pubkey, and serverkey, and sets them on the socket
-
-void
-pkgall_client_ssl_setcurve(void *client, const char *privkey,
-                        const char *pubkey, const char *serverkey)
-{
-        client_t *self = client;
-        assert(privkey);
-        assert(pubkey);
-        assert(serverkey);
-        assert(self);
-        assert(self->dealer);
-        zsock_set_curve_secretkey(self->dealer, privkey);
-        zsock_set_curve_publickey(self->dealer, pubkey);
-        zsock_set_curve_serverkey(self->dealer, serverkey);
-        zsock_set_curve_server(self->dealer, 0);
-}
-

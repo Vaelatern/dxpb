@@ -182,7 +182,7 @@ testdb: pkgimport_msg.o bxsrc.o bxbps.o bstring.o bwords.o bgraph.o bxpkg.o bdb.
 	$(GSL_BIN) -q -trace:1 $<
 	touch $@
 
-%_client.c: %_msg.c pkgall_client_ssl.xml
+%_client.c: %_msg.c set_ssl_client_keys.inc
 
 %_server.c: %_msg.c
 
@@ -212,7 +212,7 @@ dxpb-grapher: LDLIBS += -lbsd -lsqlite3 -larchive -lxbps
 dxpb-grapher: dxpb-grapher.o dxpb-client.o bwords.o bxsrc.o bxpkg.o bpkg.o bxbps.o bgraph.o bdb.o pkgimport_msg.o pkgimport_grapher.o pkggraph_msg.o pkggraph_grapher.o pkgfiles_msg.o pkgfiler_grapher.o bworker.o btranslate.o
 
 dxpb-hostdir-master: LDLIBS += -larchive -lxbps -lpthread
-dxpb-hostdir-master: dxpb-hostdir-master.o brepowatch.o bxbps.o pkggraph_msg.o pkggraph_filer.o pkgfiles_msg.o pkgfiler.o
+dxpb-hostdir-master: dxpb-hostdir-master.o brepowatch.o bxbps.o pkggraph_msg.o pkggraph_filer.o pkgfiles_msg.o pkgfiler.o dxpb-client.o
 
 dxpb-hostdir-remote: LDLIBS += -larchive -lxbps -lpthread
 dxpb-hostdir-remote: dxpb-hostdir-remote.o dxpb-client.o bxbps.o pkgfiles_msg.o pkgfiler_remote.o brepowatch.o

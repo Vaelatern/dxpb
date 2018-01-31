@@ -20,6 +20,9 @@
 		<event name = "connect error" next = "die">
 			<action name = "complain about connection error" />
 		</event>
+		<event name = "set ssl client keys">
+			<action name = "set ssl client keys" />
+		</event>
 		<after>
 			<action name = "flag bootstrap wanted" />
 		</after>
@@ -137,5 +140,9 @@
 		<field name = "ok" type = "number" />
 	</reply>
 
-	<custom filename = "pkgall_client_ssl.xml" language = "C" />
+	<method name = "set ssl client keys">
+		<field name = "privkey" type = "string" />
+		<field name = "pubkey" type = "string" />
+		<field name = "serverkey" type = "string" />
+	</method>
 </class>

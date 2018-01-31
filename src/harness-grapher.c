@@ -84,7 +84,6 @@ run(const char *dbpath, const char *import_endpoint,
 		const char *graph_endpoint, const char *file_endpoint,
 		const char *pubpoint, const char *ssldir)
 {
-	SSLDIR_UNUSED(ssldir);
 	(void) pubpoint;
 	assert(dbpath);
 	assert(import_endpoint);

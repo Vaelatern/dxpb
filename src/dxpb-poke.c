@@ -11,6 +11,7 @@
 #include "pkgimport_poke.h"
 
 #include "dxpb-common.h"
+#include "dxpb-client.h"
 
 #define VERBOSE_FLAG 1
 #define ERR_FLAG 2
@@ -34,6 +35,8 @@ run(int flags, const char *endpoint)
 
 	if (flags & VERBOSE_FLAG)
 		zstr_sendx(client, "VERBOSE", NULL);
+
+	setup_ssl(client, (setssl_cb)pkgimport_poke_set_ssl_client_keys, "dxpb-poke", "dxpb-pkgimport-master", "/var/empty");
 
 	rc = pkgimport_poke_connect_now(client, endpoint);
 	if (rc != 0) {

@@ -31,7 +31,7 @@ prologue(const char *argv0)
 			"For license details, pass the -L flag\n"
 			"Compiled: %s %s\n\n",
 			basename(arg), DXPB_VERSION, __DATE__, __TIME__);
-	free(arg);
+	FREE(arg);
 }
 
 void

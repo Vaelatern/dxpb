@@ -291,3 +291,14 @@ set_pub_to_provided (client_t *self)
 	self->pub = zsock_new_pub(self->args->pubpath);
 	bfs_ensure_sock_perms(self->args->pubpath);
 }
+
+
+//  ---------------------------------------------------------------------------
+//  set_ssl_client_keys
+//
+
+static void
+set_ssl_client_keys (client_t *self)
+{
+        #include "set_ssl_client_keys.inc"
+}

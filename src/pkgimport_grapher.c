@@ -753,3 +753,14 @@ set_publish_endpoint_as_supplied (client_t *self)
 	self->pub = zsock_new_pub(self->args->pubpoint);
 	bfs_ensure_sock_perms(self->args->pubpoint);
 }
+
+
+//  ---------------------------------------------------------------------------
+//  set_ssl_client_keys
+//
+
+static void
+set_ssl_client_keys (client_t *self)
+{
+        #include "set_ssl_client_keys.inc"
+}

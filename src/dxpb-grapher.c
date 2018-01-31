@@ -19,6 +19,7 @@
 #include "btranslate.h"
 
 #include "dxpb-common.h"
+#include "dxpb-client.h"
 
 #define VERBOSE_FLAG 1
 #define ERR_FLAG 2
@@ -236,7 +237,6 @@ run(int flags, const char *dbpath, const char *import_endpoint,
 		const char *graph_endpoint, const char *file_endpoint,
 		const char *pubpoint, const char *ssldir)
 {
-	SSLDIR_UNUSED(ssldir);
 	assert((flags & ERR_FLAG) == 0);
 	assert(dbpath);
 	assert(import_endpoint);
@@ -253,6 +253,7 @@ run(int flags, const char *dbpath, const char *import_endpoint,
 	/* Init Import */
 	importer = pkgimport_grapher_new();
 	assert(importer);
+	setup_ssl(importer, (setssl_cb)pkgimport_grapher_set_ssl_client_keys, "dxpb-grapher", "dxpb-pkgimport-master", ssldir);
 	import_actor = pkgimport_grapher_actor(importer);
 	assert(import_actor);
 	zstr_sendx(import_actor, "SET DB PATH", dbpath, NULL);
@@ -262,6 +263,7 @@ run(int flags, const char *dbpath, const char *import_endpoint,
 	/* Init Graph */
 	grapher = pkggraph_grapher_new();
 	assert(grapher);
+	setup_ssl(grapher, (setssl_cb)pkggraph_grapher_set_ssl_client_keys, "dxpb-grapher", "dxpb-frontend", ssldir);
 	graph_actor = pkggraph_grapher_actor(grapher);
 	assert(graph_actor);
 	zstr_sendx(graph_actor, "CONSTRUCT", graph_endpoint, NULL);
@@ -269,6 +271,7 @@ run(int flags, const char *dbpath, const char *import_endpoint,
 	/* Init File */
 	filer = pkgfiler_grapher_new();
 	assert(filer);
+	setup_ssl(filer, (setssl_cb)pkgfiler_grapher_set_ssl_client_keys, "dxpb-grapher", "dxpb-hostdir-master", ssldir);
 	file_actor = pkgfiler_grapher_actor(filer);
 	assert(file_actor);
 	zstr_sendx(file_actor, "CONSTRUCT", file_endpoint, NULL);

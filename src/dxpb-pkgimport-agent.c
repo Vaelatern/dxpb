@@ -12,6 +12,7 @@
 #include "pkgimport_client.h"
 
 #include "dxpb-common.h"
+#include "dxpb-client.h"
 
 #define VERBOSE_FLAG 1
 #define ERR_FLAG 2
@@ -33,6 +34,8 @@ run(int flags, const char *endpoint, const char *xbps_src)
 
 	client = pkgimport_client_new();
 	assert(client);
+	setup_ssl(client, (setssl_cb)pkgimport_client_set_ssl_client_keys, "dxpb-pkgimport-agent", "dxpb-pkgimport-master", "/var/empty");
+
 	actor = pkgimport_client_actor(client);
 	assert(actor);
 	zstr_sendx(actor, "SET XBPS_SRC PATH", xbps_src, NULL);

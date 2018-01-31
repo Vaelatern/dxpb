@@ -19,6 +19,9 @@
 			<action name = "send" message = "HELLO" />
 		</event>
 		<event name = "ROGER" next = "time2wrk" />
+		<event name = "set ssl client keys">
+			<action name = "set ssl client keys" />
+		</event>
 		<event name = "connect error">
 			<action name = "complain about connection error" />
 			<action name = "terminate" />
@@ -69,5 +72,9 @@
 		<field name = "hostdir" type = "string" />
 	</method>
 
-	<custom filename = "pkgall_client_ssl.xml" language = "C" />
+	<method name = "set ssl client keys">
+		<field name = "privkey" type = "string" />
+		<field name = "pubkey" type = "string" />
+		<field name = "serverkey" type = "string" />
+	</method>
 </class>

@@ -15,6 +15,9 @@
 			<action name = "send" message = "HELLO" />
 		</event>
 		<event name = "ROGER" next = "time2wrk" />
+		<event name = "set ssl client keys">
+			<action name = "set ssl client keys" />
+		</event>
 		<event name = "do ispkghere">
 			<action name = "store ispkghere for later sending" />
 		</event>
@@ -105,5 +108,9 @@
 		<field name = "pkgname" type = "string" />
 	</method>
 
-	<custom filename = "pkgall_client_ssl.xml" language = "C" />
+	<method name = "set ssl client keys">
+		<field name = "privkey" type = "string" />
+		<field name = "pubkey" type = "string" />
+		<field name = "serverkey" type = "string" />
+	</method>
 </class>

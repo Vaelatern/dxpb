@@ -8,6 +8,9 @@ digraph "pkgfiler_grapher" {
  "start roger" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
  "start" -> "start roger";
  "start roger" -> "time2wrk";
+ "start set ssl client keys" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set ssl client keys</font></td></tr><tr><td align="left" port="r3">set ssl client keys</td></tr></table>>];
+ "start" -> "start set ssl client keys";
+ "start set ssl client keys" -> "start";
  "start do ispkghere" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">do ispkghere</font></td></tr><tr><td align="left" port="r3">store ispkghere for later sending</td></tr></table>>];
  "start" -> "start do ispkghere";
  "start do ispkghere" -> "start";
