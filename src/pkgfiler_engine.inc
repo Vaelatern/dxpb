@@ -566,11 +566,11 @@ s_client_execute (s_client_t *self, event_t event)
                         delete_package (&self->client);
                     }
                     if (!self->exception) {
-                        //  send ROGER
+                        //  send PKGISDEL
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send ROGER",
+                            zsys_debug ("%s:         $ send PKGISDEL",
                                 self->log_prefix);
-                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_ROGER);
+                        pkgfiles_msg_set_id (self->server->message, PKGFILES_MSG_PKGISDEL);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkgfiles_msg_print (self->server->message);
                         pkgfiles_msg_set_routing_id (self->server->message, self->routing_id);

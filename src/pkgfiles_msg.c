@@ -375,6 +375,19 @@ pkgfiles_msg_recv (pkgfiles_msg_t *self, zsock_t *input)
             GET_STRING (self->pkgname);
             break;
 
+        case PKGFILES_MSG_PKGISDEL:
+            {
+                char proto_version [256];
+                GET_STRING (proto_version);
+                if (strneq (proto_version, "DPKG00")) {
+                    zsys_warning ("pkgfiles_msg: proto_version is invalid");
+                    rc = -2;    //  Malformed
+                    goto malformed;
+                }
+            }
+            GET_STRING (self->pkgname);
+            break;
+
         case PKGFILES_MSG_WANNASHARE_:
             {
                 char proto_version [256];
@@ -559,6 +572,10 @@ pkgfiles_msg_send (pkgfiles_msg_t *self, zsock_t *output)
             frame_size += 1 + strlen ("DPKG00");
             frame_size += 1 + strlen (self->pkgname);
             break;
+        case PKGFILES_MSG_PKGISDEL:
+            frame_size += 1 + strlen ("DPKG00");
+            frame_size += 1 + strlen (self->pkgname);
+            break;
         case PKGFILES_MSG_WANNASHARE_:
             frame_size += 1 + strlen ("DPKG00");
             frame_size += 1 + strlen (self->pkgname);
@@ -643,6 +660,11 @@ pkgfiles_msg_send (pkgfiles_msg_t *self, zsock_t *output)
             break;
 
         case PKGFILES_MSG_PKGDEL:
+            PUT_STRING ("DPKG00");
+            PUT_STRING (self->pkgname);
+            break;
+
+        case PKGFILES_MSG_PKGISDEL:
             PUT_STRING ("DPKG00");
             PUT_STRING (self->pkgname);
             break;
@@ -757,6 +779,12 @@ pkgfiles_msg_print (pkgfiles_msg_t *self)
 
         case PKGFILES_MSG_PKGDEL:
             zsys_debug ("PKGFILES_MSG_PKGDEL:");
+            zsys_debug ("    proto_version=dpkg00");
+            zsys_debug ("    pkgname='%s'", self->pkgname);
+            break;
+
+        case PKGFILES_MSG_PKGISDEL:
+            zsys_debug ("PKGFILES_MSG_PKGISDEL:");
             zsys_debug ("    proto_version=dpkg00");
             zsys_debug ("    pkgname='%s'", self->pkgname);
             break;
@@ -892,6 +920,9 @@ pkgfiles_msg_command (pkgfiles_msg_t *self)
             break;
         case PKGFILES_MSG_PKGDEL:
             return ("PKGDEL");
+            break;
+        case PKGFILES_MSG_PKGISDEL:
+            return ("PKGISDEL");
             break;
         case PKGFILES_MSG_WANNASHARE_:
             return ("WANNASHARE_");
@@ -1202,6 +1233,18 @@ pkgfiles_msg_test (bool verbose)
         assert (pkgfiles_msg_routing_id (self));
     }
     pkgfiles_msg_set_id (self, PKGFILES_MSG_PKGDEL);
+
+    pkgfiles_msg_set_pkgname (self, "Life is short but Now lasts for ever");
+    //  Send twice
+    pkgfiles_msg_send (self, output);
+    pkgfiles_msg_send (self, output);
+
+    for (instance = 0; instance < 2; instance++) {
+        pkgfiles_msg_recv (self, input);
+        assert (pkgfiles_msg_routing_id (self));
+        assert (streq (pkgfiles_msg_pkgname (self), "Life is short but Now lasts for ever"));
+    }
+    pkgfiles_msg_set_id (self, PKGFILES_MSG_PKGISDEL);
 
     pkgfiles_msg_set_pkgname (self, "Life is short but Now lasts for ever");
     //  Send twice

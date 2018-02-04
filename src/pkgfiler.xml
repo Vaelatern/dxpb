@@ -32,7 +32,7 @@
 		<!-- stage zero -->
 		<event name = "PKGDEL">
 			<action name = "delete package" />
-			<action name = "send" message = "ROGER" />
+			<action name = "send" message = "PKGISDEL" />
 		</event>
 		<event name = "PING">
 			<action name = "send" message = "ROGER" />

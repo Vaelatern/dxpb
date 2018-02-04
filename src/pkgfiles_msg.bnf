@@ -1,6 +1,6 @@
 The following ABNF grammar defines the DXPB File Location and Management Protocol:
 
-    pkgfiles_msg    = *( HELLO | ROGER | IFORGOTU | PING | INVALID | PKGDEL | WANNASHARE- | IWANNASHARE | IDONTWANNASHARE | GIMMEGIMMEGIMME | CHUNK | PKGNOTHERE | PKGHERE | ISPKGHERE )
+    pkgfiles_msg    = *( HELLO | ROGER | IFORGOTU | PING | INVALID | PKGDEL | PKGISDEL | WANNASHARE- | IWANNASHARE | IDONTWANNASHARE | GIMMEGIMMEGIMME | CHUNK | PKGNOTHERE | PKGHERE | ISPKGHERE )
 
     ;  No description
 
@@ -36,7 +36,13 @@ The following ABNF grammar defines the DXPB File Location and Management Protoco
 
     ;  No description
 
-    WANNASHARE-     = signature %d7 proto_version pkgname version arch
+    PKGISDEL        = signature %d7 proto_version pkgname
+    proto_version   = string                ; DXPB PKG Management Protocol Version 00
+    pkgname         = string                ;
+
+    ;  No description
+
+    WANNASHARE-     = signature %d8 proto_version pkgname version arch
     proto_version   = string                ; DXPB PKG Management Protocol Version 00
     pkgname         = string                ;
     version         = string                ;
@@ -44,7 +50,7 @@ The following ABNF grammar defines the DXPB File Location and Management Protoco
 
     ;  No description
 
-    IWANNASHARE     = signature %d8 proto_version pkgname version arch checksum
+    IWANNASHARE     = signature %d9 proto_version pkgname version arch checksum
     proto_version   = string                ; DXPB PKG Management Protocol Version 00
     pkgname         = string                ;
     version         = string                ;
@@ -53,7 +59,7 @@ The following ABNF grammar defines the DXPB File Location and Management Protoco
 
     ;  No description
 
-    IDONTWANNASHARE = signature %d9 proto_version pkgname version arch
+    IDONTWANNASHARE = signature %d10 proto_version pkgname version arch
     proto_version   = string                ; DXPB PKG Management Protocol Version 00
     pkgname         = string                ;
     version         = string                ;
@@ -61,12 +67,12 @@ The following ABNF grammar defines the DXPB File Location and Management Protoco
 
     ;  No description
 
-    GIMMEGIMMEGIMME = signature %d10 proto_version
+    GIMMEGIMMEGIMME = signature %d11 proto_version
     proto_version   = string                ; DXPB PKG Management Protocol Version 00
 
     ;  No description
 
-    CHUNK           = signature %d11 proto_version validchunk pkgname version arch subpath position eof data
+    CHUNK           = signature %d12 proto_version validchunk pkgname version arch subpath position eof data
     proto_version   = string                ; DXPB PKG Management Protocol Version 00
     validchunk      = number-1              ;
     pkgname         = string                ;
@@ -79,7 +85,7 @@ The following ABNF grammar defines the DXPB File Location and Management Protoco
 
     ;  No description
 
-    PKGNOTHERE      = signature %d12 proto_version pkgname version arch
+    PKGNOTHERE      = signature %d13 proto_version pkgname version arch
     proto_version   = string                ; DXPB PKG Management Protocol Version 00
     pkgname         = string                ;
     version         = string                ;
@@ -87,7 +93,7 @@ The following ABNF grammar defines the DXPB File Location and Management Protoco
 
     ;  No description
 
-    PKGHERE         = signature %d13 proto_version pkgname version arch
+    PKGHERE         = signature %d14 proto_version pkgname version arch
     proto_version   = string                ; DXPB PKG Management Protocol Version 00
     pkgname         = string                ;
     version         = string                ;
@@ -95,7 +101,7 @@ The following ABNF grammar defines the DXPB File Location and Management Protoco
 
     ;  No description
 
-    ISPKGHERE       = signature %d14 proto_version pkgname version arch
+    ISPKGHERE       = signature %d15 proto_version pkgname version arch
     proto_version   = string                ; DXPB PKG Management Protocol Version 00
     pkgname         = string                ;
     version         = string                ;

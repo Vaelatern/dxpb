@@ -39,6 +39,10 @@
         proto_version       string      DXPB PKG Management Protocol Version 00
         pkgname             string
 
+    PKGISDEL -
+        proto_version       string      DXPB PKG Management Protocol Version 00
+        pkgname             string
+
     WANNASHARE_ -
         proto_version       string      DXPB PKG Management Protocol Version 00
         pkgname             string
@@ -98,14 +102,15 @@
 #define PKGFILES_MSG_PING                   4
 #define PKGFILES_MSG_INVALID                5
 #define PKGFILES_MSG_PKGDEL                 6
-#define PKGFILES_MSG_WANNASHARE_            7
-#define PKGFILES_MSG_IWANNASHARE            8
-#define PKGFILES_MSG_IDONTWANNASHARE        9
-#define PKGFILES_MSG_GIMMEGIMMEGIMME        10
-#define PKGFILES_MSG_CHUNK                  11
-#define PKGFILES_MSG_PKGNOTHERE             12
-#define PKGFILES_MSG_PKGHERE                13
-#define PKGFILES_MSG_ISPKGHERE              14
+#define PKGFILES_MSG_PKGISDEL               7
+#define PKGFILES_MSG_WANNASHARE_            8
+#define PKGFILES_MSG_IWANNASHARE            9
+#define PKGFILES_MSG_IDONTWANNASHARE        10
+#define PKGFILES_MSG_GIMMEGIMMEGIMME        11
+#define PKGFILES_MSG_CHUNK                  12
+#define PKGFILES_MSG_PKGNOTHERE             13
+#define PKGFILES_MSG_PKGHERE                14
+#define PKGFILES_MSG_ISPKGHERE              15
 
 #include <czmq.h>
 

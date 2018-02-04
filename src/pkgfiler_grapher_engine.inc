@@ -35,8 +35,9 @@ typedef enum {
     act_on_do_pkgdel_event = 9,
     ispkghere_event = 10,
     pkghere_event = 11,
-    pkgnothere_event = 12,
-    expired_event = 13
+    pkgisdel_event = 12,
+    pkgnothere_event = 13,
+    expired_event = 14
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -61,6 +62,7 @@ s_event_name [] = {
     "act_on_do_pkgdel",
     "ISPKGHERE",
     "PKGHERE",
+    "PKGISDEL",
     "PKGNOTHERE",
     "expired"
 };
@@ -134,9 +136,13 @@ static void
 static void
     prepare_pkgdel_from_pipe (client_t *self);
 static void
+    remove_pkg_from_waiting_lists (client_t *self);
+static void
     tell_msgpipe_we_have_a_pkg (client_t *self);
 static void
     tell_msgpipe_we_do_not_have_a_pkg (client_t *self);
+static void
+    queue_old_patients (client_t *self);
 
 //  Create a new client connection
 
@@ -347,6 +353,9 @@ s_protocol_event (s_client_t *self, pkgfiles_msg_t *message)
         case PKGFILES_MSG_INVALID:
             return invalid_event;
             break;
+        case PKGFILES_MSG_PKGISDEL:
+            return pkgisdel_event;
+            break;
         case PKGFILES_MSG_PKGNOTHERE:
             return pkgnothere_event;
             break;
@@ -510,6 +519,21 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == do_pkgdel_event) {
+                    if (!self->exception) {
+                        //  store pkgdel for later sending
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ store pkgdel for later sending", self->log_prefix);
+                        store_pkgdel_for_later_sending (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  trigger send saved messages
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ trigger send saved messages", self->log_prefix);
+                        trigger_send_saved_messages (&self->client);
+                    }
+                }
+                else
                 if (self->event == act_on_do_ispkghere_event) {
                     if (!self->exception) {
                         //  prepare ispkghere from pipe
@@ -526,21 +550,6 @@ s_client_execute (s_client_t *self, event_t event)
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkgfiles_msg_print (self->message);
                         pkgfiles_msg_send (self->message, self->dealer);
-                    }
-                    if (!self->exception) {
-                        //  trigger send saved messages
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ trigger send saved messages", self->log_prefix);
-                        trigger_send_saved_messages (&self->client);
-                    }
-                }
-                else
-                if (self->event == do_pkgdel_event) {
-                    if (!self->exception) {
-                        //  store pkgdel for later sending
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ store pkgdel for later sending", self->log_prefix);
-                        store_pkgdel_for_later_sending (&self->client);
                     }
                     if (!self->exception) {
                         //  trigger send saved messages
@@ -590,6 +599,12 @@ s_client_execute (s_client_t *self, event_t event)
                 else
                 if (self->event == pkghere_event) {
                     if (!self->exception) {
+                        //  remove pkg from waiting lists
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ remove pkg from waiting lists", self->log_prefix);
+                        remove_pkg_from_waiting_lists (&self->client);
+                    }
+                    if (!self->exception) {
                         //  tell msgpipe we have a pkg
                         if (self->verbose)
                             zsys_debug ("%s:         $ tell msgpipe we have a pkg", self->log_prefix);
@@ -597,7 +612,22 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == pkgisdel_event) {
+                    if (!self->exception) {
+                        //  remove pkg from waiting lists
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ remove pkg from waiting lists", self->log_prefix);
+                        remove_pkg_from_waiting_lists (&self->client);
+                    }
+                }
+                else
                 if (self->event == pkgnothere_event) {
+                    if (!self->exception) {
+                        //  remove pkg from waiting lists
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ remove pkg from waiting lists", self->log_prefix);
+                        remove_pkg_from_waiting_lists (&self->client);
+                    }
                     if (!self->exception) {
                         //  tell msgpipe we do not have a pkg
                         if (self->verbose)
@@ -610,6 +640,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == expired_event) {
+                    if (!self->exception) {
+                        //  queue old patients
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ queue old patients", self->log_prefix);
+                        queue_old_patients (&self->client);
+                    }
                     if (!self->exception) {
                         //  send PING
                         if (self->verbose)

@@ -43,13 +43,13 @@
 			<action name = "store ispkghere for later sending" />
 			<action name = "trigger send saved messages" />
 		</event>
+		<event name = "do pkgdel">
+			<action name = "store pkgdel for later sending" />
+			<action name = "trigger send saved messages" />
+		</event>
 		<event name = "act on do ispkghere">
 			<action name = "prepare ispkghere from pipe" />
 			<action name = "send" message = "ISPKGHERE" />
-			<action name = "trigger send saved messages" />
-		</event>
-		<event name = "do pkgdel">
-			<action name = "store pkgdel for later sending" />
 			<action name = "trigger send saved messages" />
 		</event>
 		<event name = "act on do pkgdel">
@@ -58,16 +58,24 @@
 			<action name = "trigger send saved messages" />
 		</event>
 		<event name = "ISPKGHERE">
+			<!-- Canned response for hostdir-masters with multiple
+				actors trying to find packages. -->
 			<action name = "send" message = "PKGNOTHERE" />
 		</event>
 		<event name = "PKGHERE">
+			<action name = "remove pkg from waiting lists" />
 			<action name = "tell msgpipe we have a pkg" />
 		</event>
+		<event name = "PKGISDEL">
+			<action name = "remove pkg from waiting lists" />
+		</event>
 		<event name = "PKGNOTHERE">
+			<action name = "remove pkg from waiting lists" />
 			<action name = "tell msgpipe we do not have a pkg" />
 		</event>
 		<event name = "ROGER" />
 		<event name = "expired">
+			<action name = "queue old patients" />
 			<action name = "send" message = "PING" />
 		</event>
 		<event name = "*">

@@ -14,10 +14,14 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+// Capped at max value for a uint8_t by the below source file.
+#define MAX_PATIENTS 60
+
 #include "pkgfiler_grapher.h"
 //  TODO: Change these to match your project's needs
 #include "./pkgfiles_msg.h"
 #include "./pkgfiler_grapher.h"
+#include "bstring.h"
 #include "dxpb.h"
 
 //  Forward reference to method arguments structure
@@ -38,6 +42,9 @@ typedef struct {
 
     //  TODO: Add specific properties for your application
     zlist_t *msgs_to_send;
+    zlist_t *patients[MAX_PATIENTS]; // We will check in on their status.
+    zhash_t *dellater; // Hash for fast lookup
+    uint8_t pat_index;
 } client_t;
 
 //  Include the generated client engine
@@ -50,6 +57,38 @@ struct message_to_send {
 	char *arch;
 };
 
+static char *
+msg2send2key(struct message_to_send *msg)
+{
+	char *rV = NULL;
+	uint32_t parA, parB;
+	rV = bstring_add(rV, msg->pkgname, &parA, &parB);
+	assert(rV);
+	if (msg->type == PKGFILES_MSG_PKGDEL ||
+			msg->type == PKGFILES_MSG_PKGISDEL)
+		return rV;
+	rV = bstring_add(rV, msg->version, &parA, &parB);
+	rV = bstring_add(rV, msg->arch, &parA, &parB);
+	assert(rV);
+	return rV;
+}
+
+static char *
+pkgmsg2key(pkgfiles_msg_t *msg)
+{
+	char *rV = NULL;
+	uint32_t parA, parB;
+	rV = bstring_add(rV, pkgfiles_msg_pkgname(msg), &parA, &parB);
+	assert(rV);
+	if (pkgfiles_msg_id(msg) == PKGFILES_MSG_PKGDEL ||
+			pkgfiles_msg_id(msg) == PKGFILES_MSG_PKGISDEL)
+		return rV;
+	rV = bstring_add(rV, pkgfiles_msg_version(msg), &parA, &parB);
+	rV = bstring_add(rV, pkgfiles_msg_arch(msg), &parA, &parB);
+	assert(rV);
+	return rV;
+}
+
 //  Allocate properties and structures for a new client instance.
 //  Return 0 if OK, -1 if failed
 
@@ -57,6 +96,9 @@ static int
 client_initialize (client_t *self)
 {
 	self->msgs_to_send = zlist_new();
+	self->dellater = zhash_new();
+	for (uint8_t i = 0; i < MAX_PATIENTS; i++)
+		self->patients[i] = zlist_new();
 	engine_set_expiry(self, 15000);
 	return 0;
 }
@@ -67,6 +109,8 @@ static void
 client_terminate (client_t *self)
 {
 	zlist_destroy(&(self->msgs_to_send));
+	for (uint8_t i = 0; i < MAX_PATIENTS; i++)
+		zlist_destroy(&(self->patients[i]));
 }
 
 //  ---------------------------------------------------------------------------
@@ -142,6 +186,54 @@ tell_msgpipe_we_do_not_have_a_pkg (client_t *self)
 
 
 //  ---------------------------------------------------------------------------
+//  Waiting List Management
+//
+
+static void
+add_pkg_to_waiting_lists(client_t *self, struct message_to_send *addthis)
+{
+	assert(self);
+	assert(addthis);
+	//            cur index, but always > 0      >= 0    back to normal
+	int index = ((self->pat_index + MAX_PATIENTS) - 1) % MAX_PATIENTS;
+	zlist_append(self->patients[index], addthis);
+}
+
+static void
+remove_pkg_from_waiting_lists (client_t *self)
+{ /* Need to be clever. Else we end up O(N^2). List appending is constant.
+   * Looping through lists to remove any pkg... and then repeating every
+   * list... and doing more than just pointer comparisons... that's slow.
+   * Append to list of "We want to remove you" and work it out next sending
+   * cycle
+   */
+	char *key = pkgmsg2key(self->message);
+	zhash_insert(self->dellater, key, self);
+	FREE(key);
+}
+
+//  ---------------------------------------------------------------------------
+//  queue_old_patients
+//
+
+static void
+queue_old_patients (client_t *self)
+{
+	char *key;
+	uint32_t curloc = self->pat_index ++;
+	zlist_t *curList = self->patients[curloc];
+	struct message_to_send *cur = NULL;
+	for (cur = zlist_first(curList); cur; cur = zlist_next(curList)) {
+		key = msg2send2key(cur);
+		if (zhash_lookup(self->dellater, key) != NULL)
+			zlist_remove(curList, cur); // already got it!
+		else
+			zlist_append(self->msgs_to_send, cur);
+		FREE(key);
+	}
+}
+
+//  ---------------------------------------------------------------------------
 //  store_ispkghere_for_later_sending
 //
 
@@ -169,6 +261,7 @@ store_message_for_later_sending(client_t *self, int type)
 		exit(ERR_CODE_BAD);
 		break;
 	}
+	add_pkg_to_waiting_lists(self, tosave);
 	zlist_append(self->msgs_to_send, tosave);
 }
 
@@ -237,14 +330,6 @@ prepare_ispkghere_from_pipe (client_t *self)
 	pkgfiles_msg_set_pkgname(self->message, tosend->pkgname);
 	pkgfiles_msg_set_version(self->message, tosend->version);
 	pkgfiles_msg_set_arch(self->message, tosend->arch);
-	free(tosend->pkgname);
-	tosend->pkgname = NULL;
-	free(tosend->version);
-	tosend->version = NULL;
-	free(tosend->arch);
-	tosend->arch = NULL;
-	free(tosend);
-	tosend = NULL;
 }
 
 
@@ -260,8 +345,5 @@ prepare_pkgdel_from_pipe (client_t *self)
 	assert(tosend->type == PKGFILES_MSG_PKGDEL);
 	assert(tosend->pkgname);
 	pkgfiles_msg_set_pkgname(self->message, tosend->pkgname);
-	free(tosend->pkgname);
-	tosend->pkgname = NULL;
-	free(tosend);
-	tosend = NULL;
 }
+
