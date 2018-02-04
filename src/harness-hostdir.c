@@ -304,20 +304,32 @@ main(int argc, char * const *argv)
 	char *repopath = bstring_add(bstring_add(NULL, ourdir, NULL, NULL), "/repo/", NULL, NULL);
 	char *remotepath1 = bstring_add(bstring_add(NULL, ourdir, NULL, NULL), "/remote1/", NULL, NULL);
 	char *remotepath2 = bstring_add(bstring_add(NULL, ourdir, NULL, NULL), "/remote2/", NULL, NULL);
-	char *ssldir = "/var/empty/";
+	char *ssldir = bstring_add(bstring_add(NULL, ourdir, NULL, NULL), "/ssl/", NULL, NULL);
 
-	char *file_endpoint = "tcp://127.0.0.1:95953";
-	char *file_pubpoint = "tcp://127.0.0.1:95954";
-	char *graph_endpoint = "tcp://127.0.0.1:95955";
-	char *graph_pubpoint = "tcp://127.0.0.1:95956";
+	char *file_endpoint = "tcp://127.0.0.1:15953";
+	char *file_pubpoint = "tcp://127.0.0.1:15954";
+	char *graph_endpoint = "tcp://127.0.0.1:15955";
+	char *graph_pubpoint = "tcp://127.0.0.1:15956";
 
 	int rc = mkdir(logpath, S_IRWXU);
 	rc = mkdir(stagepath, S_IRWXU);
 	rc = mkdir(repopath, S_IRWXU);
 	rc = mkdir(remotepath1, S_IRWXU);
 	rc = mkdir(remotepath2, S_IRWXU);
+	rc = mkdir(ssldir, S_IRWXU);
 
 	prologue(argv[0]);
+
+	char create_certs_cmd[1024];
+	snprintf(create_certs_cmd, 1024, "./%s -k %s -n %s", "dxpb-certs-remote", ssldir, "dxpb-hostdir-master");
+	rc = system(create_certs_cmd);
+	assert(rc == 0);
+	snprintf(create_certs_cmd, 1024, "./%s -k %s -n %s", "dxpb-certs-remote", ssldir, "dxpb-hostdir-remote");
+	rc = system(create_certs_cmd);
+	assert(rc == 0);
+	snprintf(create_certs_cmd, 1024, "./%s -k %s -n %s", "dxpb-certs-remote", ssldir, "dxpb-frontend");
+	rc = system(create_certs_cmd);
+	assert(rc == 0);
 
 	puts("\n\nThis is a test harness.\nConducting tests....\n\n");
 
