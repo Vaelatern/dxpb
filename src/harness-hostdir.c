@@ -191,6 +191,8 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 	SETMSG(version, file_msg, DXPB_VERSION);
 	SETMSG(arch, file_msg, "noarch");
 	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	// test if we send multiple of these messages
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
 
 	DOPINGRACE(file_msg, file);
 	DOPINGRACE(file_msg, file);

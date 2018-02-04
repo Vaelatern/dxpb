@@ -498,15 +498,18 @@ static void
 broadcast_pkg_locate_request (client_t *self)
 {
 	printnote("Broadcasting request for package");
-	struct hunt *hunt = pkgmsg_to_hunt(self, self->message);
 	char *key = pkgmsg_to_str(self->message);
 	assert(key);
+	if (zhash_lookup(self->server->hunts, key) != NULL) // already hunting
+		goto end;
+
+	struct hunt *hunt = pkgmsg_to_hunt(self, self->message);
 	zhash_insert(self->server->hunts, key, hunt);
 	self->server->curhunt = hunt;
 	assert(hunt);
 	engine_broadcast_event(self->server, self, trigger_job_hunt_event);
-	free(key);
-	key = NULL;
+end:
+	FREE(key);
 }
 
 
