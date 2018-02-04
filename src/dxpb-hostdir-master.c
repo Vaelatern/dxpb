@@ -41,6 +41,8 @@ run(int flags, const char *ssldir, const char *sdir, const char *rdir,
 	if (flags & VERBOSE_FLAG)
 		zstr_sendx(file_actor, "VERBOSE", NULL);
 
+	do_server_ssl_if_possible(file_actor, ssldir, "dxpb-hostdir-master");
+
 	log_client = pkggraph_filer_new();
 	assert(log_client);
 	setup_ssl(log_client, (setssl_cb)pkggraph_filer_set_ssl_client_keys, "dxpb-hostdir-master", "dxpb-frontend", ssldir);

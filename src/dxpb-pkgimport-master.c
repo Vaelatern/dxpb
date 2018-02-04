@@ -24,7 +24,7 @@ help(void)
 }
 
 void
-run(int flags, const char *endpoint, const char *pubpoint,
+run(int flags, const char *ssldir, const char *endpoint, const char *pubpoint,
 		const char *repopath, const char *xbps_src)
 {
 	assert((flags & ERR_FLAG) == 0);
@@ -33,6 +33,8 @@ run(int flags, const char *endpoint, const char *pubpoint,
 	actor = zactor_new(pkgimport_server, "pkgimport master");
 	if (flags & VERBOSE_FLAG)
 		zstr_sendx(actor, "VERBOSE", NULL);
+
+	do_server_ssl_if_possible(actor, ssldir, "dxpb-pkgimport-master");
 
 	zstr_sendx(actor, "SET", "dxpb/repopath", repopath, NULL);
 	zstr_sendx(actor, "SET", "dxpb/xbps_src", xbps_src, NULL);
@@ -68,6 +70,7 @@ main(int argc, char * const *argv)
 	char *endpoint = NULL;
 	char *repopath = NULL;
 	char *xbps_src = NULL;
+	char *ssldir = "/var/empty";
 
 	while ((c = getopt(argc, argv, optstring)) != -1) {
 		switch(c) {
@@ -123,6 +126,6 @@ main(int argc, char * const *argv)
 	rc = ensure_sock_if_ipc(pubpoint);
 	assert(rc == ERR_CODE_OK);
 
-	run(flags, endpoint, pubpoint, repopath, xbps_src);
+	run(flags, ssldir, endpoint, pubpoint, repopath, xbps_src);
 	return 0;
 }

@@ -246,9 +246,9 @@ harness-builder2: harness-builder2.o pkggraph_msg.o
 
 harness-frontend: harness-frontend.o pkggraph_msg.o
 
-$(HARNESSES): dxpb-common.o bfs.o bstring.o
+$(HARNESSES): dxpb-common.o bfs.o bstring.o dxpb-client.o
 
-harness: $(BINARIES) $(HARNESSES)
+harness: $(BINARIES) $(SUID_BINARIES) $(HARNESSES)
 
 ########################
 #### Simple  Targets ###

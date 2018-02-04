@@ -1719,26 +1719,29 @@ s_server_handle_pipe (zloop_t *loop, zsock_t *reader, void *argument)
         zstr_free (&endpoint);
     }
     else
-    if (streq (method, "START AUTH")) {
-        //  Begin the auth actor
-	self->auth = zactor_new (zauth, NULL);
-    }
-    else
     if (streq (method, "AUTH")) {
         //  Send arguments to the auth actor
+	if (self->auth == NULL)
+		self->auth = zactor_new (zauth, NULL);
+	if (self->verbose) {
+		zstr_send (self->auth, "VERBOSE");
+		zsock_wait (self->auth);
+	}
+	zsock_set_zap_domain(self->router, "global");
         zmsg_send (&msg, self->auth);
+	zsock_wait (self->auth);
     }
     else
     if (streq (method, "CURVE")) {
-        //  Given a private-public set of keys, set the server socket
-	//  Auth needs to be created separately
-        char *private_key = zmsg_popstr (msg);
-        char *public_key = zmsg_popstr (msg);
-	zsock_set_curve_secretkey (self->router, private_key);
-	zsock_set_curve_publickey (self->router, public_key);
+        //  Given a path to a secret key, set the server socket
+	//  Auth actor needs to be created separately
+        char *path = zmsg_popstr (msg);
+        zcert_t *cert = zcert_load (path);
+	assert(cert);
+	zcert_apply (cert, self->router);
 	zsock_set_curve_server (self->router, 1);
-        zstr_free (&public_key);
-        zstr_free (&private_key);
+        zcert_destroy (&cert);
+        zstr_free (&path);
     }
     else
     if (streq (method, "PORT")) {

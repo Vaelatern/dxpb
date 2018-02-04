@@ -10,6 +10,7 @@
 #include <czmq.h>
 #include <sys/stat.h>
 #include "dxpb.h"
+#include "dxpb-client.h"
 #include "bfs.h"
 #include "bstring.h"
 #include "bwords.h"
@@ -32,6 +33,16 @@
 // Now shrunk by 2
 #define LARGEST_SIZE 51000000
 
+int
+sock_ssl_setup(zsock_t *sock, const char *mysec, const char *mypub, const char *servpub)
+{
+	zsock_set_curve_secretkey(sock, mysec);
+	zsock_set_curve_publickey(sock, mypub);
+	zsock_set_curve_serverkey(sock, servpub);
+	zsock_set_curve_server(sock, 0);
+	return 0;
+}
+
 void
 forkoff_master(const char *ssldir, const char *sdir, const char *rdir,
 		const char *ldir, const char *file_end,
@@ -41,7 +52,7 @@ forkoff_master(const char *ssldir, const char *sdir, const char *rdir,
 	switch(fork()) {
 	case 0:
 		execlp("./dxpb-hostdir-master", "dxpb-hostdir-master",
-				"-r", rdir, "-l", ldir,
+				"-r", rdir, "-l", ldir, "-v",
 				"-s", sdir, "-g", graph_end, "-G", graph_pub,
 				"-f", file_end, "-F", file_pub, "-k", ssldir,
 				NULL);
@@ -58,7 +69,7 @@ forkoff_remote(const char *ssldir, const char *hostdir, const char *file_end)
 {
 	switch(fork()) {
 	case 0:
-		execlp("./dxpb-hostdir-remote", "dxpb-hostdir-remote",
+		execlp("./dxpb-hostdir-remote", "dxpb-hostdir-remote", "-v",
 				"-H", hostdir, "-f", file_end, "-k", ssldir,
 				NULL);
 		exit(0);
@@ -107,6 +118,9 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 
 	zsock_t *file  = zsock_new (ZMQ_DEALER);
 	assert(file);
+
+	rc = setup_ssl(file, (setssl_cb)sock_ssl_setup, "dxpb-hostdir-remote", "dxpb-hostdir-master", ssldir);
+	assert(rc == 0);
 
 	zsock_attach(file, file_end, false);
 

@@ -33,6 +33,8 @@ run(int flags, const char *endpoint, const char *ssldir, const char *pubpoint)
 	if (flags & VERBOSE_FLAG)
 		zstr_sendx(actor, "VERBOSE", NULL);
 
+	do_server_ssl_if_possible(actor, ssldir, "dxpb-frontend");
+
 	zstr_sendx(actor, "SET", "dxpb/ssldir", ssldir, NULL);
 	zstr_sendx(actor, "SET", "dxpb/pubpoint", pubpoint, NULL);
 	zstr_sendx(actor, "BIND", endpoint, NULL);

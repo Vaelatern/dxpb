@@ -14,6 +14,7 @@
 #include <assert.h>
 #include <czmq.h>
 #include "dxpb.h"
+#include "bstring.h"
 #include "bfs.h"
 #include "dxpb-common.h"
 #include "dxpb-version.h"
@@ -60,4 +61,31 @@ ensure_sock_if_ipc(const char *arg)
                return rc;
        rc = bfs_ensure_sock_perms(arg);
        return rc;
+}
+
+void
+do_server_ssl_if_possible(void *client, const char *ssldir, const char *argv0)
+{
+	char *certpath = bstring_add(strdup(ssldir), "/", NULL, NULL);
+	certpath = bstring_add(bstring_add(certpath, argv0, NULL, NULL),
+			"_secret", NULL, NULL);
+
+	if (!bfs_file_exists(certpath)) {
+		fprintf(stderr, "************************************************\n"
+				"************************************************\n"
+				"************************************************\n"
+				"*****> !!Server CURVE encryption disabled!! <***\n"
+				"*****> !!    Setup not appropiate for    !! <***\n"
+				"*****> !!       any public networks      !! <***\n"
+				"************************************************\n"
+				"************************************************\n"
+				"************************************************\n");
+		goto end;
+	}
+
+	zstr_sendx(client, "AUTH", "CURVE", ssldir, NULL);
+	zstr_sendx(client, "CURVE", certpath, NULL);
+
+end:
+	FREE(certpath);
 }
