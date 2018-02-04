@@ -5,7 +5,7 @@ The following ABNF grammar defines the Package Import Managment Protocol:
     ;  No description
 
     HELLO           = signature %d1 proto_version
-    signature       = %xAA %xA0             ; two octets
+    signature       = %xAA %xA1             ; two octets
     proto_version   = string                ; Package Import Management Protocol Version 00
 
     ;  No description

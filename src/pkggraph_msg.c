@@ -297,7 +297,7 @@ pkggraph_msg_recv (pkggraph_msg_t *self, zsock_t *input)
 
     uint16_t signature;
     GET_NUMBER2 (signature);
-    if (signature != (0xAAA0 | 1)) {
+    if (signature != (0xAAA0 | 3)) {
         zsys_warning ("pkggraph_msg: invalid signature");
         rc = -2;                //  Malformed
         goto malformed;
@@ -736,7 +736,7 @@ pkggraph_msg_send (pkggraph_msg_t *self, zsock_t *output)
     zmq_msg_t frame;
     zmq_msg_init_size (&frame, frame_size);
     self->needle = (byte *) zmq_msg_data (&frame);
-    PUT_NUMBER2 (0xAAA0 | 1);
+    PUT_NUMBER2 (0xAAA0 | 3);
     PUT_NUMBER1 (self->id);
     size_t nbr_frames = 1;              //  Total number of frames to send
 

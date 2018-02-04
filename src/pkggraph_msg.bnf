@@ -5,7 +5,7 @@ The following ABNF grammar defines the Package Graph Potocol:
     ;  No description
 
     HELLO           = signature %d1 proto_version
-    signature       = %xAA %xA1             ; two octets
+    signature       = %xAA %xA3             ; two octets
     proto_version   = string                ; Package Graph Protocol Version 00
 
     ;  No description

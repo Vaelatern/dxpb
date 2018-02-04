@@ -1,6 +1,6 @@
 <class
 	name = "pkgfiles_msg"
-	signature = "0"
+	signature = "2"
 	title = "DXPB File Location and Management Protocol"
 	script = "../exec/zproto_codec_c"
 	package_dir = "../include"

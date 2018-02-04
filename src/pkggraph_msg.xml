@@ -1,6 +1,6 @@
 <class
 	name = "pkggraph_msg"
-	signature = "1"
+	signature = "3"
 	title = "Package Graph Potocol"
 	script = "../exec/zproto_codec_c"
 	package_dir = "../include"

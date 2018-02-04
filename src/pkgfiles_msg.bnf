@@ -5,7 +5,7 @@ The following ABNF grammar defines the DXPB File Location and Management Protoco
     ;  No description
 
     HELLO           = signature %d1 proto_version
-    signature       = %xAA %xA0             ; two octets
+    signature       = %xAA %xA2             ; two octets
     proto_version   = string                ; DXPB PKG Management Protocol Version 00
 
     ;  No description

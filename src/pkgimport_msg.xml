@@ -1,6 +1,6 @@
 <class
 	name = "pkgimport_msg"
-	signature = "0"
+	signature = "1"
 	title = "Package Import Managment Protocol"
 	script = "../exec/zproto_codec_c"
 	package_dir = "../include"
