@@ -598,17 +598,18 @@ bdb_read_hash(struct bdb_bound_params *params)
 }
 
 int
-bdb_read_pkgs_to_graph(bgraph grph, struct bdb_bound_params *params)
+bdb_read_pkgs_to_graph(bgraph *grph, struct bdb_bound_params *params)
 {
 	if (params->DO_NOT_USE_PARAMS)
 		return ERR_CODE_BAD;
 	assert(params);
 	assert(params->ROW);
-	assert(grph);
+	assert(!grph);
+	*grph = bgraph_new();
 	struct pkg *tmp;
 
 	while ((tmp = bdb_pkg_from_step(params)) != NULL)
-		bgraph_insert_pkg(grph, tmp);
+		bgraph_insert_pkg(*grph, tmp);
 
 	return ERR_CODE_OK;
 }

@@ -72,7 +72,7 @@ client_initialize (client_t *self)
 	self->pub = NULL;
 	self->workers = bworker_group_new();
 	engine_set_expiry(self, 15000);
-	self->pkggraph = bgraph_new();
+	self->pkggraph = NULL;
 	self->dbpath = NULL;
 	self->hash[0] = '\0';
 	return 0;
@@ -438,20 +438,23 @@ static void
 read_all_from_db (client_t *self)
 {
 	assert(self->dbpath);
+	if (self->pkggraph != NULL)
+		return;
 	int rc;
 	if (self->pub) {
 		zstr_sendm(self->pub, "TRACE");
 		zstr_sendf(self->pub, "About to read pkgs from the db");
 	}
 	struct bdb_bound_params *params = bdb_params_init_ro(self->dbpath);
-	if (params->DO_NOT_USE_PARAMS)
+	if (params->DO_NOT_USE_PARAMS) {
 		self->hash[0] = '\0';
-	else {
+		self->pkggraph = bgraph_new();
+	} else {
 		char *tmp = bdb_read_hash(params);
 		strncpy(self->hash, tmp != NULL ? tmp : "", 255);
 		self->hash[255] = '\0';
 
-		rc = bdb_read_pkgs_to_graph(self->pkggraph, params);
+		rc = bdb_read_pkgs_to_graph(&self->pkggraph, params);
 		if (rc != ERR_CODE_OK) {
 			; /* TODO: XXX: MUST HAVE a provision to work around
 			     this!

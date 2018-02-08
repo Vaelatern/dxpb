@@ -42,10 +42,10 @@ run(int flags, const char *from, const char *to)
 	assert(!params->DO_NOT_USE_PARAMS);
 	if (verbose)
 		printf("\tCreating graph\n");
-	bgraph grph = bgraph_new();
+	bgraph grph = NULL;
 	if (verbose)
 		printf("\tReading pkgs to graph\n");
-	int rc = bdb_read_pkgs_to_graph(grph, params);
+	int rc = bdb_read_pkgs_to_graph(&grph, params);
 	assert(rc == ERR_CODE_OK);
 	if (verbose)
 		printf("\tClosing database\n");
