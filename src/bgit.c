@@ -68,7 +68,10 @@ bgit_ff(git_repository *repo)
 	assert(rc == 0); // According to reading the code, not according to docs!
 	rc = git_remote_fetch(remote, refspecs, NULL, NULL);
 	git_strarray_free(refspecs);
-	assert(rc == 0);
+	if (rc != 0) {
+		fprintf(stderr, "Couldn't fetch remote: %s\n", giterr_last()->message);
+		exit(ERR_CODE_BADGIT);
+	}
 
 	/* Figure out what the new tree is */
 	rc = git_reference_name_to_id(&oid, repo, "refs/remotes/dxpb-remote/master");
