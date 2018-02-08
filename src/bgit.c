@@ -53,7 +53,6 @@ bgit_ff(git_repository *repo)
 	int rc;
 	git_libgit2_init();
 	git_remote *remote = NULL;
-	git_strarray refspecs[1];
 	git_reference *newref = NULL, *lastref = NULL;
 	git_tree *newtree = NULL;
 	git_commit *commit = NULL;
@@ -64,10 +63,7 @@ bgit_ff(git_repository *repo)
 	/* Fetch the origin at dxpb-remote, updating refs */
 	rc = git_remote_lookup(&remote, repo, "dxpb-remote");
 	assert(rc == 0);
-	rc = git_remote_get_fetch_refspecs(refspecs, remote);
-	assert(rc == 0); // According to reading the code, not according to docs!
-	rc = git_remote_fetch(remote, refspecs, NULL, NULL);
-	git_strarray_free(refspecs);
+	rc = git_remote_fetch(remote, NULL, NULL, NULL);
 	if (rc != 0) {
 		fprintf(stderr, "Couldn't fetch remote: %s\n", giterr_last()->message);
 		exit(ERR_CODE_BADGIT);
