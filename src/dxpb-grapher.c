@@ -399,6 +399,8 @@ main(int argc, char * const *argv)
 	rc = ensure_sock_if_ipc(graph_endpoint);
 	assert(rc == ERR_CODE_OK);
 
+	zsys_set_pipehwm(200000); // we expect 100k max, so double as buffer.
+
 	return run(flags, dbpath, import_endpoint, graph_endpoint,
 			file_endpoint, pubpoint, ssldir);
 }
