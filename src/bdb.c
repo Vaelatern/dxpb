@@ -604,7 +604,7 @@ bdb_read_pkgs_to_graph(bgraph *grph, struct bdb_bound_params *params)
 		return ERR_CODE_BAD;
 	assert(params);
 	assert(params->ROW);
-	assert(!grph);
+	assert(!*grph);
 	*grph = bgraph_new();
 	struct pkg *tmp;
 
