@@ -87,243 +87,154 @@ run(const char *dbpath, const char *import_endpoint,
 	zsock_attach(graph, graph_endpoint, true);
 	zsock_attach(file, file_endpoint, true);
 
+#define TOMSG(type, what) PKG##type##_MSG_##what
+
+#define SEND(type, TYPE, WHAT, msg, target) { \
+		pkg##type##_msg_set_id(msg, TOMSG(TYPE, WHAT)); \
+		rc = pkg##type##_msg_send(msg, target); \
+		assert(rc == 0); \
+	}
+#define ISEND(WHAT) SEND(import, IMPORT, WHAT, import_msg, import)
+#define GSEND(WHAT) SEND(graph, GRAPH, WHAT, graph_msg, graph)
+#define FSEND(WHAT) SEND(files, FILES, WHAT, file_msg, file)
+
+#define SET(type, what, msg, to) pkg##type##_msg_set_##what(msg, to)
+#define ISET(what, to) SET(import, what, import_msg, to)
+#define GSET(what, to) SET(graph, what, graph_msg, to)
+#define FSET(what, to) SET(files, what, file_msg, to)
+
+#define GET(type, mymsg, sock) { \
+		zpoller_t *p = zpoller_new(sock, NULL); \
+		(void) zpoller_wait(p, 30*1000); \
+		assert(!zpoller_expired(p)); \
+		if (zpoller_terminated(p)) \
+			exit(-1); \
+		rc = pkg##type##_msg_recv(mymsg, sock); \
+		assert(rc == 0); \
+		zpoller_destroy(&p); \
+	}
+#define IGET()	GET(import, import_msg, import)
+#define GGET()	GET(graph, graph_msg, graph)
+#define FGET()	GET(files, file_msg, file)
+
+// SRT is shorthand for assert(), and STRS, for assert(strcmp())
+#define SRT(type, msg, field, goal) assert(pkg##type##_msg_##field(msg) == goal)
+#define ISRT(field, goal) SRT(import, import_msg, ##field, ##goal)
+#define GSRT(field, goal) SRT(graph, graph_msg, ##field, ##goal)
+#define FSRT(field, goal) SRT(files, files_msg, ##field, ##goal)
+#define ISRTID(goal) SRT(import, import_msg, id, TOMSG(IMPORT, goal))
+#define GSRTID(goal) SRT(graph, graph_msg, id, TOMSG(GRAPH, goal))
+#define FSRTID(goal) SRT(files, files_msg, id, TOMSG(FILES, goal))
+
+#define SRTS(type, msg, field, goal) assert(strcmp(pkg##type##_msg_##field(msg), goal) == 0)
+#define ISRTS(field, goal) SRTS(import, import_msg, ##field, TOMSG(IMPORT, goal))
+#define GSRTS(field, goal) SRTS(graph, graph_msg, ##field, TOMSG(GRAPH, goal))
+#define FSRTS(field, goal) SRTS(files, files_msg, ##field, TOMSG(FILES, goal))
+
 	/* And now we get to work */
 
-	{
-		zpoller_t *p = zpoller_new(import, NULL);
-		(void) zpoller_wait(p, 10*1000);
-		assert(!zpoller_expired(p));
-		if (zpoller_terminated(p))
-			exit(-1);
-		rc = pkgimport_msg_recv(import_msg, import);
-		assert(rc == 0);
-		assert(pkgimport_msg_id(import_msg) == PKGIMPORT_MSG_HELLO);
-		zpoller_destroy(&p);
-	}
-	{
-		pkgimport_msg_set_id(import_msg, PKGIMPORT_MSG_ROGER);
-		rc = pkgimport_msg_send(import_msg, import);
-		assert(rc == 0);
-	}
-	{
-		zpoller_t *p = zpoller_new(import, NULL);
-		(void) zpoller_wait(p, 10*1000);
-		assert(!zpoller_expired(p));
-		if (zpoller_terminated(p))
-			exit(-1);
-		rc = pkgimport_msg_recv(import_msg, import);
-		assert(rc == 0);
-		assert(pkgimport_msg_id(import_msg) == PKGIMPORT_MSG_IAMTHEGRAPHER);
-		zpoller_destroy(&p);
-	}
-	{
-		pkgimport_msg_set_id(import_msg, PKGIMPORT_MSG_ROGER);
-		rc = pkgimport_msg_send(import_msg, import);
-		assert(rc == 0);
-	}
-	{
-		zpoller_t *p = zpoller_new(import, NULL);
-		(void) zpoller_wait(p, 10*1000);
-		assert(!zpoller_expired(p));
-		if (zpoller_terminated(p))
-			exit(-1);
-		rc = pkgimport_msg_recv(import_msg, import);
-		assert(rc == 0);
-		assert(pkgimport_msg_id(import_msg) == PKGIMPORT_MSG_PLZREADALL);
-		zpoller_destroy(&p);
-	}
-	{
-		zpoller_t *p = zpoller_new(import, NULL);
-		(void) zpoller_wait(p, 10*1000);
-		assert(!zpoller_expired(p));
-		if (zpoller_terminated(p))
-			exit(-1);
-		rc = pkgimport_msg_recv(import_msg, import);
-		assert(rc == 0);
-		assert(pkgimport_msg_id(import_msg) == PKGIMPORT_MSG_STABLESTATUSPLZ);
-		zpoller_destroy(&p);
-	}
-	{
-		pkgimport_msg_set_id(import_msg, PKGIMPORT_MSG_UNSTABLE);
-		rc = pkgimport_msg_send(import_msg, import);
-		assert(rc == 0);
-	}
-	{
-		pkgimport_msg_set_id(import_msg, PKGIMPORT_MSG_PKGDEL);
-		pkgimport_msg_set_pkgname(import_msg, "rmme");
-		rc = pkgimport_msg_send(import_msg, import);
-		assert(rc == 0);
-	}
+	IGET();
+	ISRTID(HELLO);
+	ISEND(ROGER);
+	IGET();
+	ISRTID(IAMTHEGRAPHER);
+	ISEND(ROGER);
+	IGET();
+	ISRTID(PLZREADALL);
+	IGET();
+	ISRTID(STABLESTATUSPLZ);
+	ISEND(UNSTABLE);
+	ISET(pkgname, "rmme");
+	ISEND(PKGDEL);
 	for (int i = 1; i < ARCH_HOST; i++) {
-		pkgimport_msg_set_id(import_msg, PKGIMPORT_MSG_PKGINFO);
-		pkgimport_msg_set_pkgname(import_msg, "foo");
-		pkgimport_msg_set_version(import_msg, "0.0.1");
-		pkgimport_msg_set_arch(import_msg, pkg_archs_str[i]);
-		pkgimport_msg_set_nativehostneeds(import_msg, "");
-		pkgimport_msg_set_nativetargetneeds(import_msg, "");
-		pkgimport_msg_set_crosshostneeds(import_msg, "");
-		pkgimport_msg_set_crosstargetneeds(import_msg, "");
-		pkgimport_msg_set_cancross(import_msg, 0);
-		pkgimport_msg_set_broken(import_msg, 0);
-		pkgimport_msg_set_bootstrap(import_msg, 0);
-		pkgimport_msg_set_restricted(import_msg, 0);
-		rc = pkgimport_msg_send(import_msg, import);
-		assert(rc == 0);
+		ISET(pkgname, "foo");
+		ISET(version, "0.0.1");
+		ISET(arch, pkg_archs_str[i]);
+		ISET(nativehostneeds, "");
+		ISET(nativetargetneeds, "");
+		ISET(crosshostneeds, "");
+		ISET(crosstargetneeds, "");
+		ISET(cancross, 0);
+		ISET(broken, 0);
+		ISET(bootstrap, 0);
+		ISET(restricted, 0);
+		ISEND(PKGINFO);
 	}
-	{
-		pkgimport_msg_set_id(import_msg, PKGIMPORT_MSG_PKGINFO);
-		pkgimport_msg_set_pkgname(import_msg, "foo");
-		pkgimport_msg_set_version(import_msg, "0.0.1");
-		pkgimport_msg_set_arch(import_msg, pkg_archs_str[ARCH_TARGET]);
-		pkgimport_msg_set_nativehostneeds(import_msg, "");
-		pkgimport_msg_set_nativetargetneeds(import_msg, "");
-		pkgimport_msg_set_crosshostneeds(import_msg, "");
-		pkgimport_msg_set_crosstargetneeds(import_msg, "");
-		pkgimport_msg_set_cancross(import_msg, 0);
-		pkgimport_msg_set_broken(import_msg, 0);
-		pkgimport_msg_set_bootstrap(import_msg, 0);
-		pkgimport_msg_set_restricted(import_msg, 0);
-		rc = pkgimport_msg_send(import_msg, import);
-		assert(rc == 0);
-	}
+	ISET(pkgname, "foo");
+	ISET(version, "0.0.1");
+	ISET(arch, pkg_archs_str[ARCH_TARGET]);
+	ISET(nativehostneeds, "");
+	ISET(nativetargetneeds, "");
+	ISET(crosshostneeds, "");
+	ISET(crosstargetneeds, "");
+	ISET(cancross, 0);
+	ISET(broken, 0);
+	ISET(bootstrap, 0);
+	ISET(restricted, 0);
+	ISEND(PKGINFO);
+
 	for (int i = 1; i <= ARCH_HOST; i++) {
-		zpoller_t *p = zpoller_new(import, NULL);
-		(void) zpoller_wait(p, 10*1000);
-		assert(!zpoller_expired(p));
-		if (zpoller_terminated(p))
-			exit(-1);
-		rc = pkgimport_msg_recv(import_msg, import);
-		assert(rc == 0);
-		assert(pkgimport_msg_id(import_msg) == PKGIMPORT_MSG_ROGER);
-		zpoller_destroy(&p);
+		IGET();
+		ISRTID(ROGER);
 	}
-	{
-		zpoller_t *p = zpoller_new(import, NULL);
-		(void) zpoller_wait(p, 10*1000);
-		assert(!zpoller_expired(p));
-		if (zpoller_terminated(p))
-			exit(-1);
-		rc = pkgimport_msg_recv(import_msg, import);
-		assert(rc == 0);
-		assert(pkgimport_msg_id(import_msg) == PKGIMPORT_MSG_STABLESTATUSPLZ);
-		zpoller_destroy(&p);
-	}
-	{
-		pkgimport_msg_set_id(import_msg, PKGIMPORT_MSG_STABLE);
-		pkgimport_msg_set_commithash(import_msg, "aabdbababdbabababdbabababdbdbabaabdbdbab");
-		rc = pkgimport_msg_send(import_msg, import);
-		assert(rc == 0);
-	}
+	IGET();
+	ISRTID(STABLESTATUSPLZ);
+	ISET(commithash, "aabdbababdbabababdbabababdbdbabaabdbdbab");
+	ISEND(STABLE);
 	for (int i = 1; i < ARCH_HOST; i++) {
-		pkgimport_msg_set_id(import_msg, PKGIMPORT_MSG_PKGINFO);
-		pkgimport_msg_set_pkgname(import_msg, "bar");
-		pkgimport_msg_set_version(import_msg, "0.1.0");
-		pkgimport_msg_set_arch(import_msg, pkg_archs_str[i]);
-		pkgimport_msg_set_nativehostneeds(import_msg, "foo");
-		pkgimport_msg_set_nativetargetneeds(import_msg, "foo");
-		pkgimport_msg_set_crosshostneeds(import_msg, "foo");
-		pkgimport_msg_set_crosstargetneeds(import_msg, "foo");
-		pkgimport_msg_set_cancross(import_msg, 0);
-		pkgimport_msg_set_broken(import_msg, 0);
-		pkgimport_msg_set_bootstrap(import_msg, 1);
-		pkgimport_msg_set_restricted(import_msg, 0);
-		rc = pkgimport_msg_send(import_msg, import);
-		assert(rc == 0);
+		ISET(pkgname, "bar");
+		ISET(version, "0.1.0");
+		ISET(arch, pkg_archs_str[i]);
+		ISET(nativehostneeds, "foo");
+		ISET(nativetargetneeds, "foo");
+		ISET(crosshostneeds, "foo");
+		ISET(crosstargetneeds, "foo");
+		ISET(cancross, 0);
+		ISET(broken, 0);
+		ISET(bootstrap, 1);
+		ISET(restricted, 0);
+		ISEND(PKGINFO);
 	}
-	{
-		pkgimport_msg_set_id(import_msg, PKGIMPORT_MSG_PKGINFO);
-		pkgimport_msg_set_pkgname(import_msg, "bar");
-		pkgimport_msg_set_version(import_msg, "0.1.0");
-		pkgimport_msg_set_arch(import_msg, pkg_archs_str[ARCH_TARGET]);
-		pkgimport_msg_set_nativehostneeds(import_msg, "");
-		pkgimport_msg_set_nativetargetneeds(import_msg, "");
-		pkgimport_msg_set_crosshostneeds(import_msg, "");
-		pkgimport_msg_set_crosstargetneeds(import_msg, "");
-		pkgimport_msg_set_cancross(import_msg, 0);
-		pkgimport_msg_set_broken(import_msg, 0);
-		pkgimport_msg_set_bootstrap(import_msg, 0);
-		pkgimport_msg_set_restricted(import_msg, 0);
-		rc = pkgimport_msg_send(import_msg, import);
-		assert(rc == 0);
-	}
+	ISET(pkgname, "bar");
+	ISET(version, "0.1.0");
+	ISET(arch, pkg_archs_str[ARCH_TARGET]);
+	ISET(nativehostneeds, "");
+	ISET(nativetargetneeds, "");
+	ISET(crosshostneeds, "");
+	ISET(crosstargetneeds, "");
+	ISET(cancross, 0);
+	ISET(broken, 0);
+	ISET(bootstrap, 0);
+	ISET(restricted, 0);
+	ISEND(PKGINFO);
 	for (int i = 1; i <= ARCH_HOST; i++) {
-		zpoller_t *p = zpoller_new(import, NULL);
-		(void) zpoller_wait(p, 10*1000);
-		assert(!zpoller_expired(p));
-		if (zpoller_terminated(p))
-			exit(-1);
-		rc = pkgimport_msg_recv(import_msg, import);
-		assert(rc == 0);
-		assert(pkgimport_msg_id(import_msg) == PKGIMPORT_MSG_ROGER);
-		zpoller_destroy(&p);
+		IGET();
+		ISRTID(ROGER);
 	}
-	{
-		pkgimport_msg_set_id(import_msg, PKGIMPORT_MSG_PKGINFO);
-		pkgimport_msg_set_pkgname(import_msg, "baz");
-		pkgimport_msg_set_version(import_msg, "91230");
-		pkgimport_msg_set_arch(import_msg, pkg_archs_str[ARCH_NOARCH]);
-		pkgimport_msg_set_nativehostneeds(import_msg, "bar");
-		pkgimport_msg_set_nativetargetneeds(import_msg, "bar");
-		pkgimport_msg_set_crosshostneeds(import_msg, "foo");
-		pkgimport_msg_set_crosstargetneeds(import_msg, "foo");
-		pkgimport_msg_set_cancross(import_msg, 0);
-		pkgimport_msg_set_broken(import_msg, 0);
-		pkgimport_msg_set_bootstrap(import_msg, 0);
-		pkgimport_msg_set_restricted(import_msg, 0);
-		rc = pkgimport_msg_send(import_msg, import);
-		assert(rc == 0);
-	}
-	{
-		zpoller_t *p = zpoller_new(import, NULL);
-		(void) zpoller_wait(p, 10*1000);
-		assert(!zpoller_expired(p));
-		if (zpoller_terminated(p))
-			exit(-1);
-		rc = pkgimport_msg_recv(import_msg, import);
-		assert(rc == 0);
-		assert(pkgimport_msg_id(import_msg) == PKGIMPORT_MSG_ROGER);
-		zpoller_destroy(&p);
-	}
-	{
-		zpoller_t *p = zpoller_new(import, NULL);
-		(void) zpoller_wait(p, 10*1000);
-		assert(!zpoller_expired(p));
-		if (zpoller_terminated(p))
-			exit(-1);
-		rc = pkgimport_msg_recv(import_msg, import);
-		assert(rc == 0);
-		assert(pkgimport_msg_id(import_msg) == PKGIMPORT_MSG_STABLESTATUSPLZ);
-		zpoller_destroy(&p);
-	}
-	{
-		pkgimport_msg_set_id(import_msg, PKGIMPORT_MSG_STABLE);
-		pkgimport_msg_set_commithash(import_msg, "aabdbababdbabababdbabababdbdbabaabdbdbac");
-		rc = pkgimport_msg_send(import_msg, import);
-		assert(rc == 0);
-	}
-	{
-		pkgimport_msg_set_id(import_msg, PKGIMPORT_MSG_PKGDEL);
-		pkgimport_msg_set_pkgname(import_msg, "alsormme");
-		rc = pkgimport_msg_send(import_msg, import);
-		assert(rc == 0);
-	}
-	{
-		zpoller_t *p = zpoller_new(import, NULL);
-		(void) zpoller_wait(p, 10*1000);
-		assert(!zpoller_expired(p));
-		if (zpoller_terminated(p))
-			exit(-1);
-		rc = pkgimport_msg_recv(import_msg, import);
-		assert(rc == 0);
-		assert(pkgimport_msg_id(import_msg) == PKGIMPORT_MSG_STABLESTATUSPLZ);
-		zpoller_destroy(&p);
-	}
-	{
-		pkgimport_msg_set_id(import_msg, PKGIMPORT_MSG_STABLE);
-		pkgimport_msg_set_commithash(import_msg, "aabdbababdbabababdbabababdbdbabaabdbdbad");
-		rc = pkgimport_msg_send(import_msg, import);
-		assert(rc == 0);
-	}
+	ISET(pkgname, "baz");
+	ISET(version, "91230");
+	ISET(arch, pkg_archs_str[ARCH_NOARCH]);
+	ISET(nativehostneeds, "bar");
+	ISET(nativetargetneeds, "bar");
+	ISET(crosshostneeds, "foo");
+	ISET(crosstargetneeds, "foo");
+	ISET(cancross, 0);
+	ISET(broken, 0);
+	ISET(bootstrap, 0);
+	ISET(restricted, 0);
+	ISEND(PKGINFO);
+	IGET();
+	ISRTID(ROGER);
+	IGET();
+	ISRTID(STABLESTATUSPLZ);
+	ISET(commithash, "aabdbababdbabababdbabababdbdbabaabdbdbac");
+	ISEND(STABLE);
+	ISET(pkgname, "alsormme");
+	ISEND(PKGDEL);
+	IGET();
+	ISRTID(STABLESTATUSPLZ);
+	ISET(commithash, "aabdbababdbabababdbabababdbdbabaabdbdbad");
+	ISEND(STABLE);
 	/* Work over, let's clean up. */
 
 	pkgimport_msg_destroy(&import_msg);
