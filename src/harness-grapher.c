@@ -345,9 +345,9 @@ main(int argc, char * const *argv)
 	char *ourdir = mkdtemp(tmppath);
 	assert(ourdir);
  	char *dbpath = bstring_add(bstring_add(NULL, ourdir, NULL, NULL), "/test.db", NULL, NULL);
- 	char *import_endpoint = bstring_add(bstring_add(NULL, "ipc://", NULL, NULL), bfs_new_tmpsock(ourdir, "import"), NULL, NULL);
- 	char *file_endpoint = bstring_add(bstring_add(NULL, "ipc://", NULL, NULL), bfs_new_tmpsock(ourdir, "file"), NULL, NULL);
- 	char *graph_endpoint = bstring_add(bstring_add(NULL, "ipc://", NULL, NULL), bfs_new_tmpsock(ourdir, "graph"), NULL, NULL);
+ 	char *import_endpoint = "tcp://127.0.0.1:6012";
+ 	char *file_endpoint = "tcp://127.0.0.1:6013";
+ 	char *graph_endpoint = "tcp://127.0.0.1:6014";
 	char *pubpoint = bstring_add(bstring_add(NULL, "ipc://", NULL, NULL), bfs_new_tmpsock(ourdir, "pub"), NULL, NULL);
  	char *ssldir = "/var/empty/";
 
