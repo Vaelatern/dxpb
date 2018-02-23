@@ -120,6 +120,9 @@ license.inc: ../COPYING
 dxpb-version.h: ../CHANGELOG.md
 	awk '/## [0-9]+\.[0-9]+\.[0-9]+ -/ { print "#define DXPB_VERSION \"" $$2 "\""; exit }' ../CHANGELOG.md >dxpb-version.h
 
+../README.md: ../doc/dxpb.7
+	mandoc -T markdown ../doc/dxpb.7 >../README.md
+
 #############################
 ######  Testing targets #####
 #############################
