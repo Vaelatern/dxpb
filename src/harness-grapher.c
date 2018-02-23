@@ -32,10 +32,33 @@ help(void)
 	printf("%.*s\n", ___doc_dxpb_grapher_help_txt_len, ___doc_dxpb_grapher_help_txt);
 }
 
-#define DXPB_HANDLE_SOCK(type, sock, msg, outbound, direction, retVal) { \
-		pkg##type##_msg_recv(msg, sock); \
-		retVal = handle_##type##_##direction##_msg(msg, outbound); \
+static void
+append_pkgkey_to_list(zlist_t *list, const char *name, const char *ver, const char *arch)
+{
+	assert(list);
+	zlist_comparefn(list, (zlist_compare_fn *)strcmp);
+	zlist_autofree(list);
+	char *key = bstring_add(bstring_add(strdup(name), ver, NULL, NULL), arch, NULL, NULL);
+	zlist_append(list, key);
+	FREE(key);
+}
+
+static void
+remove_pkgkey_from_list(zlist_t *list, int deltype, const char *name, const char *ver, const char *arch)
+{
+	assert(list);
+	zlist_comparefn(list, (zlist_compare_fn *)strcmp);
+	char *key = strdup(name);
+	assert(key);
+	if (!deltype)
+		key = bstring_add(bstring_add(key, ver, NULL, NULL), arch, NULL, NULL);
+	if (!zlist_exists(list, key)) {
+		printf("Couldn't find: %s\n", key);
+		assert(false);
 	}
+	zlist_remove(list, key);
+	FREE(key);
+}
 
 void
 forkoff(const char *dbpath, const char *import_endpoint,
@@ -72,6 +95,8 @@ run(const char *dbpath, const char *import_endpoint,
 
 	int rc;
 
+	zlist_t *list = zlist_new();
+
 	pkgimport_msg_t *import_msg = pkgimport_msg_new();
 	pkggraph_msg_t *graph_msg = pkggraph_msg_new();
 	pkgfiles_msg_t *file_msg = pkgfiles_msg_new();
@@ -92,7 +117,7 @@ run(const char *dbpath, const char *import_endpoint,
 #define SEND(type, TYPE, WHAT, msg, target) { \
 		pkg##type##_msg_set_id(msg, TOMSG(TYPE, WHAT)); \
 		rc = pkg##type##_msg_send(msg, target); \
-		assert(rc == 0); \
+		assert(rc == 0 && "message sending didn't work"); \
 	}
 #define ISEND(WHAT) SEND(import, IMPORT, WHAT, import_msg, import)
 #define GSEND(WHAT) SEND(graph, GRAPH, WHAT, graph_msg, graph)
@@ -106,30 +131,38 @@ run(const char *dbpath, const char *import_endpoint,
 #define GET(type, mymsg, sock) { \
 		zpoller_t *p = zpoller_new(sock, NULL); \
 		(void) zpoller_wait(p, 30*1000); \
-		assert(!zpoller_expired(p)); \
+		assert(!zpoller_expired(p) && "Timeout while waiting for any message"); \
 		if (zpoller_terminated(p)) \
 			exit(-1); \
 		rc = pkg##type##_msg_recv(mymsg, sock); \
-		assert(rc == 0); \
+		assert(rc == 0 && "We thought there was a message. We were wrong"); \
 		zpoller_destroy(&p); \
 	}
 #define IGET()	GET(import, import_msg, import)
 #define GGET()	GET(graph, graph_msg, graph)
 #define FGET()	GET(files, file_msg, file)
 
+#define IF(type, msg, field, goal) if(pkg##type##_msg_##field(msg) == goal)
+#define IIF(field, goal) IF(import, import_msg, field, goal)
+#define GIF(field, goal) IF(graph, graph_msg, field, goal)
+#define FIF(field, goal) IF(files, file_msg, field, goal)
+#define IIFID(goal) IIF(id, TOMSG(IMPORT, goal))
+#define GIFID(goal) GIF(id, TOMSG(GRAPH, goal))
+#define FIFID(goal) FIF(id, TOMSG(FILES, goal))
+
 // SRT is shorthand for assert(), and STRS, for assert(strcmp())
 #define SRT(type, msg, field, goal) assert(pkg##type##_msg_##field(msg) == goal)
 #define ISRT(field, goal) SRT(import, import_msg, ##field, ##goal)
 #define GSRT(field, goal) SRT(graph, graph_msg, ##field, ##goal)
-#define FSRT(field, goal) SRT(files, files_msg, ##field, ##goal)
+#define FSRT(field, goal) SRT(files, file_msg, ##field, ##goal)
 #define ISRTID(goal) SRT(import, import_msg, id, TOMSG(IMPORT, goal))
 #define GSRTID(goal) SRT(graph, graph_msg, id, TOMSG(GRAPH, goal))
-#define FSRTID(goal) SRT(files, files_msg, id, TOMSG(FILES, goal))
+#define FSRTID(goal) SRT(files, file_msg, id, TOMSG(FILES, goal))
 
 #define SRTS(type, msg, field, goal) assert(strcmp(pkg##type##_msg_##field(msg), goal) == 0)
-#define ISRTS(field, goal) SRTS(import, import_msg, ##field, TOMSG(IMPORT, goal))
-#define GSRTS(field, goal) SRTS(graph, graph_msg, ##field, TOMSG(GRAPH, goal))
-#define FSRTS(field, goal) SRTS(files, files_msg, ##field, TOMSG(FILES, goal))
+#define ISRTS(field, goal) SRTS(import, import_msg,  field , goal)
+#define GSRTS(field, goal) SRTS(graph, graph_msg,  field , goal)
+#define FSRTS(field, goal) SRTS(files, file_msg,  field , goal)
 
 	/* And now we get to work */
 
@@ -235,6 +268,39 @@ run(const char *dbpath, const char *import_endpoint,
 	ISRTID(STABLESTATUSPLZ);
 	ISET(commithash, "aabdbababdbabababdbabababdbdbabaabdbdbad");
 	ISEND(STABLE);
+
+	/* Now we set up a graph, let's find out if files are there */
+	FGET();
+	FSRTID(HELLO);
+	FSEND(ROGER);
+	for (int i = 1; i < ARCH_HOST; i++) {
+		append_pkgkey_to_list(list, "foo", "0.0.1", pkg_archs_str[i]);
+		append_pkgkey_to_list(list, "bar", "0.1.0", pkg_archs_str[i]);
+	}
+	append_pkgkey_to_list(list, "rmme", NULL, NULL);
+	append_pkgkey_to_list(list, "alsormme", NULL, NULL);
+	append_pkgkey_to_list(list, "baz", "91230", pkg_archs_str[ARCH_NOARCH]);
+	{
+		int max = 2*(ARCH_HOST) + 1; // + 1 noarch
+		for (int i = 0; i < max; i++) {
+			FGET();
+			int is_del;
+			FIFID(ISPKGHERE)
+				is_del = 0;
+			else FIFID(PKGDEL)
+				is_del = 1;
+			else
+				assert(false);
+			remove_pkgkey_from_list(list, is_del,
+					pkgfiles_msg_pkgname(file_msg),
+					pkgfiles_msg_version(file_msg),
+					pkgfiles_msg_arch(file_msg));
+		}
+	}
+	assert(zlist_size(list) == 0);
+
+	FSET(pkgname, "foo");
+	FSET(version, "0.0.1");
 	/* Work over, let's clean up. */
 
 	pkgimport_msg_destroy(&import_msg);
@@ -244,6 +310,8 @@ run(const char *dbpath, const char *import_endpoint,
 	zsock_destroy(&import);
 	zsock_destroy(&graph);
 	zsock_destroy(&file);
+
+	zlist_destroy(&list);
 
 	return 0;
 }
