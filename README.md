@@ -124,7 +124,7 @@ among all daemons (though not necessarily for utilities).
 
 > Path which will be a sqlite db, if it is not already, for storing packages.
 > This database is not extremely important, but keeping it around will result in
-> building sooner than if the database needs to be regenrated.
+> building sooner than if the database needs to be regenerated.
 
 **-W** *hostarch:targetarch:cost\[:iscross]*
 
