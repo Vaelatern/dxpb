@@ -13,7 +13,7 @@ unset USER GROUP WRKDIR HOSTDIR SSLDIR ENDPOINT LOGFILE
 
 args=""
 [ -n "$SSLDIR" ] && args="$args -k $SSLDIR"
-[ -n "$HOSTDIR" ] && args="$args -H $HOSTDIR"
+[ -n "$HOSTDIR" ] && args="$args -r $HOSTDIR"
 [ -n "$ENDPOINT" ] && args="$args -f $ENDPOINT"
 
 [ -n "$WRKDIR" ] && cd "$WRKDIR"

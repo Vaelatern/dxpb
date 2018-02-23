@@ -15,7 +15,7 @@ unset USER GROUP ETCDIR WKRDIR REPODIR XBPSSRC ENDPOINT PUBPOINT LOGFILE
 [ -z "$WRKDIR" -a -z "$REPODIR" ] && echo "Will not start - need a hostdir to own" && exit 1
 
 args=""
-[ -n "$REPODIR" ] && args="${args} -r $REPODIR"
+[ -n "$REPODIR" ] && args="${args} -p $REPODIR"
 [ -n "$XBPSSRC" ] && args="${args} -x $XBPSSRC"
 [ -n "$ENDPOINT" ] && args="${args} -i $ENDPOINT"
 [ -n "$PUBPOINT" ] && args="${args} -I $PUBPOINT"
