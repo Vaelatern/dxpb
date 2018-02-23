@@ -11,7 +11,8 @@ Arguments:
 		operation over an insecure network.
   -H <dir>	Hostdir builder can use
   -m <dir>	Masterdir builder can use
-  -r <path>	Path to repo, with ./xbps-src present
+  -p <path>	Path to repo, with ./xbps-src present
+  -R <pattern>  Pattern to be passed to mkdtemp() for in-binary ipc:// sockets.
   -W <spec>	Spec following hostarch:targetarch:cost:iscross with :iscross
 		being true if present. host:target:cost for non-cross setups.
 
@@ -20,7 +21,8 @@ The following flags have defaults.
   -g: tcp://127.0.0.1:5195
   -k: /etc/dxpb/curve/
   -m: ./masterdir
-  -r: ./
+  -p: ./
+  -R: /var/run/dxpb/tmpsock-XXXXXX
 
 The following flag is required:
   -W

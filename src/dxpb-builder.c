@@ -205,7 +205,7 @@ main(int argc, char * const *argv)
 	char *endpoint = NULL;
 	char *repopath = NULL;
 	char *varrundir = NULL;
-	const char *optstring = "hvLg:k:H:m:W:r:R:";
+	const char *optstring = "hvLg:k:H:m:W:p:T:";
 
 	while ((ch = getopt(argc, argv, optstring)) != -1) {
 		switch(ch) {
@@ -218,10 +218,10 @@ main(int argc, char * const *argv)
 		case 'g':
 			endpoint = optarg;
 			break;
-		case 'r':
+		case 'p':
 			repopath = optarg;
 			break;
-		case 'R':
+		case 'T':
 			varrundir = optarg;
 			break;
 		case 'k':

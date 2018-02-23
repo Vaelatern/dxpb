@@ -5,9 +5,73 @@
 .Nm dxpb
 .Nd Builders and organization for running xbps-src builds well
 .Sh SYNOPSIS
-.Nm progname
-.Op Fl options
-.Ar
+.Ss GRAPH BINARIES
+.Nm dxpb-builder
+.Op Fl hL
+.Op Fl g Ar graph-endpoint
+.Op Fl k Ar ssl-dir
+.Op Fl H Ar hostdir
+.Op Fl m Ar masterdir
+.Op Fl p Ar packages-git-repo
+.Op Fl T Ar mkdtemp-template
+.Fl W Ar hostarch:targetarch:cost[:iscross]
+.Nm dxpb-frontend
+.Op Fl hL
+.Op Fl g Ar graph-endpoint
+.Op Fl G Ar publish-socket
+.Op Fl k Ar ssl-dir
+.Nm dxpb-grapher
+See:
+.Sx IMPORT BINARIES
+.Nm dxpb-hostdir-master
+See:
+.Sx FILE BINARIES
+.Ss IMPORT BINARIES
+.Nm dxpb-grapher
+.Op Fl hL
+.Op Fl i Ar import-endpoint
+.Op Fl g Ar graph-endpoint
+.Op Fl f Ar file-endpoint
+.Op Fl d Ar package-db
+.Op Fl I Ar publish-socket
+.Op Fl k Ar ssl-dir
+.Nm dxpb-pkgimport-agent
+.Op Fl hL
+.Op Fl i Ar import-endpoint
+.Op Fl x Ar path-to-xbps-src
+.Nm dxpb-pkgimport-master
+.Op Fl hL
+.Op Fl i Ar import-endpoint
+.Op Fl I Ar publish-socket
+.Op Fl p Ar packages-git-repo
+.Op Fl x Ar path-to-xbps-src
+.Nm dxpb-poke
+.Op Fl hL
+.Op Fl i Ar import-endpoint
+.Ss FILE BINARIES
+.Nm dxpb-hostdir-master
+.Op Fl hL
+.Op Fl r Ar package-directory
+.Op Fl l Ar log-directory
+.Op Fl s Ar staging-directory
+.Op Fl g Ar graph-endpoint
+.Op Fl f Ar file-endpoint
+.Op Fl G Ar publish-socket-1
+.Op Fl F Ar publish-socket-2
+.Op Fl k Ar ssl-dir
+.Nm dxpb-hostdir-remote
+.Op Fl hL
+.Op Fl r Ar local-package-directory
+.Op Fl f Ar file-endpoint
+.Op Fl k Ar ssl-dir
+.Nm dxpb-grapher
+See:
+.Sx IMPORT BINARIES
+.Ss UTILITIES
+.Nm dxpb-graph-to-dot
+.Op Fl hL
+.Op Fl f Ar package-db
+.Op Fl t Ar target-file
 .Sh DESCRIPTION
 The
 .Nm
@@ -18,7 +82,68 @@ same endpoints.
 .Nm
 also requires certain resources.
 
-The multiple program chains are as follows: Import, File, Graph.
+.Sh OPTIONS
+The dxpb family of binaries accepts certain flags, and aims for consistency
+among all daemons (though not necessarily for utilities).
+.Bl -tag -width Ds
+.It Fl h
+Print out help text for the specific binary and quit.
+.It Fl L
+Print out the license and quit.
+.It Fl i
+Endpoint in the form tcp://host:port for the import chain. Host can be * but
+only on dxpb-pkgimport-master.
+.It Fl g
+Endpoint in the form tcp://host:port for the graph chain. Host can be * but
+only on dxpb-frontend.
+.It Fl f
+Endpoint in the form tcp://host:port for the file chain. Host can be * but
+only on dxpb-hostdir-master.
+.It Fl d
+Path which will be a sqlite db, if it is not already, for storing packages.
+This database is not extremely important, but keeping it around will result in
+building sooner than if the database needs to be regenrated.
+.It Fl W Ar hostarch:targetarch:cost[:iscross]
+Worker Specification. If the [:iscross] component is present, the specification
+is defined as a crossbuilding setup. It is up to the caller to get this
+specification correct.
+The architectures are any architecture that xbps-src accepts.
+The hostarch should match the host machine's architecture.
+The targetarch is whatever that builder should be building. It can be the same
+as the hostarch, or it can be anything else xbps-src will accept. Remember to
+set iscross as relevant.
+Cost should default to 100, and is an unsigned integer between 0 and 255.
+.It Fl s
+A staging directory. Just needs to not be tiny and needs to be read/writeable.
+Shouldn't have anything else in there.
+.It Fl I Fl G Fl F
+Publishing sockets for an ircbot or other scraper to listen and glean state.
+Every publishing socket needs to be unique, otherwise zeromq can't handle it.
+.It Fl x
+A path to xbps-src. This is most often irrelevant, since the working directory
+of those binaries coupled with the default option for this flag generally is
+all a user needs.
+.It Fl m
+Masterdir as used by xbps-src. Generally a chroot-ready environment, managed
+completely by xbps-src (and thus not by the users of dxpb). Any daemon requiring
+this flag must be able to read and write to this.
+.It Fl H
+A path to a /hostdir. /hostdir is the path from the root of a git checkout of
+the upstream -packages repo. This is most often irrelevant, since the working
+directory of those binaries coupled with the default option for this flag
+generally is all a user needs.
+.It Fl r
+Path to a git-clone of the upstream -packages repository.
+.It Fl p
+A path to a directory to store xbps packages. hostdir/binpkgs from the root of
+a package git repository checkout.
+.It Fl T
+A template pattern for mkdtemp. Should be a string where the last 6 characters
+are X - please see the mkdtemp manpage for more information. Any caller needs
+to create directories with these patterns at whim.
+.It Fl k
+Directory for storing public keys and at least the private key for the named
+daemon. Currently unused.
 .Sh CHAINS
 .Ss Import
 This chain is responsible for reading in xbps-src templates, understanding

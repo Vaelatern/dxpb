@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.11.1 - 2018-02-22 - The Next One
+### Overview
+- Flags have been changed for consistency of purpose across all daemons.
+- There is now a manpage for dxpb, which will eventually be joined by more.
+
 ## 0.0.11 - 2018-02-08 - The one where we are not a cookie monster
 ### Overview
 - ALL BINARIES ARE INCOMPATIBLE WITH PREVIOUS VERSIONS - message signatures

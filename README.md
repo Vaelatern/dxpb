@@ -6,9 +6,80 @@ dxpb(7) - Miscellaneous Information Manual
 
 # SYNOPSIS
 
-**progname**
-\[**-options**]
-*file&nbsp;...*
+## GRAPH BINARIES
+
+**dxpb-builder**
+\[**-hL**]
+\[**-g**&nbsp;*graph-endpoint*]
+\[**-k**&nbsp;*ssl-dir*]
+\[**-H**&nbsp;*hostdir*]
+\[**-m**&nbsp;*masterdir*]
+\[**-p**&nbsp;*packages-git-repo*]
+\[**-T**&nbsp;*mkdtemp-template*]
+**-W**&nbsp;*hostarch:targetarch:cost\[:iscross]*  
+**dxpb-frontend**
+\[**-hL**]
+\[**-g**&nbsp;*graph-endpoint*]
+\[**-G**&nbsp;*publish-socket*]
+\[**-k**&nbsp;*ssl-dir*]  
+**dxpb-grapher**
+See:
+*IMPORT&nbsp;BINARIES*  
+**dxpb-hostdir-master**
+See:
+*FILE&nbsp;BINARIES*
+
+## IMPORT BINARIES
+
+**dxpb-grapher**
+\[**-hL**]
+\[**-i**&nbsp;*import-endpoint*]
+\[**-g**&nbsp;*graph-endpoint*]
+\[**-f**&nbsp;*file-endpoint*]
+\[**-d**&nbsp;*package-db*]
+\[**-I**&nbsp;*publish-socket*]
+\[**-k**&nbsp;*ssl-dir*]  
+**dxpb-pkgimport-agent**
+\[**-hL**]
+\[**-i**&nbsp;*import-endpoint*]
+\[**-x**&nbsp;*path-to-xbps-src*]  
+**dxpb-pkgimport-master**
+\[**-hL**]
+\[**-i**&nbsp;*import-endpoint*]
+\[**-I**&nbsp;*publish-socket*]
+\[**-p**&nbsp;*packages-git-repo*]
+\[**-x**&nbsp;*path-to-xbps-src*]  
+**dxpb-poke**
+\[**-hL**]
+\[**-i**&nbsp;*import-endpoint*]
+
+## FILE BINARIES
+
+**dxpb-hostdir-master**
+\[**-hL**]
+\[**-r**&nbsp;*package-directory*]
+\[**-l**&nbsp;*log-directory*]
+\[**-s**&nbsp;*staging-directory*]
+\[**-g**&nbsp;*graph-endpoint*]
+\[**-f**&nbsp;*file-endpoint*]
+\[**-G**&nbsp;*publish-socket-1*]
+\[**-F**&nbsp;*publish-socket-2*]
+\[**-k**&nbsp;*ssl-dir*]  
+**dxpb-hostdir-remote**
+\[**-hL**]
+\[**-r**&nbsp;*local-package-directory*]
+\[**-f**&nbsp;*file-endpoint*]
+\[**-k**&nbsp;*ssl-dir*]  
+**dxpb-grapher**
+See:
+*IMPORT&nbsp;BINARIES*
+
+## UTILITIES
+
+**dxpb-graph-to-dot**
+\[**-hL**]
+\[**-f**&nbsp;*package-db*]
+\[**-t**&nbsp;*target-file*]
 
 # DESCRIPTION
 
@@ -21,7 +92,100 @@ same endpoints.
 **dxpb**
 also requires certain resources.
 
-The multiple program chains are as follows: Import, File, Graph.
+# OPTIONS
+
+The dxpb family of binaries accepts certain flags, and aims for consistency
+among all daemons (though not necessarily for utilities).
+
+**-h**
+
+> Print out help text for the specific binary and quit.
+
+**-L**
+
+> Print out the license and quit.
+
+**-i**
+
+> Endpoint in the form tcp://host:port for the import chain. Host can be \* but
+> only on dxpb-pkgimport-master.
+
+**-g**
+
+> Endpoint in the form tcp://host:port for the graph chain. Host can be \* but
+> only on dxpb-frontend.
+
+**-f**
+
+> Endpoint in the form tcp://host:port for the file chain. Host can be \* but
+> only on dxpb-hostdir-master.
+
+**-d**
+
+> Path which will be a sqlite db, if it is not already, for storing packages.
+> This database is not extremely important, but keeping it around will result in
+> building sooner than if the database needs to be regenrated.
+
+**-W** *hostarch:targetarch:cost\[:iscross]*
+
+> Worker Specification. If the \[:iscross] component is present, the specification
+> is defined as a crossbuilding setup. It is up to the caller to get this
+> specification correct.
+> The architectures are any architecture that xbps-src accepts.
+> The hostarch should match the host machine's architecture.
+> The targetarch is whatever that builder should be building. It can be the same
+> as the hostarch, or it can be anything else xbps-src will accept. Remember to
+> set iscross as relevant.
+> Cost should default to 100, and is an unsigned integer between 0 and 255.
+
+**-s**
+
+> A staging directory. Just needs to not be tiny and needs to be read/writeable.
+> Shouldn't have anything else in there.
+
+**-I** **-G** **-F**
+
+> Publishing sockets for an ircbot or other scraper to listen and glean state.
+> Every publishing socket needs to be unique, otherwise zeromq can't handle it.
+
+**-x**
+
+> A path to xbps-src. This is most often irrelevant, since the working directory
+> of those binaries coupled with the default option for this flag generally is
+> all a user needs.
+
+**-m**
+
+> Masterdir as used by xbps-src. Generally a chroot-ready environment, managed
+> completely by xbps-src (and thus not by the users of dxpb). Any daemon requiring
+> this flag must be able to read and write to this.
+
+**-H**
+
+> A path to a /hostdir. /hostdir is the path from the root of a git checkout of
+> the upstream -packages repo. This is most often irrelevant, since the working
+> directory of those binaries coupled with the default option for this flag
+> generally is all a user needs.
+
+**-r**
+
+> Path to a git-clone of the upstream -packages repository.
+
+**-p**
+
+> A path to a directory to store xbps packages. hostdir/binpkgs from the root of
+> a package git repository checkout.
+
+**-T**
+
+> A template pattern for mkdtemp. Should be a string where the last 6 characters
+> are X - please see the mkdtemp manpage for more information. Any caller needs
+> to create directories with these patterns at whim.
+
+**-k**
+
+> Directory for storing public keys and at least the private key for the named
+> daemon. Currently unused.
 
 # CHAINS
 

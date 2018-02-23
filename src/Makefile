@@ -105,9 +105,11 @@ OBJECTS = \
 
 .PHONY: all main test check_%
 
-main: prod
+main: release prod
 
 all: test
+
+release: ../README.md
 
 runnables: $(BINARIES)
 

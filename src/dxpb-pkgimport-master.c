@@ -59,7 +59,7 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "vhLr:i:I:x:";
+	const char *optstring = "vhLp:i:I:x:";
 	char *default_endpoint = DEFAULT_IMPORT_ENDPOINT;
 	char *default_pubpoint = DEFAULT_DXPB_PKGIMPORT_MASTER_PUBPOINT;
 	char *default_repopath = DEFAULT_REPOPATH;
@@ -83,7 +83,7 @@ main(int argc, char * const *argv)
 		case 'i':
 			endpoint = optarg;
 			break;
-		case 'r':
+		case 'p':
 			repopath = optarg;
 			break;
 		case 'x':

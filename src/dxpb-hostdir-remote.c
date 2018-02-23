@@ -68,7 +68,7 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "vhLH:k:f:";
+	const char *optstring = "vhLr:k:f:";
 	char *default_hostdir = DEFAULT_REPOPATH;
 	char *default_ssldir = DEFAULT_SSLDIR;
 	char *default_endpoint = DEFAULT_GRAPH_ENDPOINT;
@@ -90,7 +90,7 @@ main(int argc, char * const *argv)
 		case 'k':
 			ssldir = optarg;
 			break;
-		case 'H':
+		case 'r':
 			hostdir = optarg;
 			break;
 		case 'v':

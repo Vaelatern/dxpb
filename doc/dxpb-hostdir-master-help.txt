@@ -18,7 +18,6 @@ Arguments:
                 If not specified, no encryption will be performed, warnings
 		will be printed, and the entire setup will be unfit for
 		operation over an insecure network.
-  -R <pattern>  Pattern to be passed to mkdtemp() for in-binary ipc:// sockets.
 
 The following flags have defaults.
   -k: /etc/dxpb/curve/
@@ -29,4 +28,3 @@ The following flags have defaults.
   -G: ipc:///var/run/dxpb/log-dxpb-hostdir-master-graph.sock
   -f: tcp://127.0.0.1:5196
   -F: ipc:///var/run/dxpb/log-dxpb-hostdir-master-files.sock
-  -R: /var/run/dxpb/tmpsock-XXXXXX
