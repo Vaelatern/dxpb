@@ -23,7 +23,7 @@ prologue(const char *argv0)
 {
 	char *arg = strdup(argv0);
 	assert(arg);
-	printf("DXPB: Distributed XBPS Package Builder\n"
+	fprintf(stderr, "DXPB: Distributed XBPS Package Builder\n"
 			"%s %s\n"
 			"Copyright 2016-2018, Toyam Cox\n"
 			"This is free software with ABSOLUTELY NO WARRANTY.\n"
