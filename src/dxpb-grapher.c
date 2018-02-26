@@ -50,6 +50,7 @@ handle_files_out_msg(pkgfiles_msg_t *msg, pkgfiler_grapher_t *filer)
 				pkgfiles_msg_pkgname(msg));
 		break;
 	default:
+		fprintf(stderr, "We don't know how to handle this message (files_out)\n");
 		return ERR_CODE_BAD;
 	}
 	return ERR_CODE_OK;
@@ -72,6 +73,7 @@ handle_graph_out_msg(pkggraph_msg_t *msg, pkggraph_grapher_t *grapher)
 		pkggraph_grapher_do_update_bootstrap(grapher);
 		break;
 	default:
+		fprintf(stderr, "We don't know how to handle this message (graph_out)\n");
 		return ERR_CODE_BAD;
 	}
 	return ERR_CODE_OK;
@@ -127,6 +129,7 @@ handle_graph_in_msg(pkggraph_msg_t *msg, pkgimport_grapher_t *importer)
 		}
 		break;
 	default:
+		fprintf(stderr, "We don't know how to handle this message (graph_in)\n");
 		return ERR_CODE_BAD;
 	}
 	return ERR_CODE_OK;
@@ -149,6 +152,7 @@ handle_files_in_msg(pkgfiles_msg_t *msg, pkgimport_grapher_t *importer)
 				pkgfiles_msg_arch(msg));
 		break;
 	default:
+		fprintf(stderr, "We don't know how to handle this message (files_in)\n");
 		return ERR_CODE_BAD;
 	}
 	return ERR_CODE_OK;
@@ -192,7 +196,9 @@ main_loop(pkgimport_grapher_t *importer, pkggraph_grapher_t *grapher,
 
 	while (retVal == ERR_CODE_OK &&
 				(in_sock = zpoller_wait(polling, -1)) != NULL) {
+		retVal = ERR_CODE_DONE;
 		if (in_sock == import_sock) {
+			retVal = ERR_CODE_OK;
 			zframe_t *frame = zframe_recv(import_sock);
 			switch (btranslate_type_of_msg(frame)) {
 			case TRANSLATE_FILES:
@@ -206,14 +212,17 @@ main_loop(pkgimport_grapher_t *importer, pkggraph_grapher_t *grapher,
 			default:
 				break;
 			}
-		} else if (in_sock == graph_sock) {
+		}
+		if (in_sock == graph_sock) {
+			retVal = ERR_CODE_OK;
 			DXPB_HANDLE_SOCK(graph, in_sock, graph_msg, importer,
 					in, retVal);
-		} else if (in_sock == file_sock) {
+		}
+		if (in_sock == file_sock) {
+			retVal = ERR_CODE_OK;
 			DXPB_HANDLE_SOCK(files, in_sock, file_msg, importer,
 					in, retVal);
-		} else /* interrupted, bid everybody farewell and die */
-			retVal = ERR_CODE_DONE;
+		}
 	}
 	zpoller_destroy(&polling);
 	pkgimport_msg_destroy(&import_msg);

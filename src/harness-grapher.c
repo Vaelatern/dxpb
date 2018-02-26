@@ -184,9 +184,9 @@ run(const char *dbpath, const char *import_endpoint,
 		ISET(version, "0.0.1");
 		ISET(arch, pkg_archs_str[i]);
 		ISET(nativehostneeds, "");
-		ISET(nativetargetneeds, "");
+		ISET(nativetargetneeds, "giggity");
 		ISET(crosshostneeds, "");
-		ISET(crosstargetneeds, "");
+		ISET(crosstargetneeds, "giggity");
 		ISET(cancross, 0);
 		ISET(broken, 0);
 		ISET(bootstrap, 0);
@@ -205,11 +205,31 @@ run(const char *dbpath, const char *import_endpoint,
 	ISET(bootstrap, 0);
 	ISET(restricted, 0);
 	ISEND(PKGINFO);
+	ISET(arch, pkg_archs_str[ARCH_HOST]);
+	ISEND(PKGINFO);
 
-	for (int i = 1; i <= ARCH_HOST; i++) {
+	for (int i = 0; i < ARCH_TARGET; i++) {
 		IGET();
 		ISRTID(ROGER);
 	}
+	ISET(pkgname, "giggity");
+	ISET(version, "1.5.0");
+	ISET(arch, pkg_archs_str[ARCH_NOARCH]);
+	ISET(nativehostneeds, "");
+	ISET(nativetargetneeds, "");
+	ISET(crosshostneeds, "");
+	ISET(crosstargetneeds, "");
+	ISET(cancross, 0);
+	ISET(broken, 0);
+	ISET(bootstrap, 1);
+	ISET(restricted, 0);
+	ISEND(PKGINFO);
+	ISET(arch, pkg_archs_str[ARCH_HOST]);
+	ISEND(PKGINFO);
+	IGET();
+	ISRTID(ROGER);
+	IGET();
+	ISRTID(ROGER);
 	IGET();
 	ISRTID(STABLESTATUSPLZ);
 	ISET(commithash, "aabdbababdbabababdbabababdbdbabaabdbdbab");
@@ -240,7 +260,9 @@ run(const char *dbpath, const char *import_endpoint,
 	ISET(bootstrap, 0);
 	ISET(restricted, 0);
 	ISEND(PKGINFO);
-	for (int i = 1; i <= ARCH_HOST; i++) {
+	ISET(arch, pkg_archs_str[ARCH_HOST]);
+	ISEND(PKGINFO);
+	for (int i = 0; i < ARCH_TARGET; i++) {
 		IGET();
 		ISRTID(ROGER);
 	}
@@ -256,6 +278,10 @@ run(const char *dbpath, const char *import_endpoint,
 	ISET(bootstrap, 0);
 	ISET(restricted, 0);
 	ISEND(PKGINFO);
+	ISET(arch, pkg_archs_str[ARCH_HOST]);
+	ISEND(PKGINFO);
+	IGET();
+	ISRTID(ROGER);
 	IGET();
 	ISRTID(ROGER);
 	IGET();
@@ -275,13 +301,12 @@ run(const char *dbpath, const char *import_endpoint,
 	FSEND(ROGER);
 	for (int i = 1; i < ARCH_HOST; i++) {
 		append_pkgkey_to_list(list, "foo", "0.0.1", pkg_archs_str[i]);
-		append_pkgkey_to_list(list, "bar", "0.1.0", pkg_archs_str[i]);
 	}
 	append_pkgkey_to_list(list, "rmme", NULL, NULL);
 	append_pkgkey_to_list(list, "alsormme", NULL, NULL);
-	append_pkgkey_to_list(list, "baz", "91230", pkg_archs_str[ARCH_NOARCH]);
+	append_pkgkey_to_list(list, "giggity", "1.5.0", pkg_archs_str[ARCH_NOARCH]);
 	{
-		int max = 2*(ARCH_HOST) + 1; // + 1 noarch
+		int max = zlist_size(list);
 		for (int i = 0; i < max; i++) {
 			FGET();
 			int is_del;
@@ -301,6 +326,34 @@ run(const char *dbpath, const char *import_endpoint,
 
 	FSET(pkgname, "foo");
 	FSET(version, "0.0.1");
+	for (int i = 1; i < ARCH_HOST; i++) {
+		FSET(arch, pkg_archs_str[i]);
+		if (i != ARCH_AARCH64_MUSL && i != ARCH_X86_64) {
+			append_pkgkey_to_list(list, "bar", "0.1.0", pkg_archs_str[i]);
+			FSEND(PKGHERE);
+		} else {
+			FSEND(PKGNOTHERE);
+		}
+	}
+	{
+		int max = zlist_size(list);
+		for (int i = 0; i < max; i++) {
+			FGET();
+			int is_del;
+			FIFID(ISPKGHERE)
+				is_del = 0;
+			else FIFID(PKGDEL)
+				is_del = 1;
+			else
+				assert(false);
+			remove_pkgkey_from_list(list, is_del,
+					pkgfiles_msg_pkgname(file_msg),
+					pkgfiles_msg_version(file_msg),
+					pkgfiles_msg_arch(file_msg));
+		}
+	}
+	assert(zlist_size(list) == 0);
+
 	/* Work over, let's clean up. */
 
 	pkgimport_msg_destroy(&import_msg);

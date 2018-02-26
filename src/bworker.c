@@ -435,6 +435,8 @@ bworker_grp_pkg_matches(struct bworkgroup *grp, struct pkg *pkg)
 
 	if (retVal == NULL) // no effect, but makes the return values clear.
 		return NULL;
+	if (retVal->num == 0)
+		bworker_match_destroy(&retVal); // sets retVal to NULL
 	return retVal;
 }
 

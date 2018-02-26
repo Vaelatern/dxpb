@@ -654,8 +654,10 @@ match_workers_to_this_pkg (client_t *self)
 
 	if ((matches = bworker_grp_pkg_matches(self->workers, pkg)) == NULL)
 		return;
-	if ((wrkr = bworker_group_matches_choose(matches)) == NULL)
+	if ((wrkr = bworker_group_matches_choose(matches)) == NULL) {
+		fprintf(stderr, "Told of possible workers, but it was a lie\n");
 		exit(ERR_CODE_BADDOBBY);
+	}
 	bworker_match_destroy(&matches);
 
 	if (pkgimport_grapher_ask_worker_to_help(self, wrkr, pkg) == ERR_CODE_OK)
