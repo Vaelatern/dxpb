@@ -81,6 +81,19 @@ See:
 \[**-f**&nbsp;*package-db*]
 \[**-t**&nbsp;*target-file*]
 
+## SSL UTILITIES
+
+**dxpb-certs-server**
+\[**-hL**]
+\[**-k**&nbsp;*ssl-dir*]
+\[**-R**]
+\[**-F**]
+\[**-G**]  
+**dxpb-certs-server**
+\[**-hL**]
+\[**-k**&nbsp;*ssl-dir*]
+\[**-n**&nbsp;*daemon-name*]
+
 # DESCRIPTION
 
 The
@@ -167,6 +180,11 @@ among all daemons (though not necessarily for utilities).
 > directory of those binaries coupled with the default option for this flag
 > generally is all a user needs.
 
+**-n**
+
+> Name to be used as daemon. This is relevant for ssl keys, because this name is
+> used to name ssl keys. Clients even have the names for their servers hardcoded.
+
 **-r**
 
 > Path to a git-clone of the upstream -packages repository.
@@ -185,7 +203,7 @@ among all daemons (though not necessarily for utilities).
 **-k**
 
 > Directory for storing public keys and at least the private key for the named
-> daemon. Currently unused.
+> daemon. When empty, ssl is disabled.
 
 # CHAINS
 
@@ -267,6 +285,24 @@ There are a variety of resources needed by dxpb, and they are listed below.
 *	An endpoint over which to communicate. See dxpb-grapher -h for the default
 	endpoint.
 
+# SSL
+
+Zeromq provides a curve implementation that uses Curve25519, which is an
+implementation of DJB's protocol to provide perfect forward secrecy. This
+involves server keys, where the public key must be available to every endpoint
+which wants to connect. Private keys are generated on every endpoint. Each
+client is theoretically capable of choosing its own private key (based on
+argv0), but the server does not enforce one key per connection. Thus, if
+desirable, every remote on a single box may use a single private key. Due to
+the curve implementation, and how permanent keys are never sent in the clear,
+this may be an acceptable solution.
+
+The list of allowed public keys is not explicitly given to the server. Instead,
+the server with a directory containing the acceptable client public keys.
+Public keys and private keys are just flat files, and there is no technological
+rule enforcing naming, for dxpb's purposes, argv0 needs to be the pubkey, and
+argv0\_secret must be the private key.
+
 # AUTHORS
 
 Toyam Cox &lt;Vaelatern@gmail.com&gt;
@@ -291,4 +327,4 @@ might be fixed.
 zmq\_tcp(7)
 zmq\_curve(7)
 
-Void Linux - February 22, 2018
+Void Linux - February 26, 2018

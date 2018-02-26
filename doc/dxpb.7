@@ -72,6 +72,17 @@ See:
 .Op Fl hL
 .Op Fl f Ar package-db
 .Op Fl t Ar target-file
+.Ss SSL UTILITIES
+.Nm dxpb-certs-server
+.Op Fl hL
+.Op Fl k Ar ssl-dir
+.Op Fl R
+.Op Fl F
+.Op Fl G
+.Nm dxpb-certs-server
+.Op Fl hL
+.Op Fl k Ar ssl-dir
+.Op Fl n Ar daemon-name
 .Sh DESCRIPTION
 The
 .Nm
@@ -132,6 +143,9 @@ A path to a /hostdir. /hostdir is the path from the root of a git checkout of
 the upstream -packages repo. This is most often irrelevant, since the working
 directory of those binaries coupled with the default option for this flag
 generally is all a user needs.
+.It Fl n
+Name to be used as daemon. This is relevant for ssl keys, because this name is
+used to name ssl keys. Clients even have the names for their servers hardcoded.
 .It Fl r
 Path to a git-clone of the upstream -packages repository.
 .It Fl p
@@ -143,7 +157,7 @@ are X - please see the mkdtemp manpage for more information. Any caller needs
 to create directories with these patterns at whim.
 .It Fl k
 Directory for storing public keys and at least the private key for the named
-daemon. Currently unused.
+daemon. When empty, ssl is disabled.
 .Sh CHAINS
 .Ss Import
 This chain is responsible for reading in xbps-src templates, understanding
@@ -219,6 +233,22 @@ dxpb-builder process. It will do its job in this directory.
 An endpoint over which to communicate. See dxpb-grapher -h for the default
 endpoint.
 .El bullet
+.Sh SSL
+Zeromq provides a curve implementation that uses Curve25519, which is an
+implementation of DJB's protocol to provide perfect forward secrecy. This
+involves server keys, where the public key must be available to every endpoint
+which wants to connect. Private keys are generated on every endpoint. Each
+client is theoretically capable of choosing its own private key (based on
+argv0), but the server does not enforce one key per connection. Thus, if
+desirable, every remote on a single box may use a single private key. Due to
+the curve implementation, and how permanent keys are never sent in the clear,
+this may be an acceptable solution.
+
+The list of allowed public keys is not explicitly given to the server. Instead,
+the server with a directory containing the acceptable client public keys.
+Public keys and private keys are just flat files, and there is no technological
+rule enforcing naming, for dxpb's purposes, argv0 needs to be the pubkey, and
+argv0_secret must be the private key.
 .Sh AUTHORS
 Toyam Cox <Vaelatern@gmail.com>
 .Sh BUGS

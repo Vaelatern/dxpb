@@ -120,6 +120,7 @@ But the basic forms are just 2. `$pkgname{,-$version_$revision}}`, since xbps
 refuses `$pkgname-$version` without `_$revision`.
 Therefore to match a dependency statement to a package name, one simply tries
 the whole string, or passes off the xbps pkgname checking functions.
+
 ### So how does this SSL thing work anyway?
 
 Zeromq provides a curve implementation that uses Curve25519, which is an
@@ -131,9 +132,6 @@ server does not enforce one key per connection. Thus, if desirable, every
 remote on a single box may use a single private key. Due to the curve
 implementation, and how permanent keys are never sent in the clear, this may be
 an acceptable solution.
-
-The graph protocol server uses the `dxpb-graph` public key, while the file
-protocol server uses the `dxpb-file` public key.
 
 #### Yeah, but I looked at the code. It's just magic.
 
