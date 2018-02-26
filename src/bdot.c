@@ -94,6 +94,13 @@ bdot_save_graph(Agraph_t *grph, const char *path)
 	agwrite(grph, file);
 	fclose(file);
 }
+
+void
+bdot_print_graph(Agraph_t *grph)
+{
+	agwrite(grph, stdout);
+}
+
 void
 bdot_close(Agraph_t **grph)
 {

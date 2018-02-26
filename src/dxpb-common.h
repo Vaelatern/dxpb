@@ -19,7 +19,6 @@ enum ret_codes	ensure_sock_if_ipc(const char *);
 #define DEFAULT_DXPB_HOSTDIR_MASTER_FILE_PUBPOINT "ipc:///var/run/dxpb/log-dxpb-hostdir-master-filer.sock"
 
 #define DEFAULT_DBPATH "/var/cache/dxpb/pkgs.db"
-#define DEFAULT_DOTGRAPHPATH "/var/cache/dxpb/pkgs.dot"
 
 #define DEFAULT_VARRUNDIR "/var/run/dxpb/"
 

@@ -33,7 +33,6 @@ int
 run(int flags, const char *from, const char *to)
 {
 	assert(from);
-	assert(to);
 	int verbose = flags & VERBOSE_FLAG;
 
 	if (verbose)
@@ -62,9 +61,13 @@ run(int flags, const char *from, const char *to)
 	if (verbose)
 		printf("Creating dot graph...\n");
 	Agraph_t *dot = bdot_from_graph(grph);
-	if (verbose)
-		printf("Saving to file %s ...\n", to);
-	bdot_save_graph(dot, to);
+
+	if (!to) {
+		if (verbose)
+			printf("Saving to file %s ...\n", to);
+		bdot_save_graph(dot, to);
+	} else
+		bdot_print_graph(dot);
 	bdot_close(&dot);
 	if (verbose)
 		printf("Done\n");
@@ -79,7 +82,6 @@ main(int argc, char * const *argv)
 	const char *optstring = "hLvt:f:";
 	char *default_dbpath = DEFAULT_DBPATH;
 	char *dbpath = NULL;
-	char *default_graphpath = DEFAULT_DOTGRAPHPATH;
 	char *graphpath = NULL;
 
 
@@ -117,8 +119,6 @@ main(int argc, char * const *argv)
 
 	prologue(argv[0]);
 
-	if (!graphpath)
-		graphpath = default_graphpath;
 	if (!dbpath)
 		dbpath = default_dbpath;
 
