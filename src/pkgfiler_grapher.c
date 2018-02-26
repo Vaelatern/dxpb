@@ -62,6 +62,7 @@ msg2send2key(struct message_to_send *msg)
 {
 	char *rV = NULL;
 	uint32_t parA, parB;
+	parA = parB = 0;
 	rV = bstring_add(rV, msg->pkgname, &parA, &parB);
 	assert(rV);
 	if (msg->type == PKGFILES_MSG_PKGDEL ||
@@ -78,6 +79,7 @@ pkgmsg2key(pkgfiles_msg_t *msg)
 {
 	char *rV = NULL;
 	uint32_t parA, parB;
+	parA = parB = 0;
 	rV = bstring_add(rV, pkgfiles_msg_pkgname(msg), &parA, &parB);
 	assert(rV);
 	if (pkgfiles_msg_id(msg) == PKGFILES_MSG_PKGDEL ||
