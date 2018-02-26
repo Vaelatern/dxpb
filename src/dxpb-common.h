@@ -2,7 +2,6 @@ void		prologue(const char *);
 void		print_license(void);
 void		flushsock(void *, const char *);
 enum ret_codes	ensure_sock_if_ipc(const char *);
-int		setup_ssl(void *, const char *, const char *, const char *);
 void		do_server_ssl_if_possible(void *, const char *, const char *);
 
 #define DEFAULT_SSLDIR "/etc/dxpb/curve/"

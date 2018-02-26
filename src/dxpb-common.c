@@ -83,8 +83,8 @@ do_server_ssl_if_possible(void *client, const char *ssldir, const char *argv0)
 		goto end;
 	}
 
-	zstr_sendx(client, "AUTH", "CURVE", ssldir, NULL);
 	zstr_sendx(client, "CURVE", certpath, NULL);
+	zstr_sendx(client, "AUTH", "CURVE", ssldir, NULL);
 
 end:
 	FREE(certpath);

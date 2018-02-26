@@ -182,11 +182,11 @@ testdb: pkgimport_msg.o bxsrc.o bxbps.o bstring.o bwords.o bgraph.o bxpkg.o bdb.
 	$(GSL_BIN) -q -trace:1 $<
 	touch $@
 
-%_client.c: %_msg.c set_ssl_client_keys.inc
+%_client.c: %_msg.c
 
 %_server.c: %_msg.c
 
-%_engine.inc: %.xml pkgall_client_ssl.xml
+%_engine.inc: %.xml
 
 ##################################
 #### Binaries and their needs ####

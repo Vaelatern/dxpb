@@ -39,7 +39,6 @@ sock_ssl_setup(zsock_t *sock, const char *mysec, const char *mypub, const char *
 	zsock_set_curve_secretkey(sock, mysec);
 	zsock_set_curve_publickey(sock, mypub);
 	zsock_set_curve_serverkey(sock, servpub);
-	zsock_set_curve_server(sock, 0);
 	return 0;
 }
 
@@ -70,7 +69,7 @@ forkoff_remote(const char *ssldir, const char *hostdir, const char *file_end)
 	switch(fork()) {
 	case 0:
 		execlp("./dxpb-hostdir-remote", "dxpb-hostdir-remote", "-v",
-				"-H", hostdir, "-f", file_end, "-k", ssldir,
+				"-r", hostdir, "-f", file_end, "-k", ssldir,
 				NULL);
 		exit(0);
 	case -1:

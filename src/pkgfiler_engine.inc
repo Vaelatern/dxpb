@@ -1149,7 +1149,6 @@ s_server_handle_pipe (zloop_t *loop, zsock_t *reader, void *argument)
 	zsock_set_curve_server (self->router, 1);
         zcert_destroy (&cert);
         zstr_free (&path);
-	printf("*****> ENDED CURVE INSTRUCTION <*****\n");
     }
     else
     if (streq (method, "PORT")) {
