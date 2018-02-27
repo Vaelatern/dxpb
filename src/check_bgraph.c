@@ -9,7 +9,7 @@ START_TEST(test_basic_bgraph)
 	zlist_t *list;
 	grph = bgraph_new();
 	ck_assert_ptr_nonnull(grph);
-	ck_assert_int_eq(zhash_size(grph), ARCH_NUM_MAX);
+	ck_assert_int_eq(zhash_size(grph), ARCH_NUM_MAX-1);
 	for (zhash_t *item = zhash_first(grph); item != NULL;
 					item = zhash_next(grph)) {
 		ck_assert_int_eq(zhash_size(item), 0);
@@ -18,6 +18,7 @@ START_TEST(test_basic_bgraph)
 	ck_assert_ptr_nonnull(list);
 	ck_assert_int_eq(zlist_size(list), 0);
 	zlist_destroy(&list);
+	ck_assert_ptr_nonnull(grph);
 	bgraph_destroy(&grph);
 	ck_assert_ptr_null(grph);
 }

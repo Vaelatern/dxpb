@@ -78,16 +78,12 @@ bgraph_destroy(bgraph *deadmeat)
 {
 	bgraph goner = *deadmeat;
 	struct pkg *child;
-	zhash_t *tmp;
-	enum pkg_archs i = ARCH_NOARCH;
-	while (pkg_archs_str[i] != NULL && i < ARCH_NUM_MAX) {
-		tmp = zhash_lookup(goner, pkg_archs_str[i]);
+	for (zhash_t *tmp = zhash_first(goner); tmp; tmp = zhash_next(goner)) {
 		for (child = zhash_first(tmp); child != NULL; child = zhash_next(tmp)) {
 			bgraph_destroy_pkg(child);
 		}
-		zhash_delete(goner, pkg_archs_str[i]);
+		zhash_delete(goner, zhash_cursor(goner));
 		zhash_destroy(&tmp);
-		i++;
 	}
 	zhash_destroy(deadmeat);
 }
@@ -138,11 +134,13 @@ bgraph_insert_pkg(bgraph grph, struct pkg *newguy)
 		return ERR_CODE_BADDOBBY;
 
 	struct pkg *oldguy = zhash_freefn(relevant, newguy->name, NULL);
-	if (oldguy) /* A pre-existing element */
+	if (oldguy) { /* A pre-existing element */
 		/* The only case we don't handle by magic */
 		if (oldguy->arch == ARCH_TARGET && newguy->arch == ARCH_NOARCH)
 			for (enum pkg_archs i = ARCH_NOARCH + 1; i < ARCH_HOST; i++)
 				zhash_delete(zhash_lookup(grph, pkg_archs_str[i]), newguy->name);
+		bpkg_destroy(oldguy);
+	}
 	zhash_update(relevant, newguy->name, newguy);
 
 	return 0;
