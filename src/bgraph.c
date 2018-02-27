@@ -58,9 +58,15 @@ bgraph_un_needs_me(struct pkg *poor_soul, struct pkg *origin)
 static void
 bgraph_destroy_pkg(void *sacrifice)
 {
+	assert(sacrifice);
 	struct pkg *lamb = sacrifice;
 	struct pkg_need *i = NULL;
 	struct pkg *j = NULL;
+	assert(lamb->name);
+	assert(lamb->ver);
+	assert(lamb->cross_needs);
+	assert(lamb->needs);
+	assert(lamb->needs_me);
 	while ((i = zlist_pop(lamb->cross_needs)) != NULL) {
 		bgraph_destroy_need(&i, lamb);
 	}
@@ -80,7 +86,7 @@ bgraph_destroy(bgraph *deadmeat)
 	struct pkg *child;
 	for (zhash_t *tmp = zhash_first(goner); tmp; tmp = zhash_next(goner)) {
 		for (child = zhash_first(tmp); child != NULL; child = zhash_next(tmp)) {
-			bgraph_destroy_pkg(child);
+			zhash_delete(tmp, zhash_cursor(tmp));
 		}
 		zhash_delete(goner, zhash_cursor(goner));
 		zhash_destroy(&tmp);
@@ -133,17 +139,17 @@ bgraph_insert_pkg(bgraph grph, struct pkg *newguy)
 	if (relevant == NULL)
 		return ERR_CODE_BADDOBBY;
 
-	struct pkg *oldguy = zhash_freefn(relevant, newguy->name, NULL);
-	if (oldguy) { /* A pre-existing element */
+	struct pkg *oldguy = zhash_lookup(relevant, newguy->name);
+	if (oldguy) /* A pre-existing element */
 		/* The only case we don't handle by magic */
 		if (oldguy->arch == ARCH_TARGET && newguy->arch == ARCH_NOARCH)
-			for (enum pkg_archs i = ARCH_NOARCH + 1; i < ARCH_HOST; i++)
+			for (enum pkg_archs i = ARCH_NOARCH + 1; i <= ARCH_HOST; i++)
 				zhash_delete(zhash_lookup(grph, pkg_archs_str[i]), newguy->name);
-		bpkg_destroy(oldguy);
-	}
 	zhash_update(relevant, newguy->name, newguy);
+	oldguy = zhash_freefn(relevant, newguy->name, bgraph_destroy_pkg);
+	assert(oldguy);
 
-	return 0;
+	return ERR_CODE_OK;
 }
 
 inline static struct pkg *
@@ -165,8 +171,7 @@ bgraph_destroy_need(struct pkg_need **lamb, struct pkg *goner)
 	(*lamb)->pkg->priority--;
 	(*lamb)->pkg = NULL;
 	(*lamb)->spec = NULL;
-	free(*lamb);
-	*lamb = NULL;
+	FREE(*lamb);
 }
 
 inline static struct pkg_need *

@@ -43,10 +43,8 @@ bpkg_destroy(struct pkg *lamb)
 {
 	if (lamb == NULL)
 		return;
-	free(lamb->name);
-	lamb->name = NULL;
-	free(lamb->ver);
-	lamb->ver = NULL;
+	FREE(lamb->name);
+	FREE(lamb->ver);
 	bwords_destroy(&(lamb->wneeds_cross_host), 1);
 	bwords_destroy(&(lamb->wneeds_cross_target), 1);
 	bwords_destroy(&(lamb->wneeds_native_host), 1);
@@ -54,7 +52,7 @@ bpkg_destroy(struct pkg *lamb)
 	zlist_destroy((zlist_t **) &(lamb->cross_needs));
 	zlist_destroy((zlist_t **) &(lamb->needs));
 	zlist_destroy((zlist_t **) &(lamb->needs_me));
-	free(lamb);
+	FREE(lamb);
 	return;
 }
 
