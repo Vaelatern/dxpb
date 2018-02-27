@@ -333,4 +333,4 @@ might be fixed.
 zmq\_tcp(7)
 zmq\_curve(7)
 
-Void Linux - February 27, 2018
+Void Linux - March 2, 2018

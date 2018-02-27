@@ -75,10 +75,10 @@ digraph "pkgimport_grapher" {
  "unstable pkgdel" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkgdel</font></td></tr><tr><td align="left" port="r3">mark pkg for deletion</td></tr></table>>];
  "unstable" -> "unstable pkgdel";
  "unstable pkgdel" -> "unstable";
- "unstable worker gone" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">worker gone</font></td></tr><tr><td align="left" port="r3">return pkg to pending</td></tr><tr><td align="left" port="r3">unassign worker</td></tr><tr><td align="left" port="r3">remove worker from list</td></tr></table>>];
+ "unstable worker gone" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">worker gone</font></td></tr><tr><td align="left" port="r3">return pkg to pending</td></tr><tr><td align="left" port="r3">remove worker from list</td></tr></table>>];
  "unstable" -> "unstable worker gone";
  "unstable worker gone" -> "unstable";
- "unstable pkg now completed" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkg now completed</font></td></tr><tr><td align="left" port="r3">ask around for this pkg</td></tr><tr><td align="left" port="r3">unassign worker</td></tr><tr><td align="left" port="r3">remove worker from list</td></tr></table>>];
+ "unstable pkg now completed" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkg now completed</font></td></tr><tr><td align="left" port="r3">ask around for this pkg</td></tr><tr><td align="left" port="r3">remove worker from list</td></tr></table>>];
  "unstable" -> "unstable pkg now completed";
  "unstable pkg now completed" -> "unstable";
  "unstable pkg not here" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkg not here</font></td></tr><tr><td align="left" port="r3">note pkg not yet around</td></tr><tr><td align="left" port="r3">match workers to this pkg</td></tr></table>>];
@@ -90,7 +90,7 @@ digraph "pkgimport_grapher" {
  "unstable pkg failed to build" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkg failed to build</font></td></tr><tr><td align="left" port="r3">mark pkg bad</td></tr></table>>];
  "unstable" -> "unstable pkg failed to build";
  "unstable pkg failed to build" -> "unstable";
- "unstable worker not appropiate" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">worker not appropiate</font></td></tr><tr><td align="left" port="r3">return pkg to pending</td></tr><tr><td align="left" port="r3">negative pkg affinity for wrkr</td></tr></table>>];
+ "unstable worker not appropiate" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">worker not appropiate</font></td></tr><tr><td align="left" port="r3">return pkg to pending</td></tr><tr><td align="left" port="r3">remove worker from list</td></tr></table>>];
  "unstable" -> "unstable worker not appropiate";
  "unstable worker not appropiate" -> "unstable";
  "unstable unstable" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">unstable</font></td></tr></table>>];
@@ -137,10 +137,10 @@ digraph "pkgimport_grapher" {
  "stable pkgdel" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkgdel</font></td></tr><tr><td align="left" port="r3">mark pkg for deletion</td></tr></table>>];
  "stable" -> "stable pkgdel";
  "stable pkgdel" -> "unstable";
- "stable worker gone" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">worker gone</font></td></tr><tr><td align="left" port="r3">return pkg to pending</td></tr><tr><td align="left" port="r3">unassign worker</td></tr><tr><td align="left" port="r3">remove worker from list</td></tr></table>>];
+ "stable worker gone" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">worker gone</font></td></tr><tr><td align="left" port="r3">return pkg to pending</td></tr><tr><td align="left" port="r3">remove worker from list</td></tr></table>>];
  "stable" -> "stable worker gone";
  "stable worker gone" -> "stable";
- "stable pkg now completed" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkg now completed</font></td></tr><tr><td align="left" port="r3">ask around for this pkg</td></tr><tr><td align="left" port="r3">unassign worker</td></tr><tr><td align="left" port="r3">remove worker from list</td></tr></table>>];
+ "stable pkg now completed" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkg now completed</font></td></tr><tr><td align="left" port="r3">ask around for this pkg</td></tr><tr><td align="left" port="r3">remove worker from list</td></tr></table>>];
  "stable" -> "stable pkg now completed";
  "stable pkg now completed" -> "stable";
  "stable pkg not here" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkg not here</font></td></tr><tr><td align="left" port="r3">note pkg not yet around</td></tr><tr><td align="left" port="r3">match workers to this pkg</td></tr></table>>];
@@ -152,7 +152,7 @@ digraph "pkgimport_grapher" {
  "stable pkg failed to build" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkg failed to build</font></td></tr><tr><td align="left" port="r3">mark pkg bad</td></tr></table>>];
  "stable" -> "stable pkg failed to build";
  "stable pkg failed to build" -> "stable";
- "stable worker not appropiate" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">worker not appropiate</font></td></tr><tr><td align="left" port="r3">return pkg to pending</td></tr><tr><td align="left" port="r3">negative pkg affinity for wrkr</td></tr></table>>];
+ "stable worker not appropiate" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">worker not appropiate</font></td></tr><tr><td align="left" port="r3">return pkg to pending</td></tr><tr><td align="left" port="r3">remove worker from list</td></tr></table>>];
  "stable" -> "stable worker not appropiate";
  "stable worker not appropiate" -> "stable";
  "stable iforgotu" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];

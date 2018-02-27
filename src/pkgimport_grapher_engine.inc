@@ -104,11 +104,11 @@ s_event_name [] = {
 //  These are the different method arguments we manage automatically
 struct _client_args_t {
     char *endpoint;
+    int addr;
+    int check;
     char *pkgname;
     char *version;
     char *arch;
-    int addr;
-    int check;
     char *hostarch;
     char *targetarch;
     uint8_t iscross;
@@ -199,8 +199,6 @@ static void
 static void
     return_pkg_to_pending (client_t *self);
 static void
-    unassign_worker (client_t *self);
-static void
     remove_worker_from_list (client_t *self);
 static void
     ask_around_for_this_pkg (client_t *self);
@@ -214,8 +212,6 @@ static void
     get_package_list_for_arch (client_t *self);
 static void
     mark_pkg_bad (client_t *self);
-static void
-    negative_pkg_affinity_for_wrkr (client_t *self);
 static void
     cease_all_operations (client_t *self);
 
@@ -986,12 +982,6 @@ s_client_execute (s_client_t *self, event_t event)
                         return_pkg_to_pending (&self->client);
                     }
                     if (!self->exception) {
-                        //  unassign worker
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ unassign worker", self->log_prefix);
-                        unassign_worker (&self->client);
-                    }
-                    if (!self->exception) {
                         //  remove worker from list
                         if (self->verbose)
                             zsys_debug ("%s:         $ remove worker from list", self->log_prefix);
@@ -1005,12 +995,6 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ ask around for this pkg", self->log_prefix);
                         ask_around_for_this_pkg (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  unassign worker
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ unassign worker", self->log_prefix);
-                        unassign_worker (&self->client);
                     }
                     if (!self->exception) {
                         //  remove worker from list
@@ -1073,10 +1057,10 @@ s_client_execute (s_client_t *self, event_t event)
                         return_pkg_to_pending (&self->client);
                     }
                     if (!self->exception) {
-                        //  negative pkg affinity for wrkr
+                        //  remove worker from list
                         if (self->verbose)
-                            zsys_debug ("%s:         $ negative pkg affinity for wrkr", self->log_prefix);
-                        negative_pkg_affinity_for_wrkr (&self->client);
+                            zsys_debug ("%s:         $ remove worker from list", self->log_prefix);
+                        remove_worker_from_list (&self->client);
                     }
                 }
                 else {
@@ -1244,12 +1228,6 @@ s_client_execute (s_client_t *self, event_t event)
                         return_pkg_to_pending (&self->client);
                     }
                     if (!self->exception) {
-                        //  unassign worker
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ unassign worker", self->log_prefix);
-                        unassign_worker (&self->client);
-                    }
-                    if (!self->exception) {
                         //  remove worker from list
                         if (self->verbose)
                             zsys_debug ("%s:         $ remove worker from list", self->log_prefix);
@@ -1263,12 +1241,6 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ ask around for this pkg", self->log_prefix);
                         ask_around_for_this_pkg (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  unassign worker
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ unassign worker", self->log_prefix);
-                        unassign_worker (&self->client);
                     }
                     if (!self->exception) {
                         //  remove worker from list
@@ -1331,10 +1303,10 @@ s_client_execute (s_client_t *self, event_t event)
                         return_pkg_to_pending (&self->client);
                     }
                     if (!self->exception) {
-                        //  negative pkg affinity for wrkr
+                        //  remove worker from list
                         if (self->verbose)
-                            zsys_debug ("%s:         $ negative pkg affinity for wrkr", self->log_prefix);
-                        negative_pkg_affinity_for_wrkr (&self->client);
+                            zsys_debug ("%s:         $ remove worker from list", self->log_prefix);
+                        remove_worker_from_list (&self->client);
                     }
                 }
                 else {
@@ -1455,12 +1427,6 @@ s_client_execute (s_client_t *self, event_t event)
                         return_pkg_to_pending (&self->client);
                     }
                     if (!self->exception) {
-                        //  unassign worker
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ unassign worker", self->log_prefix);
-                        unassign_worker (&self->client);
-                    }
-                    if (!self->exception) {
                         //  remove worker from list
                         if (self->verbose)
                             zsys_debug ("%s:         $ remove worker from list", self->log_prefix);
@@ -1474,12 +1440,6 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ ask around for this pkg", self->log_prefix);
                         ask_around_for_this_pkg (&self->client);
-                    }
-                    if (!self->exception) {
-                        //  unassign worker
-                        if (self->verbose)
-                            zsys_debug ("%s:         $ unassign worker", self->log_prefix);
-                        unassign_worker (&self->client);
                     }
                     if (!self->exception) {
                         //  remove worker from list
@@ -1542,10 +1502,10 @@ s_client_execute (s_client_t *self, event_t event)
                         return_pkg_to_pending (&self->client);
                     }
                     if (!self->exception) {
-                        //  negative pkg affinity for wrkr
+                        //  remove worker from list
                         if (self->verbose)
-                            zsys_debug ("%s:         $ negative pkg affinity for wrkr", self->log_prefix);
-                        negative_pkg_affinity_for_wrkr (&self->client);
+                            zsys_debug ("%s:         $ remove worker from list", self->log_prefix);
+                        remove_worker_from_list (&self->client);
                     }
                 }
                 else {
@@ -1723,7 +1683,7 @@ s_client_handle_cmdpipe (zloop_t *loop, zsock_t *reader, void *argument)
         zstr_free (&self->args.pkgname);
         zstr_free (&self->args.version);
         zstr_free (&self->args.arch);
-        zsock_recv (self->cmdpipe, "sss", &self->args.pkgname, &self->args.version, &self->args.arch);
+        zsock_recv (self->cmdpipe, "iisss", &self->args.addr, &self->args.check, &self->args.pkgname, &self->args.version, &self->args.arch);
         s_client_execute (self, pkg_now_completed_event);
     }
     else
@@ -2000,11 +1960,11 @@ pkgimport_grapher_construct (pkgimport_grapher_t *self, const char *endpoint)
 //  No explanation
 
 int
-pkgimport_grapher_pkg_now_completed (pkgimport_grapher_t *self, const char *pkgname, const char *version, const char *arch)
+pkgimport_grapher_pkg_now_completed (pkgimport_grapher_t *self, int addr, int check, const char *pkgname, const char *version, const char *arch)
 {
     assert (self);
 
-    zsock_send (self->actor, "ssss", "PKG NOW COMPLETED", pkgname, version, arch);
+    zsock_send (self->actor, "siisss", "PKG NOW COMPLETED", addr, check, pkgname, version, arch);
     return 0;
 }
 

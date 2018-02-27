@@ -1,6 +1,6 @@
 The following ABNF grammar defines the Package Graph Potocol:
 
-    pkggraph_msg    = *( HELLO | ROGER | IFORGOTU | INVALID | PING | STOP | PKGDEL | NEEDPKG | ICANHELP | WORKERCANHELP | FORGET-ABOUT-ME | RESETLOG | LOGHERE | UPDATE-BOOTSTRAP | PKGDONE | JOB-ENDED | IMTHEGRAPHER | IAMSTORAGE | IMAWORKER | GRAPHREADY | GRAPHNOTREADY )
+    pkggraph_msg    = *( HELLO | ROGER | IFORGOTU | INVALID | PING | STOP | PKGDEL | NEEDPKG | ICANHELP | WORKERCANHELP | FORGET-ABOUT-ME | RESETLOG | LOGHERE | UPDATE-BOOTSTRAP | JOB-ENDED | IMTHEGRAPHER | IAMSTORAGE | IMAWORKER | GRAPHREADY | GRAPHNOTREADY )
 
     ;  No description
 
@@ -97,18 +97,9 @@ The following ABNF grammar defines the Package Graph Potocol:
     UPDATE-BOOTSTRAP = signature %d14 proto_version
     proto_version   = string                ; Package Graph Protocol Version 00
 
-    ;  No description
+    ;  For any reason.
 
-    PKGDONE         = signature %d15 proto_version pkgname version arch
-    proto_version   = string                ; Package Graph Protocol Version 00
-    pkgname         = string                ;
-    version         = string                ;
-    arch            = string                ;
-
-    ;  For any reason. It is an error to do this with success without also
-    ;  marking a package as done using a PKGDONE.
-
-    JOB-ENDED       = signature %d16 proto_version addr check cause pkgname version arch
+    JOB-ENDED       = signature %d15 proto_version addr check cause pkgname version arch
     proto_version   = string                ; Package Graph Protocol Version 00
     addr            = number-2              ;
     check           = number-4              ;
@@ -119,27 +110,27 @@ The following ABNF grammar defines the Package Graph Potocol:
 
     ;  No description
 
-    IMTHEGRAPHER    = signature %d17 proto_version
+    IMTHEGRAPHER    = signature %d16 proto_version
     proto_version   = string                ; Package Graph Protocol Version 00
 
     ;  No description
 
-    IAMSTORAGE      = signature %d18 proto_version
+    IAMSTORAGE      = signature %d17 proto_version
     proto_version   = string                ; Package Graph Protocol Version 00
 
     ;  No description
 
-    IMAWORKER       = signature %d19 proto_version
+    IMAWORKER       = signature %d18 proto_version
     proto_version   = string                ; Package Graph Protocol Version 00
 
     ;  No description
 
-    GRAPHREADY      = signature %d20 proto_version
+    GRAPHREADY      = signature %d19 proto_version
     proto_version   = string                ; Package Graph Protocol Version 00
 
     ;  No description
 
-    GRAPHNOTREADY   = signature %d21 proto_version
+    GRAPHNOTREADY   = signature %d20 proto_version
     proto_version   = string                ; Package Graph Protocol Version 00
 
     ; A chunk has 4-octet length + binary contents

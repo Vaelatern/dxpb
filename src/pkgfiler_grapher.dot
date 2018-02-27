@@ -58,7 +58,7 @@ digraph "pkgfiler_grapher" {
  "time2wrk roger" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
  "time2wrk" -> "time2wrk roger";
  "time2wrk roger" -> "time2wrk";
- "time2wrk expired" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">queue old patients</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "time2wrk expired" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">queue old patients</td></tr><tr><td align="left" port="r3">trigger send saved messages</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "time2wrk" -> "time2wrk expired";
  "time2wrk expired" -> "time2wrk";
  "time2wrk *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">terminate</td></tr></table>>];

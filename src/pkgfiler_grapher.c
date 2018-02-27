@@ -15,7 +15,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 // Capped at max value for a uint8_t by the below source file.
-#define MAX_PATIENTS 60
+#define MAX_PATIENTS 4
 
 #include "pkgfiler_grapher.h"
 //  TODO: Change these to match your project's needs
@@ -99,9 +99,10 @@ client_initialize (client_t *self)
 {
 	self->msgs_to_send = zlist_new();
 	self->dellater = zhash_new();
+	self->pat_index = 0;
 	for (uint8_t i = 0; i < MAX_PATIENTS; i++)
 		self->patients[i] = zlist_new();
-	engine_set_expiry(self, 15000);
+	engine_set_expiry(self, 10000);
 	return 0;
 }
 
@@ -186,7 +187,6 @@ tell_msgpipe_we_do_not_have_a_pkg (client_t *self)
 	assert(rc == 0);
 }
 
-
 //  ---------------------------------------------------------------------------
 //  Waiting List Management
 //
@@ -196,8 +196,7 @@ add_pkg_to_waiting_lists(client_t *self, struct message_to_send *addthis)
 {
 	assert(self);
 	assert(addthis);
-	//            cur index, but always > 0      >= 0    back to normal
-	int index = ((self->pat_index + MAX_PATIENTS) - 1) % MAX_PATIENTS;
+	int index = (MAX_PATIENTS - 1) - self->pat_index;
 	zlist_append(self->patients[index], addthis);
 }
 
@@ -222,15 +221,17 @@ static void
 queue_old_patients (client_t *self)
 {
 	char *key;
-	uint32_t curloc = self->pat_index ++;
+	uint32_t curloc = self->pat_index++;
+	self->pat_index %= MAX_PATIENTS;
 	zlist_t *curList = self->patients[curloc];
 	struct message_to_send *cur = NULL;
 	for (cur = zlist_first(curList); cur; cur = zlist_next(curList)) {
 		key = msg2send2key(cur);
 		if (zhash_lookup(self->dellater, key) != NULL)
 			zlist_remove(curList, cur); // already got it!
-		else
+		else {
 			zlist_append(self->msgs_to_send, cur);
+		}
 		FREE(key);
 	}
 }
@@ -273,7 +274,6 @@ store_ispkghere_for_later_sending (client_t *self)
 	store_message_for_later_sending(self, PKGFILES_MSG_ISPKGHERE);
 }
 
-
 //  ---------------------------------------------------------------------------
 //  store_pkgdel_for_later_sending
 //  Only to be executed where we can't yet send messages.
@@ -283,7 +283,6 @@ store_pkgdel_for_later_sending (client_t *self)
 {
 	store_message_for_later_sending(self, PKGFILES_MSG_PKGDEL);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  trigger_send_saved_messages
@@ -315,7 +314,6 @@ trigger_send_saved_messages (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  prepare_ispkghere_from_pipe
 //
@@ -334,7 +332,6 @@ prepare_ispkghere_from_pipe (client_t *self)
 	pkgfiles_msg_set_arch(self->message, tosend->arch);
 }
 
-
 //  ---------------------------------------------------------------------------
 //  prepare_pkgdel_from_pipe
 //
@@ -348,8 +345,6 @@ prepare_pkgdel_from_pipe (client_t *self)
 	assert(tosend->pkgname);
 	pkgfiles_msg_set_pkgname(self->message, tosend->pkgname);
 }
-
-
 
 //  ---------------------------------------------------------------------------
 //  set_ssl_client_keys

@@ -107,9 +107,9 @@ digraph "pkggraph_grapher" {
  "ready expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "ready" -> "ready expired";
  "ready expired" -> "ready";
- "ready pkgdone" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkgdone</font></td></tr><tr><td align="left" port="r3">send message verbatim down the msgpipe</td></tr></table>>];
- "ready" -> "ready pkgdone";
- "ready pkgdone" -> "ready";
+ "ready job ended" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">job ended</font></td></tr><tr><td align="left" port="r3">send message verbatim down the msgpipe</td></tr></table>>];
+ "ready" -> "ready job ended";
+ "ready job ended" -> "ready";
  "ready icanhelp" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">icanhelp</font></td></tr><tr><td align="left" port="r3">send message verbatim down the msgpipe</td></tr></table>>];
  "ready" -> "ready icanhelp";
  "ready icanhelp" -> "ready";

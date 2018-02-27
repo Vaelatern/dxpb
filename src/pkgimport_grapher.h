@@ -65,7 +65,7 @@ int
 
 //  No explanation
 int
-    pkgimport_grapher_pkg_now_completed (pkgimport_grapher_t *self, const char *pkgname, const char *version, const char *arch);
+    pkgimport_grapher_pkg_now_completed (pkgimport_grapher_t *self, int addr, int check, const char *pkgname, const char *version, const char *arch);
 
 //  No explanation
 int

@@ -151,7 +151,6 @@ send_message_verbatim_down_the_msgpipe (client_t *self)
 	assert(rc == 0);
 }
 
-
 //  ---------------------------------------------------------------------------
 //  set_expiry
 //
@@ -161,7 +160,6 @@ set_expiry (client_t *self)
 {
 	engine_set_expiry(self, 10000);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  trigger_send_saved_messages
@@ -184,12 +182,11 @@ trigger_send_saved_messages (client_t *self)
 		engine_set_next_event(self, act_on_do_workercanhelp_event);
 		break;
 	default:
-		fprintf(stderr, "Saved message is non-sensical\n");
+		fprintf(stderr, "Saved message is non-sensical: %d\n", tosend->type);
 		exit(ERR_CODE_BAD);
 		break;
 	}
 }
-
 
 //  ---------------------------------------------------------------------------
 //  prepare_update_bootstrap_from_pipe
@@ -200,7 +197,6 @@ prepare_update_bootstrap_from_pipe (client_t *self)
 {
 	(void) self;
 }
-
 
 //  ---------------------------------------------------------------------------
 //  prepare_workercanhelp_from_pipe
@@ -222,7 +218,6 @@ prepare_workercanhelp_from_pipe (client_t *self)
 	FREE(tosend);
 }
 
-
 //  ---------------------------------------------------------------------------
 //  store_update_bootstrap_for_later_sending
 //
@@ -232,7 +227,6 @@ store_update_bootstrap_for_later_sending (client_t *self)
 {
 	self->send_update_bootstrap = 1;
 }
-
 
 //  ---------------------------------------------------------------------------
 //  store_workercanhelp_for_later_sending
@@ -257,7 +251,6 @@ store_workercanhelp_for_later_sending (client_t *self)
 	assert(tosave->arch);
 	zlist_append(self->msgs_to_send, tosave);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  set_ssl_client_keys

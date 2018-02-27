@@ -57,7 +57,6 @@ handle_files_out_msg(pkgfiles_msg_t *msg, pkgfiler_grapher_t *filer)
 	return ERR_CODE_OK;
 }
 
-
 enum ret_codes
 handle_graph_out_msg(pkggraph_msg_t *msg, pkggraph_grapher_t *grapher)
 {
@@ -103,6 +102,8 @@ handle_graph_in_msg(pkggraph_msg_t *msg, pkgimport_grapher_t *importer)
 		switch(pkggraph_msg_cause(msg)) {
 		case END_STATUS_OK:
 			pkgimport_grapher_pkg_now_completed(importer,
+					pkggraph_msg_addr(msg),
+					pkggraph_msg_check(msg),
 					pkggraph_msg_pkgname(msg),
 					pkggraph_msg_version(msg),
 					pkggraph_msg_arch(msg));
@@ -214,12 +215,12 @@ main_loop(pkgimport_grapher_t *importer, pkggraph_grapher_t *grapher,
 				break;
 			}
 		}
-		if (in_sock == graph_sock) {
+		else if (in_sock == graph_sock) {
 			retVal = ERR_CODE_OK;
 			DXPB_HANDLE_SOCK(graph, in_sock, graph_msg, importer,
 					in, retVal);
 		}
-		if (in_sock == file_sock) {
+		else if (in_sock == file_sock) {
 			retVal = ERR_CODE_OK;
 			DXPB_HANDLE_SOCK(files, in_sock, file_msg, importer,
 					in, retVal);

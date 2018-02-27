@@ -79,6 +79,7 @@
 		<event name = "ROGER" />
 		<event name = "expired">
 			<action name = "queue old patients" />
+			<action name = "trigger send saved messages" />
 			<action name = "send" message = "PING" />
 		</event>
 		<event name = "*">

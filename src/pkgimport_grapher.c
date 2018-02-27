@@ -92,7 +92,6 @@ client_terminate (client_t *self)
 	bgraph_destroy(&(self->pkggraph));
 }
 
-
 //  ---------------------------------------------------------------------------
 //  Selftest
 
@@ -219,6 +218,7 @@ add_worker_to_list (client_t *self)
 	if (bworker_group_insert(self->workers, self->args->addr, self->args->check,
 				targetarch, hostarch, self->args->iscross,
 				self->args->cost) == UINT16_MAX) {
+		fprintf(stderr, "Failed to add a worker!\n");
 		if (self->pub) {
 			zstr_sendm(self->pub, "DEBUG");
 			zstr_sendf(self->pub, "Failed to add worker to grapher");
@@ -238,7 +238,7 @@ add_worker_to_list (client_t *self)
 static enum ret_codes
 pkgimport_grapher_ask_worker_to_help(client_t *self, struct bworker *wrkr, struct pkg *pkg)
 {
-	assert(pkg->arch == wrkr->arch);
+	assert(pkg->arch == wrkr->arch || pkg->arch == ARCH_NOARCH);
 	pkggraph_msg_t *msg;
 	int rc = ERR_CODE_OK;
 
@@ -256,6 +256,8 @@ pkgimport_grapher_ask_worker_to_help(client_t *self, struct bworker *wrkr, struc
 	rc = pkggraph_msg_send(msg, self->msgpipe);
 	if (rc != 0)
 		rc = ERR_CODE_SADSOCK;
+	if (rc == ERR_CODE_OK)
+		(void)bworker_job_assign(wrkr, pkg->name, pkg->ver, pkg->arch);
 	if (rc == ERR_CODE_OK && self->pub) {
 		zstr_sendm(self->pub, "NORMAL");
 		zstr_sendf(self->pub, "Asked worker to build %s/%s/%s",
@@ -269,7 +271,7 @@ pkgimport_grapher_ask_worker_to_help(client_t *self, struct bworker *wrkr, struc
 				pkggraph_msg_version(msg),
 				pkggraph_msg_arch(msg));
 	}
-
+	pkg->status = PKG_STATUS_BUILDING;
 
 	pkggraph_msg_destroy(&msg);
 	return rc;
@@ -517,21 +519,6 @@ set_expiry_high (client_t *self)
 	engine_set_expiry(self, 15000);
 }
 
-
-//  ---------------------------------------------------------------------------
-//  unassign_worker
-//
-
-static void
-unassign_worker (client_t *self)
-{
-	struct bworker *wrkr = bworker_from_remote_addr(self->workers,
-			self->args->addr, self->args->check);
-	if (wrkr != NULL)
-		bworker_job_remove(wrkr);
-}
-
-
 //  ---------------------------------------------------------------------------
 //  note_pkg_not_yet_around
 //
@@ -549,7 +536,6 @@ note_pkg_not_yet_around (client_t *self)
 	if (rc != ERR_CODE_OK && rc != ERR_CODE_NO)
 		return; // TODO: Decide if an action is appropiate.
 }
-
 
 //  ---------------------------------------------------------------------------
 //  note_pkg_present
@@ -569,7 +555,6 @@ note_pkg_present (client_t *self)
 		return; // TODO: Decide if an action is appropiate.
 }
 
-
 //  ---------------------------------------------------------------------------
 //  mark_pkg_bad
 //  The package is not to be built again until the template is edited.
@@ -588,7 +573,6 @@ mark_pkg_bad (client_t *self)
 		return; // TODO: Decide if an action is appropiate.
 }
 
-
 //  ---------------------------------------------------------------------------
 //  return_pkg_to_pending
 //
@@ -596,32 +580,18 @@ mark_pkg_bad (client_t *self)
 static void
 return_pkg_to_pending (client_t *self)
 {
-	enum pkg_archs arch = bpkg_enum_lookup(self->args->arch);
-	if (arch == ARCH_NUM_MAX)
-		return; // TODO: Decide if an action is appropiate on bad input
+	struct bworker *wrkr = bworker_from_remote_addr(self->workers,
+			self->args->addr, self->args->check);
+	if (!wrkr)
+		return;
+	if (wrkr->job.name == NULL || wrkr->job.arch == ARCH_NUM_MAX)
+		return;
 
-	int rc = bgraph_mark_pkg_not_in_progress(self->pkggraph,
-			self->args->pkgname, self->args->version, arch);
+	int rc = bgraph_mark_pkg_absent(self->pkggraph,
+			wrkr->job.name, wrkr->job.ver, wrkr->job.arch);
 
-	if (rc != ERR_CODE_OK && rc != ERR_CODE_NO)
-		return; // TODO: Decide if an action is appropiate.
+	assert(rc == ERR_CODE_OK);
 }
-
-//  ---------------------------------------------------------------------------
-//  negative_pkg_affinity_for_wrkr
-//
-
-static void
-negative_pkg_affinity_for_wrkr (client_t *self)
-{
-	// TODO: Consider implementing. Perhaps should be fixed to be part of
-	// bworker_group_matches_choose(matches), maybe adding a pkg parameter.
-	// The trick is making it performant, and I don't think it's necessary
-	// for 0.0.1
-	// Vaelatern, 2017-07-10
-	(void) self;
-}
-
 
 //  ---------------------------------------------------------------------------
 //  ask_around_for_wanted_pkgs
@@ -634,7 +604,6 @@ ask_around_for_wanted_pkgs (client_t *self)
 	if (rc != ERR_CODE_OK)
 		return; // TODO: Decide if action here is appropiate
 }
-
 
 //  ---------------------------------------------------------------------------
 //  match_workers_to_this_pkg
@@ -660,12 +629,9 @@ match_workers_to_this_pkg (client_t *self)
 	}
 	bworker_match_destroy(&matches);
 
-	if (pkgimport_grapher_ask_worker_to_help(self, wrkr, pkg) == ERR_CODE_OK)
-		pkg->status = PKG_STATUS_BUILDING;
-	else
+	if (pkgimport_grapher_ask_worker_to_help(self, wrkr, pkg) != ERR_CODE_OK)
 		return; // TODO: Is a reaction appropiate?
 }
-
 
 //  ---------------------------------------------------------------------------
 //  get_package_for_arch
@@ -675,11 +641,14 @@ static void
 get_package_list_for_arch (client_t *self)
 {
 	enum pkg_archs i = bpkg_enum_lookup(self->args->arch);
-	if (self->nextup[i] != NULL)
-		zlist_destroy(&(self->nextup[i]));
-	self->nextup[i] = bgraph_what_next_for_arch(self->pkggraph, i);
+	if (i == ARCH_NOARCH)
+		get_packages(self);
+	else {
+		if (self->nextup[i] != NULL)
+			zlist_destroy(&(self->nextup[i]));
+		self->nextup[i] = bgraph_what_next_for_arch(self->pkggraph, i);
+	}
 }
-
 
 //  ---------------------------------------------------------------------------
 //  find_package_for_worker
@@ -690,21 +659,30 @@ find_package_for_worker (client_t *self)
 {
 	struct bworker *wrkr = bworker_from_remote_addr(self->workers,
 			self->args->addr, self->args->check);
+	assert(wrkr);
 	assert(wrkr->job.name == NULL);
 	enum pkg_archs arch = wrkr->arch;
 	struct pkg *pkg;
+	int assigned = 0;
+tryagain:
 	for (pkg = zlist_first(self->nextup[arch]);
 			pkg; // zlist_* returns NULL at end of list
 			pkg = zlist_next(self->nextup[arch])) {
 		if (pkg->status == PKG_STATUS_TOBUILD && bworker_pkg_match(wrkr, pkg)) {
-			if (pkgimport_grapher_ask_worker_to_help(self, wrkr, pkg) != ERR_CODE_OK)
+			if (pkgimport_grapher_ask_worker_to_help(self, wrkr, pkg) != ERR_CODE_OK) {
+				fprintf(stderr, "Failed to ask a worker to help!\n");
 				return; // Possible an action should be taken
-			else
+			} else {
+				assigned = 1;
 				break; // We found a package for this worker, now we let it work.
+			}
 		}
 	}
+	if (!assigned && arch != ARCH_NOARCH) {
+		arch = ARCH_NOARCH;
+		goto tryagain;
+	}
 }
-
 
 //  ---------------------------------------------------------------------------
 //  ask_around_for_this_pkg
@@ -728,7 +706,6 @@ ask_around_for_this_pkg (client_t *self)
 		return; // TODO: Is a reaction appropiate?
 }
 
-
 //  ---------------------------------------------------------------------------
 //  set_db_path_as_supplied
 //
@@ -739,7 +716,6 @@ set_db_path_as_supplied (client_t *self)
 	self->dbpath = strdup(self->args->dbpath);
 	assert(self->dbpath);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  set_publish_endpoint_as_supplied
@@ -753,7 +729,6 @@ set_publish_endpoint_as_supplied (client_t *self)
 	self->pub = zsock_new_pub(self->args->pubpoint);
 	bfs_ensure_sock_perms(self->args->pubpoint);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  set_ssl_client_keys

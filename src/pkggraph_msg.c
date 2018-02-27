@@ -509,21 +509,6 @@ pkggraph_msg_recv (pkggraph_msg_t *self, zsock_t *input)
             }
             break;
 
-        case PKGGRAPH_MSG_PKGDONE:
-            {
-                char proto_version [256];
-                GET_STRING (proto_version);
-                if (strneq (proto_version, "GRPH00")) {
-                    zsys_warning ("pkggraph_msg: proto_version is invalid");
-                    rc = -2;    //  Malformed
-                    goto malformed;
-                }
-            }
-            GET_STRING (self->pkgname);
-            GET_STRING (self->version);
-            GET_STRING (self->arch);
-            break;
-
         case PKGGRAPH_MSG_JOB_ENDED:
             {
                 char proto_version [256];
@@ -701,12 +686,6 @@ pkggraph_msg_send (pkggraph_msg_t *self, zsock_t *output)
         case PKGGRAPH_MSG_UPDATE_BOOTSTRAP:
             frame_size += 1 + strlen ("GRPH00");
             break;
-        case PKGGRAPH_MSG_PKGDONE:
-            frame_size += 1 + strlen ("GRPH00");
-            frame_size += 1 + strlen (self->pkgname);
-            frame_size += 1 + strlen (self->version);
-            frame_size += 1 + strlen (self->arch);
-            break;
         case PKGGRAPH_MSG_JOB_ENDED:
             frame_size += 1 + strlen ("GRPH00");
             frame_size += 2;            //  addr
@@ -827,13 +806,6 @@ pkggraph_msg_send (pkggraph_msg_t *self, zsock_t *output)
 
         case PKGGRAPH_MSG_UPDATE_BOOTSTRAP:
             PUT_STRING ("GRPH00");
-            break;
-
-        case PKGGRAPH_MSG_PKGDONE:
-            PUT_STRING ("GRPH00");
-            PUT_STRING (self->pkgname);
-            PUT_STRING (self->version);
-            PUT_STRING (self->arch);
             break;
 
         case PKGGRAPH_MSG_JOB_ENDED:
@@ -976,14 +948,6 @@ pkggraph_msg_print (pkggraph_msg_t *self)
             zsys_debug ("    proto_version=grph00");
             break;
 
-        case PKGGRAPH_MSG_PKGDONE:
-            zsys_debug ("PKGGRAPH_MSG_PKGDONE:");
-            zsys_debug ("    proto_version=grph00");
-            zsys_debug ("    pkgname='%s'", self->pkgname);
-            zsys_debug ("    version='%s'", self->version);
-            zsys_debug ("    arch='%s'", self->arch);
-            break;
-
         case PKGGRAPH_MSG_JOB_ENDED:
             zsys_debug ("PKGGRAPH_MSG_JOB_ENDED:");
             zsys_debug ("    proto_version=grph00");
@@ -1108,9 +1072,6 @@ pkggraph_msg_command (pkggraph_msg_t *self)
             break;
         case PKGGRAPH_MSG_UPDATE_BOOTSTRAP:
             return ("UPDATE_BOOTSTRAP");
-            break;
-        case PKGGRAPH_MSG_PKGDONE:
-            return ("PKGDONE");
             break;
         case PKGGRAPH_MSG_JOB_ENDED:
             return ("JOB_ENDED");
@@ -1590,22 +1551,6 @@ pkggraph_msg_test (bool verbose)
     for (instance = 0; instance < 2; instance++) {
         pkggraph_msg_recv (self, input);
         assert (pkggraph_msg_routing_id (self));
-    }
-    pkggraph_msg_set_id (self, PKGGRAPH_MSG_PKGDONE);
-
-    pkggraph_msg_set_pkgname (self, "Life is short but Now lasts for ever");
-    pkggraph_msg_set_version (self, "Life is short but Now lasts for ever");
-    pkggraph_msg_set_arch (self, "Life is short but Now lasts for ever");
-    //  Send twice
-    pkggraph_msg_send (self, output);
-    pkggraph_msg_send (self, output);
-
-    for (instance = 0; instance < 2; instance++) {
-        pkggraph_msg_recv (self, input);
-        assert (pkggraph_msg_routing_id (self));
-        assert (streq (pkggraph_msg_pkgname (self), "Life is short but Now lasts for ever"));
-        assert (streq (pkggraph_msg_version (self), "Life is short but Now lasts for ever"));
-        assert (streq (pkggraph_msg_arch (self), "Life is short but Now lasts for ever"));
     }
     pkggraph_msg_set_id (self, PKGGRAPH_MSG_JOB_ENDED);
 

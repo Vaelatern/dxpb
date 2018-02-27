@@ -86,14 +86,7 @@
     UPDATE_BOOTSTRAP - Useful for when a bootstrap package has been upgraded.
         proto_version       string      Package Graph Protocol Version 00
 
-    PKGDONE -
-        proto_version       string      Package Graph Protocol Version 00
-        pkgname             string
-        version             string
-        arch                string
-
-    JOB_ENDED - For any reason. It is an error to do this with success without
-also marking a package as done using a PKGDONE.
+    JOB_ENDED - For any reason.
         proto_version       string      Package Graph Protocol Version 00
         addr                number 2
         check               number 4
@@ -133,13 +126,12 @@ also marking a package as done using a PKGDONE.
 #define PKGGRAPH_MSG_RESETLOG               12
 #define PKGGRAPH_MSG_LOGHERE                13
 #define PKGGRAPH_MSG_UPDATE_BOOTSTRAP       14
-#define PKGGRAPH_MSG_PKGDONE                15
-#define PKGGRAPH_MSG_JOB_ENDED              16
-#define PKGGRAPH_MSG_IMTHEGRAPHER           17
-#define PKGGRAPH_MSG_IAMSTORAGE             18
-#define PKGGRAPH_MSG_IMAWORKER              19
-#define PKGGRAPH_MSG_GRAPHREADY             20
-#define PKGGRAPH_MSG_GRAPHNOTREADY          21
+#define PKGGRAPH_MSG_JOB_ENDED              15
+#define PKGGRAPH_MSG_IMTHEGRAPHER           16
+#define PKGGRAPH_MSG_IAMSTORAGE             17
+#define PKGGRAPH_MSG_IMAWORKER              18
+#define PKGGRAPH_MSG_GRAPHREADY             19
+#define PKGGRAPH_MSG_GRAPHNOTREADY          20
 
 #include <czmq.h>
 

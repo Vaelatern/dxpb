@@ -666,6 +666,12 @@ s_client_execute (s_client_t *self, event_t event)
                         queue_old_patients (&self->client);
                     }
                     if (!self->exception) {
+                        //  trigger send saved messages
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ trigger send saved messages", self->log_prefix);
+                        trigger_send_saved_messages (&self->client);
+                    }
+                    if (!self->exception) {
                         //  send PING
                         if (self->verbose)
                             zsys_debug ("%s:         $ send PING",

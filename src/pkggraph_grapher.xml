@@ -13,9 +13,8 @@
 		<message name = "WORKERCANHELP" />
 	I will be sending down the msgpipe:
 		<message name = "ICANHELP" />
-		<message name = "PKGDONE" />
 		<message name = "FORGET_ABOUT_ME" />
-		<message name = "JOB_ENDED" />
+		<message name = "JOB ENDED" />
 	-->
 
 	<state name = "start" inherit = "defaults">
@@ -48,7 +47,7 @@
 		<before>
 			<action name = "trigger send saved messages" />
 		</before>
-		<event name = "PKGDONE">
+		<event name = "JOB ENDED">
 			<action name = "send message verbatim down the msgpipe">
 				The reader at the end of the msgpipe will know what to do.
 			</action>

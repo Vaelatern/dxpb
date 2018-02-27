@@ -19,6 +19,7 @@
 #include "pkgimport_grapher.h"
 #include "pkggraph_grapher.h"
 #include "pkgfiler_grapher.h"
+#include "bworker_end_status.h"
 
 #include "dxpb-common.h"
 
@@ -151,9 +152,9 @@ run(const char *dbpath, const char *import_endpoint,
 
 // SRT is shorthand for assert(), and STRS, for assert(strcmp())
 #define SRT(type, msg, field, goal) assert(pkg##type##_msg_##field(msg) == goal)
-#define ISRT(field, goal) SRT(import, import_msg, ##field, ##goal)
-#define GSRT(field, goal) SRT(graph, graph_msg, ##field, ##goal)
-#define FSRT(field, goal) SRT(files, file_msg, ##field, ##goal)
+#define ISRT(field, goal) SRT(import, import_msg, field, goal)
+#define GSRT(field, goal) SRT(graph, graph_msg, field, goal)
+#define FSRT(field, goal) SRT(files, file_msg, field, goal)
 #define ISRTID(goal) SRT(import, import_msg, id, TOMSG(IMPORT, goal))
 #define GSRTID(goal) SRT(graph, graph_msg, id, TOMSG(GRAPH, goal))
 #define FSRTID(goal) SRT(files, file_msg, id, TOMSG(FILES, goal))
@@ -223,10 +224,6 @@ run(const char *dbpath, const char *import_endpoint,
 	ISET(bootstrap, 1);
 	ISET(restricted, 0);
 	ISEND(PKGINFO);
-	ISET(arch, pkg_archs_str[ARCH_HOST]);
-	ISEND(PKGINFO);
-	IGET();
-	ISRTID(ROGER);
 	IGET();
 	ISRTID(ROGER);
 	IGET();
@@ -237,10 +234,10 @@ run(const char *dbpath, const char *import_endpoint,
 		ISET(pkgname, "bar");
 		ISET(version, "0.1.0");
 		ISET(arch, pkg_archs_str[i]);
-		ISET(nativehostneeds, "foo");
-		ISET(nativetargetneeds, "foo");
-		ISET(crosshostneeds, "foo");
-		ISET(crosstargetneeds, "foo");
+		ISET(nativehostneeds, "");
+		ISET(nativetargetneeds, "baz\37foo");
+		ISET(crosshostneeds, "");
+		ISET(crosstargetneeds, "baz\37foo");
 		ISET(cancross, 0);
 		ISET(broken, 0);
 		ISET(bootstrap, 1);
@@ -268,8 +265,8 @@ run(const char *dbpath, const char *import_endpoint,
 	ISET(pkgname, "baz");
 	ISET(version, "91230");
 	ISET(arch, pkg_archs_str[ARCH_NOARCH]);
-	ISET(nativehostneeds, "bar");
-	ISET(nativetargetneeds, "bar");
+	ISET(nativehostneeds, "");
+	ISET(nativetargetneeds, "");
 	ISET(crosshostneeds, "foo");
 	ISET(crosstargetneeds, "foo");
 	ISET(cancross, 0);
@@ -277,10 +274,6 @@ run(const char *dbpath, const char *import_endpoint,
 	ISET(bootstrap, 0);
 	ISET(restricted, 0);
 	ISEND(PKGINFO);
-	ISET(arch, pkg_archs_str[ARCH_HOST]);
-	ISEND(PKGINFO);
-	IGET();
-	ISRTID(ROGER);
 	IGET();
 	ISRTID(ROGER);
 	IGET();
@@ -298,12 +291,10 @@ run(const char *dbpath, const char *import_endpoint,
 	FGET();
 	FSRTID(HELLO);
 	FSEND(ROGER);
-	for (int i = 1; i < ARCH_HOST; i++) {
-		append_pkgkey_to_list(list, "foo", "0.0.1", pkg_archs_str[i]);
-	}
 	append_pkgkey_to_list(list, "rmme", NULL, NULL);
 	append_pkgkey_to_list(list, "alsormme", NULL, NULL);
 	append_pkgkey_to_list(list, "giggity", "1.5.0", pkg_archs_str[ARCH_NOARCH]);
+	append_pkgkey_to_list(list, "baz", "91230", pkg_archs_str[ARCH_NOARCH]);
 	{
 		int max = zlist_size(list);
 		for (int i = 0; i < max; i++) {
@@ -323,17 +314,74 @@ run(const char *dbpath, const char *import_endpoint,
 	}
 	assert(zlist_size(list) == 0);
 
+	FSET(pkgname, "rmme");
+	FSEND(PKGISDEL);
+	FSET(pkgname, "alsormme");
+	FSEND(PKGISDEL);
+
+	FSET(pkgname, "giggity");
+	FSET(version, "1.5.0");
+	FSET(arch, pkg_archs_str[ARCH_NOARCH]);
+	FSEND(PKGNOTHERE);
+
+	/* And now let's offer to build a package. */
+	GGET();
+	GSRTID(HELLO);
+	GSEND(ROGER);
+	GGET();
+	GSRTID(IMTHEGRAPHER);
+	GSEND(ROGER);
+	GSET(hostarch, pkg_archs_str[ARCH_ARMV6L]);
+	GSET(targetarch, pkg_archs_str[ARCH_ARMV6L]);
+	GSET(iscross, 0);
+	GSET(cost, 100);
+	GSET(addr, 0);
+	GSET(check, 0);
+	GSEND(ICANHELP);
+	GGET();
+	GSRTID(WORKERCANHELP);
+	GSRTS(pkgname, "giggity");
+	GSRTS(version, "1.5.0");
+	GSRTS(arch, pkg_archs_str[ARCH_NOARCH]);
+	GSEND(FORGET_ABOUT_ME);
+	GSET(check, 6000);
+	GSEND(ICANHELP);
+	GGET();
+	GSRTID(WORKERCANHELP);
+	GSRTS(pkgname, "giggity");
+	GSRTS(version, "1.5.0");
+	GSRTS(arch, pkg_archs_str[ARCH_NOARCH]);
+	GSET(cause, END_STATUS_NODISK);
+	GSEND(JOB_ENDED);
+	GSEND(ICANHELP);
+	GGET();
+	GSRTID(WORKERCANHELP);
+	GSRTS(pkgname, "giggity");
+	GSRTS(version, "1.5.0");
+	GSRTS(arch, pkg_archs_str[ARCH_NOARCH]);
+	GSET(cause, END_STATUS_OK);
+	GSEND(JOB_ENDED);
+
+	GSET(hostarch, pkg_archs_str[ARCH_ARMV6L]);
+	GSET(targetarch, pkg_archs_str[ARCH_ARMV6L]);
+	GSET(iscross, 0);
+	GSET(cost, 100);
+	GSET(addr, 5);
+	GSET(check, 1);
+	GSEND(ICANHELP);
+
+	FGET();
+	FSRTID(ISPKGHERE);
+	FSRTS(pkgname, "giggity");
+	FSRTS(version, "1.5.0");
+	FSRTS(arch, pkg_archs_str[ARCH_NOARCH]);
+	FSEND(PKGHERE);
+
+	for (int i = 1; i < ARCH_HOST; i++) {
+		append_pkgkey_to_list(list, "foo", "0.0.1", pkg_archs_str[i]);
+	}
 	FSET(pkgname, "foo");
 	FSET(version, "0.0.1");
-	for (int i = 1; i < ARCH_HOST; i++) {
-		FSET(arch, pkg_archs_str[i]);
-		if (i != ARCH_AARCH64_MUSL && i != ARCH_X86_64) {
-			append_pkgkey_to_list(list, "bar", "0.1.0", pkg_archs_str[i]);
-			FSEND(PKGHERE);
-		} else {
-			FSEND(PKGNOTHERE);
-		}
-	}
 	{
 		int max = zlist_size(list);
 		for (int i = 0; i < max; i++) {
@@ -345,13 +393,183 @@ run(const char *dbpath, const char *import_endpoint,
 				is_del = 1;
 			else
 				assert(false);
+			assert(!is_del);
 			remove_pkgkey_from_list(list, is_del,
 					pkgfiles_msg_pkgname(file_msg),
 					pkgfiles_msg_version(file_msg),
 					pkgfiles_msg_arch(file_msg));
+			if (bpkg_enum_lookup(pkgfiles_msg_arch(file_msg)) == ARCH_ARMV6L_MUSL ||
+					bpkg_enum_lookup(pkgfiles_msg_arch(file_msg)) == ARCH_ARMV7L) {
+				FSEND(PKGNOTHERE);
+			} else {
+				FSEND(PKGHERE);
+			}
 		}
 	}
 	assert(zlist_size(list) == 0);
+
+	GSET(hostarch, pkg_archs_str[ARCH_ARMV6L_MUSL]);
+	GSET(targetarch, pkg_archs_str[ARCH_ARMV6L_MUSL]);
+	GSET(iscross, 0);
+	GSET(cost, 100);
+	GSET(addr, 1);
+	GSET(check, 501);
+	GSEND(ICANHELP);
+
+	GSET(hostarch, pkg_archs_str[ARCH_ARMV7L]);
+	GSET(targetarch, pkg_archs_str[ARCH_ARMV7L]);
+	GSET(iscross, 0);
+	GSET(cost, 100);
+	GSET(addr, 2);
+	GSET(check, 123123);
+	GSEND(ICANHELP);
+
+	GGET();
+	GSRTID(WORKERCANHELP);
+	GSRTS(pkgname, "foo");
+	GSRTS(version, "0.0.1");
+	GSRTS(arch, pkg_archs_str[ARCH_ARMV6L_MUSL]);
+	GSRT(addr, 1);
+	GSRT(check, 501);
+
+	GGET();
+	GSRTID(WORKERCANHELP);
+	GSRTS(pkgname, "foo");
+	GSRTS(version, "0.0.1");
+	GSRTS(arch, pkg_archs_str[ARCH_ARMV7L]);
+	GSRT(addr, 2);
+	GSRT(check, 123123);
+
+	GSEND(FORGET_ABOUT_ME);
+
+	GSET(pkgname, "foo");
+	GSET(version, "0.0.1");
+	GSET(arch, pkg_archs_str[ARCH_ARMV6L_MUSL]);
+	GSET(addr, 1);
+	GSET(check, 501);
+	GSET(cause, END_STATUS_OK);
+	GSEND(JOB_ENDED);
+
+	GSET(hostarch, pkg_archs_str[ARCH_ARMV6L_MUSL]);
+	GSET(targetarch, pkg_archs_str[ARCH_ARMV6L_MUSL]);
+	GSET(iscross, 0);
+	GSET(cost, 100);
+	GSET(addr, 1);
+	GSET(check, 502);
+	GSEND(ICANHELP);
+
+	GSET(hostarch, pkg_archs_str[ARCH_ARMV7L]);
+	GSET(targetarch, pkg_archs_str[ARCH_ARMV7L]);
+	GSET(iscross, 0);
+	GSET(cost, 100);
+	GSET(addr, 2);
+	GSET(check, 123123);
+	GSEND(ICANHELP);
+
+	FGET();
+	FSRTID(ISPKGHERE);
+	FSRTS(pkgname, "foo");
+	FSRTS(version, "0.0.1");
+	FSRTS(arch, pkg_archs_str[ARCH_ARMV6L_MUSL]);
+	FSEND(PKGHERE);
+
+	GGET();
+	GSRTID(WORKERCANHELP);
+	GSRTS(pkgname, "foo");
+	GSRTS(version, "0.0.1");
+	GSRTS(arch, pkg_archs_str[ARCH_ARMV7L]);
+	GSRT(addr, 2);
+	GSRT(check, 123123);
+	GSEND(JOB_ENDED);
+
+	FGET();
+	FSRTID(ISPKGHERE);
+	FSRTS(pkgname, "foo");
+	FSRTS(version, "0.0.1");
+	FSRTS(arch, pkg_archs_str[ARCH_ARMV7L]);
+	FSEND(PKGHERE);
+
+	// Now we make sure that dropped messages get picked up.
+	for (int i = 0; i < 4; i++) {
+		IGET();
+		ISRTID(PING);
+		ISEND(ROGER);
+		GGET();
+		GSRTID(PING);
+		GSEND(ROGER);
+		FGET();
+		FSRTID(PING);
+		FSEND(ROGER);
+	}
+
+	FGET();
+	FSRTID(ISPKGHERE);
+	FSRTS(pkgname, "baz");
+	FSRTS(version, "91230");
+	FSRTS(arch, pkg_archs_str[ARCH_NOARCH]);
+
+	FSEND(PKGHERE);
+
+	for (int i = 1; i < ARCH_HOST; i++) {
+		append_pkgkey_to_list(list, "bar", "0.1.0", pkg_archs_str[i]);
+	}
+	FSET(pkgname, "bar");
+	FSET(version, "0.1.0");
+	{
+		int max = zlist_size(list);
+		for (int i = 0; i < max; i++) {
+			FGET();
+			int is_del;
+			FIFID(ISPKGHERE)
+				is_del = 0;
+			else FIFID(PKGDEL)
+				is_del = 1;
+			else
+				assert(false);
+			assert(!is_del);
+			remove_pkgkey_from_list(list, is_del,
+					pkgfiles_msg_pkgname(file_msg),
+					pkgfiles_msg_version(file_msg),
+					pkgfiles_msg_arch(file_msg));
+			if (bpkg_enum_lookup(pkgfiles_msg_arch(file_msg)) == ARCH_ARMV6L) {
+				FSEND(PKGNOTHERE);
+				GGET();
+				GSRTID(WORKERCANHELP);
+				GSRT(addr, 5);
+				GSRT(check, 1);
+				GSRTS(pkgname, "bar");
+				GSRTS(version, "0.1.0");
+				GSRTS(arch, pkg_archs_str[ARCH_ARMV6L]);
+			} else {
+				FSEND(PKGHERE);
+			}
+		}
+	}
+
+	GSET(pkgname, "bar");
+	GSET(version, "0.1.0");
+	GSET(arch, pkg_archs_str[ARCH_ARMV6L]);
+	GSET(addr, 5);
+	GSET(check, 1);
+	GSET(cause, END_STATUS_OK);
+	GSEND(JOB_ENDED);
+
+	FGET();
+	FSRTID(ISPKGHERE);
+	FSRTS(pkgname, "bar");
+	FSRTS(version, "0.1.0");
+	FSRTS(arch, pkg_archs_str[ARCH_ARMV6L]);
+	FSEND(PKGHERE);
+
+	IGET();
+	ISRTID(PING);
+	ISEND(ROGER);
+	GGET();
+	GSRTID(PING);
+	GSEND(ROGER);
+	FGET();
+	FSRTID(PING);
+	FSEND(ROGER);
 
 	/* Work over, let's clean up. */
 

@@ -32,7 +32,7 @@ typedef enum {
     connect_error_event = 2,
     set_ssl_client_keys_event = 3,
     roger_event = 4,
-    pkgdone_event = 5,
+    job_ended_event = 5,
     icanhelp_event = 6,
     forget_about_me_event = 7,
     act_on_do_update_bootstrap_event = 8,
@@ -64,7 +64,7 @@ s_event_name [] = {
     "connect_error",
     "set_ssl_client_keys",
     "ROGER",
-    "PKGDONE",
+    "JOB_ENDED",
     "ICANHELP",
     "FORGET_ABOUT_ME",
     "act_on_do_update_bootstrap",
@@ -379,8 +379,8 @@ s_protocol_event (s_client_t *self, pkggraph_msg_t *message)
         case PKGGRAPH_MSG_FORGET_ABOUT_ME:
             return forget_about_me_event;
             break;
-        case PKGGRAPH_MSG_PKGDONE:
-            return pkgdone_event;
+        case PKGGRAPH_MSG_JOB_ENDED:
+            return job_ended_event;
             break;
         default:
             zsys_error ("%s: unknown command %s, halting",
@@ -862,7 +862,7 @@ s_client_execute (s_client_t *self, event_t event)
                 break;
 
             case ready_state:
-                if (self->event == pkgdone_event) {
+                if (self->event == job_ended_event) {
                     if (!self->exception) {
                         //  send message verbatim down the msgpipe
                         if (self->verbose)

@@ -14,7 +14,6 @@
 #include "dxpb.h"
 #include "bworker.h"
 
-
 static void bworker_subgroup_free(struct bworksubgroup **);
 static int bworker_subgroup_assign_slot(struct bworkgroup *, struct bworksubgroup *);
 static void bworker_destroy(struct bworker **);
@@ -32,6 +31,7 @@ bworker_group_new(void)
 		exit(ERR_CODE_NOMEM);
 
 	retVal->direct_use = 1;
+	retVal->num_workers = 0;
 
 	return retVal;
 }
@@ -39,7 +39,7 @@ bworker_group_new(void)
 struct bworker *
 bworker_from_my_addr(struct bworkgroup *group, uint16_t addr, uint32_t check)
 {
-	if (group->workers[addr] != NULL && group->workers[addr]->check == check)
+	if (group->workers[addr] != NULL && group->workers[addr]->mycheck == check)
 		return group->workers[addr];
 	return NULL;
 }
@@ -47,9 +47,10 @@ bworker_from_my_addr(struct bworkgroup *group, uint16_t addr, uint32_t check)
 struct bworker *
 bworker_from_remote_addr(struct bworkgroup *group, uint16_t addr, uint32_t check)
 {
-	for (uint16_t i = 0; i < group->num_workers; i++)
-		if (group->workers[i]->addr == addr && group->workers[i]->mycheck == check)
+	for (uint16_t i = 0; i < group->num_workers; i++) {
+		if (group->workers[i]->addr == addr && group->workers[i]->check == check)
 			return group->workers[i];
+	}
 	return NULL;
 }
 
@@ -98,11 +99,10 @@ bworker_group_insert(struct bworkgroup *grp, uint16_t addr, uint32_t check,
 	assert(grp->owners == NULL);
 	assert(grp->direct_use);
 	struct bworker *myguy = NULL;
-	for (uint16_t i = 0; i < grp->num_workers; i++) {
+	for (uint16_t i = 0; i < grp->num_workers; i++) { // Reusing worker
 		if (grp->workers[i]->addr == UINT16_MAX) {
 			myguy = grp->workers[i];
 			bworker_reinit(myguy, addr, check, arch, hostarch, iscross, cost);
-			grp->num_workers++;
 			return i;
 		}
 	}
@@ -115,13 +115,12 @@ bworker_group_insert(struct bworkgroup *grp, uint16_t addr, uint32_t check,
 	return grp->num_workers - 1;
 }
 
-
 /* Subgroup */
 
 void *
 bworker_owner_from_my_addr(struct bworkgroup *group, uint16_t addr, uint32_t check)
 {
-	if (group->workers[addr] != NULL && group->workers[addr]->check == check)
+	if (group->workers[addr] != NULL && group->workers[addr]->mycheck == check)
 		return group->owners[addr]->owner;
 	return NULL;
 }
@@ -158,8 +157,8 @@ bworker_reinit(struct bworker *wrkr, uint16_t addr, uint32_t check,
 	wrkr->arch = arch;
 	wrkr->hostarch = hostarch;
 	wrkr->iscross = iscross;
-	wrkr->job.name = NULL;
-	wrkr->job.ver = NULL;
+	FREE(wrkr->job.name);
+	FREE(wrkr->job.ver);
 	wrkr->job.arch = ARCH_NUM_MAX;
 
 	wrkr->mycheck = arc4random();
@@ -247,7 +246,6 @@ bworker_subgroup_assign_slot(struct bworkgroup *grp, struct bworksubgroup *sub)
 
 	return 1;
 }
-
 
 void
 bworker_subgroup_destroy(struct bworksubgroup **sub)
@@ -339,7 +337,6 @@ bworker_subgroup_insert(struct bworksubgroup *grp, uint16_t addr,
 	return topgrp->num_workers - 1;
 }
 
-
 /* Worker Job Management */
 
 int
@@ -367,14 +364,8 @@ void
 bworker_job_remove(struct bworker *wrkr)
 {
 	assert(wrkr);
-	if (wrkr->job.name != NULL) {
-		free(wrkr->job.name);
-		wrkr->job.name = NULL;
-	}
-	if (wrkr->job.ver != NULL) {
-		free(wrkr->job.ver);
-		wrkr->job.ver = NULL;
-	}
+	FREE(wrkr->job.name);
+	FREE(wrkr->job.ver);
 	wrkr->job.arch = ARCH_NUM_MAX;
 }
 
@@ -385,6 +376,7 @@ bworker_job_equal(struct bworker *wrkr, char *name, char *ver, enum pkg_archs ar
 	assert(name);
 	assert(ver);
 
+	/* Cheap checks first, then highest entropy to lowest entropy */
 	if (arch >= ARCH_HOST || wrkr->job.arch >= ARCH_HOST)
 		return 0;
 	if (wrkr->job.arch != arch)
@@ -397,7 +389,6 @@ bworker_job_equal(struct bworker *wrkr, char *name, char *ver, enum pkg_archs ar
 	return 1;
 }
 
-
 /* Worker Matching */
 
 int
@@ -406,7 +397,9 @@ bworker_pkg_match(struct bworker *wrkr, struct pkg *pkg)
 	assert(wrkr);
 	assert(pkg);
 	if (wrkr->job.name == NULL) // A fast, simple check
-		if (wrkr->arch == pkg->arch && (pkg->can_cross || !wrkr->iscross))
+		if (pkg->arch == ARCH_NOARCH ||
+				(wrkr->arch == pkg->arch &&
+				 (pkg->can_cross || !wrkr->iscross)))
 			return 1;
 	return 0;
 }
