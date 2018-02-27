@@ -92,6 +92,7 @@ s_event_name [] = {
 //  These are the different method arguments we manage automatically
 struct _client_args_t {
     char *endpoint;
+    char *repourl;
     char *repopath;
     char *hostarch;
     char *targetarch;
@@ -220,6 +221,7 @@ s_client_destroy (s_client_t **self_p)
     if (*self_p) {
         s_client_t *self = *self_p;
         zstr_free (&self->args.endpoint);
+        zstr_free (&self->args.repourl);
         zstr_free (&self->args.repopath);
         zstr_free (&self->args.hostarch);
         zstr_free (&self->args.targetarch);
@@ -1597,8 +1599,9 @@ s_client_handle_cmdpipe (zloop_t *loop, zsock_t *reader, void *argument)
     }
     else
     if (streq (method, "SET REPOPATH")) {
+        zstr_free (&self->args.repourl);
         zstr_free (&self->args.repopath);
-        zsock_recv (self->cmdpipe, "s", &self->args.repopath);
+        zsock_recv (self->cmdpipe, "ss", &self->args.repourl, &self->args.repopath);
         s_client_execute (self, set_repopath_event);
     }
     else
@@ -1884,11 +1887,11 @@ pkggraph_worker_construct (pkggraph_worker_t *self, const char *endpoint)
 //  No explanation
 
 int
-pkggraph_worker_set_repopath (pkggraph_worker_t *self, const char *repopath)
+pkggraph_worker_set_repopath (pkggraph_worker_t *self, const char *repourl, const char *repopath)
 {
     assert (self);
 
-    zsock_send (self->actor, "ss", "SET REPOPATH", repopath);
+    zsock_send (self->actor, "sss", "SET REPOPATH", repourl, repopath);
     return 0;
 }
 

@@ -13,6 +13,7 @@
 .Op Fl H Ar hostdir
 .Op Fl m Ar masterdir
 .Op Fl p Ar packages-git-repo
+.Op Fl P Ar git-repo-remote-url
 .Op Fl T Ar mkdtemp-template
 .Fl W Ar hostarch:targetarch:cost[:iscross]
 .Nm dxpb-frontend
@@ -44,6 +45,7 @@ See:
 .Op Fl i Ar import-endpoint
 .Op Fl I Ar publish-socket
 .Op Fl p Ar packages-git-repo
+.Op Fl P Ar git-repo-remote-url
 .Op Fl x Ar path-to-xbps-src
 .Nm dxpb-poke
 .Op Fl hL
@@ -147,10 +149,12 @@ generally is all a user needs.
 Name to be used as daemon. This is relevant for ssl keys, because this name is
 used to name ssl keys. Clients even have the names for their servers hardcoded.
 .It Fl r
-Path to a git-clone of the upstream -packages repository.
-.It Fl p
 A path to a directory to store xbps packages. hostdir/binpkgs from the root of
 a package git repository checkout.
+.It Fl p
+Path to a git-clone of the upstream -packages repository.
+.It Fl P
+The url to use as remote, as in with a git-clone.
 .It Fl T
 A template pattern for mkdtemp. Should be a string where the last 6 characters
 are X - please see the mkdtemp manpage for more information. Any caller needs

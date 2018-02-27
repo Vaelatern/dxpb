@@ -20,7 +20,8 @@ forkoff(const char *path, const char *endpoint, const char *pubpoint)
 {
 	switch(fork()) {
 	case 0:
-		execlp(path, "dxpb-pkgimport-master",
+		execlp(path, "dxpb-pkgimport-master", "-P",
+				"https://github.com/dxpb/packages.git",
 				"-i", endpoint, "-I", pubpoint, NULL);
 		exit(0);
 	case -1:
@@ -61,7 +62,7 @@ run(const char *endpoint, const char *pubpoint)
 
 #define GET(mymsg, sock)	{ \
 					zpoller_t *p = zpoller_new(sock, NULL); \
-					(void) zpoller_wait(p, 10*1000); \
+					(void) zpoller_wait(p, 5*60*1000); \
 					assert(!zpoller_expired(p)); \
 					if (zpoller_terminated(p)) \
 						exit(-1); \
@@ -237,9 +238,6 @@ main(int argc, char * const *argv)
 	prologue(argv[0]);
 
 	rc = chdir(repopath);
-	assert(rc == 0);
-
-	rc = system("git clone --depth 5 -o dxpb-remote https://github.com/dxpb/packages.git ./");
 	assert(rc == 0);
 
 	puts("\n\nThis is a test harness.\nConducting tests....\n\n");

@@ -134,9 +134,9 @@ spawn_child(char *endpoint, char *masterdir, char *hostdir, char *xbps_src)
 }
 
 int
-run(int flags, char *argv0, char *masterdir, char *hostdir,  char *ssldir,
-		char *endpoint, char *repopath, struct workerspec *wrkr,
-		const char *varrundir)
+run(int flags, char *argv0, char *masterdir, char *hostdir, char *ssldir,
+		char *endpoint, char *repopath, char *repourl,
+		struct workerspec *wrkr, char *varrundir)
 {
 	assert(varrundir);
 	assert((flags & ERR_FLAG) == 0);
@@ -165,7 +165,7 @@ run(int flags, char *argv0, char *masterdir, char *hostdir,  char *ssldir,
 		retVal = ERR_CODE_BAD;
 		goto end;
 	}
-	zstr_sendx(actor, "SET REPOPATH", repopath, NULL);
+	zstr_sendx(actor, "SET REPOPATH", repourl, repopath, NULL);
 	zstr_sendx(actor, "CONSTRUCT", endpoint, NULL);
 
 	zpoller_t *polling = zpoller_new(actor, NULL);
@@ -203,14 +203,16 @@ main(int argc, char * const *argv)
 	char *default_ssldir = DEFAULT_SSLDIR;
 	char *default_endpoint = DEFAULT_GRAPH_ENDPOINT;
 	char *default_repopath = DEFAULT_REPOPATH;
+	char *default_repourl = DEFAULT_REPOURL;
 	char *default_varrundir = DEFAULT_VARRUNDIR;
 	char *masterdir = NULL;
 	char *hostdir = NULL;
 	char *ssldir = NULL;
 	char *endpoint = NULL;
 	char *repopath = NULL;
+	char *repourl = NULL;
 	char *varrundir = NULL;
-	const char *optstring = "hvLg:k:H:m:W:p:T:";
+	const char *optstring = "hvLg:k:H:m:W:p:P:T:";
 
 	while ((ch = getopt(argc, argv, optstring)) != -1) {
 		switch(ch) {
@@ -225,6 +227,9 @@ main(int argc, char * const *argv)
 			break;
 		case 'p':
 			repopath = optarg;
+			break;
+		case 'P':
+			repourl = optarg;
 			break;
 		case 'T':
 			varrundir = optarg;
@@ -275,6 +280,8 @@ main(int argc, char * const *argv)
 		endpoint = default_endpoint;
 	if (!repopath)
 		repopath = default_repopath;
+	if (!repourl)
+		repourl = default_repourl;
 	if (!varrundir)
 		varrundir = default_varrundir;
 	if (!wrkr)
@@ -287,7 +294,7 @@ main(int argc, char * const *argv)
 	enum ret_codes rc = ensure_sock_if_ipc(endpoint);
 	assert(rc == ERR_CODE_OK);
 
-	int returnMe = run(flags, argv0, masterdir, hostdir, ssldir, endpoint, repopath, wrkr, varrundir);
+	int returnMe = run(flags, argv0, masterdir, hostdir, ssldir, endpoint, repopath, repourl, wrkr, varrundir);
 	FREE(argv0);
 	return returnMe;
 }

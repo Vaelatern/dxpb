@@ -15,6 +15,7 @@ dxpb(7) - Miscellaneous Information Manual
 \[**-H**&nbsp;*hostdir*]
 \[**-m**&nbsp;*masterdir*]
 \[**-p**&nbsp;*packages-git-repo*]
+\[**-P**&nbsp;*git-repo-remote-url*]
 \[**-T**&nbsp;*mkdtemp-template*]
 **-W**&nbsp;*hostarch:targetarch:cost\[:iscross]*  
 **dxpb-frontend**
@@ -48,6 +49,7 @@ See:
 \[**-i**&nbsp;*import-endpoint*]
 \[**-I**&nbsp;*publish-socket*]
 \[**-p**&nbsp;*packages-git-repo*]
+\[**-P**&nbsp;*git-repo-remote-url*]
 \[**-x**&nbsp;*path-to-xbps-src*]  
 **dxpb-poke**
 \[**-hL**]
@@ -187,12 +189,16 @@ among all daemons (though not necessarily for utilities).
 
 **-r**
 
-> Path to a git-clone of the upstream -packages repository.
+> A path to a directory to store xbps packages. hostdir/binpkgs from the root of
+> a package git repository checkout.
 
 **-p**
 
-> A path to a directory to store xbps packages. hostdir/binpkgs from the root of
-> a package git repository checkout.
+> Path to a git-clone of the upstream -packages repository.
+
+**-P**
+
+> The url to use as remote, as in with a git-clone.
 
 **-T**
 
@@ -327,4 +333,4 @@ might be fixed.
 zmq\_tcp(7)
 zmq\_curve(7)
 
-Void Linux - February 26, 2018
+Void Linux - February 27, 2018

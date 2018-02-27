@@ -25,7 +25,7 @@ help(void)
 
 void
 run(int flags, const char *ssldir, const char *endpoint, const char *pubpoint,
-		const char *repopath, const char *xbps_src)
+		const char *repourl, const char *repopath, const char *xbps_src)
 {
 	assert((flags & ERR_FLAG) == 0);
 	zactor_t *actor;
@@ -36,6 +36,7 @@ run(int flags, const char *ssldir, const char *endpoint, const char *pubpoint,
 
 	do_server_ssl_if_possible(actor, ssldir, "dxpb-pkgimport-master");
 
+	zstr_sendx(actor, "SET", "dxpb/repourl", repourl, NULL);
 	zstr_sendx(actor, "SET", "dxpb/repopath", repopath, NULL);
 	zstr_sendx(actor, "SET", "dxpb/xbps_src", xbps_src, NULL);
 	zstr_sendx(actor, "SET", "dxpb/pubpoint", pubpoint, NULL);
@@ -61,13 +62,15 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "vhLp:i:I:x:";
+	const char *optstring = "vhLp:P:i:I:x:";
 	char *default_endpoint = DEFAULT_IMPORT_ENDPOINT;
 	char *default_pubpoint = DEFAULT_DXPB_PKGIMPORT_MASTER_PUBPOINT;
 	char *default_repopath = DEFAULT_REPOPATH;
+	char *default_repourl = DEFAULT_REPOURL;
 	char *default_xbps_src = DEFAULT_XBPS_SRC;
 	char *pubpoint = NULL;
 	char *endpoint = NULL;
+	char *repourl  = NULL;
 	char *repopath = NULL;
 	char *xbps_src = NULL;
 	char *ssldir = "/var/empty";
@@ -88,6 +91,9 @@ main(int argc, char * const *argv)
 			break;
 		case 'p':
 			repopath = optarg;
+			break;
+		case 'P':
+			repourl = optarg;
 			break;
 		case 'x':
 			xbps_src = optarg;
@@ -116,6 +122,8 @@ main(int argc, char * const *argv)
 		endpoint = default_endpoint;
 	if (!pubpoint)
 		pubpoint = default_pubpoint;
+	if (!repourl)
+		repourl = default_repourl;
 	if (!repopath)
 		repopath = default_repopath;
 	if (!xbps_src)
@@ -126,6 +134,6 @@ main(int argc, char * const *argv)
 	rc = ensure_sock_if_ipc(pubpoint);
 	assert(rc == ERR_CODE_OK);
 
-	run(flags, ssldir, endpoint, pubpoint, repopath, xbps_src);
+	run(flags, ssldir, endpoint, pubpoint, repourl, repopath, xbps_src);
 	return 0;
 }

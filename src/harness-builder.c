@@ -30,8 +30,8 @@ forkoff(const char *endpoint, const char *hostdir, const char *masterdir,
 	switch(fork()) {
 	case 0:
 		execlp("./dxpb-builder", "dxpb-builder",
-				"-g", endpoint, "-R", varrundir,
-				"-H", hostdir, "-m", masterdir, "-r", repopath,
+				"-g", endpoint, "-T", varrundir,
+				"-H", hostdir, "-m", masterdir, "-p", repopath,
 				"-W", workspec, "-k", ssldir, NULL);
 		exit(0);
 	case -1:
@@ -73,7 +73,7 @@ run(const char *endpoint, const char *hostdir, const char *masterdir,
 
 #define GET(mymsg, sock)        { \
 					zpoller_t *p = zpoller_new(sock, NULL); \
-					(void) zpoller_wait(p, 30*1000); \
+					(void) zpoller_wait(p, 5*60*1000); \
 					assert(!zpoller_expired(p)); \
 					if (zpoller_terminated(p)) \
 					exit(-1); \
@@ -183,12 +183,6 @@ main(int argc, char * const *argv)
 	rc = mkdir(varrundir, S_IRWXU);
 	rc = mkdir(repopath, S_IRWXU);
 	rc = mkdir(ssldir, S_IRWXU);
-
-	char buf[120];
-	snprintf(buf, 120, "git clone --depth 5 -o dxpb-remote https://github.com/voidlinux/void-packages.git %s", repopath);
-
-	rc = system(buf);
-	assert(rc == 0);
 
 	prologue(argv[0]);
 

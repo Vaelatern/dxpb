@@ -45,6 +45,7 @@ struct _server_t {
 	client_t *knowngrapher;
 	char *curhash;
 	char *repopath;
+	char *repourl;
 	char *xbps_src;
 };
 
@@ -364,7 +365,8 @@ get_new_pkgs_from_git (client_t *self)
 	self->server->curhash = NULL;
 	bgit_proc_changed_pkgs(self->server->repopath, self->server->xbps_src,
 			zlist_append_wrapper, (void *)self->server->toread);
-	self->server->curhash = bgit_get_head_hash(self->server->repopath);
+	self->server->curhash = bgit_get_head_hash(self->server->repourl,
+			self->server->repopath);
 	if (self->server->pub) {
 		zstr_sendm(self->server->pub, "TRACE");
 		zstr_sendf(self->server->pub, "Updated pkgs from git");
@@ -528,16 +530,18 @@ ensure_all_configuration_is_complete (client_t *self)
 		self->server->xbps_src = zconfig_get(self->server->config, "dxpb/xbps_src", NULL);
 	if (!self->server->repopath)
 		self->server->repopath = zconfig_get(self->server->config, "dxpb/repopath", NULL);
+	if (!self->server->repourl)
+		self->server->repourl = zconfig_get(self->server->config, "dxpb/repourl", NULL);
 	if (!self->server->pubpath) {
 		self->server->pubpath = zconfig_get(self->server->config, "dxpb/pubpoint", NULL);
 		self->server->pub = zsock_new_pub(self->server->pubpath);
 		bfs_ensure_sock_perms(self->server->pubpath);
 	}
-	if (!self->server->xbps_src || !self->server->repopath) {
-		fprintf(stderr, "Caller neglected to set both xbps_src and repopath!\n");
+	if (!self->server->xbps_src || !self->server->repopath || !self->server->repourl) {
+		fprintf(stderr, "Caller neglected to set xbps_src, repourl, and repopath!\n");
 		exit(ERR_CODE_BAD);
 	}
-	self->server->curhash = bgit_get_head_hash(self->server->repopath);
+	self->server->curhash = bgit_get_head_hash(self->server->repourl, self->server->repopath);
 }
 
 

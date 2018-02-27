@@ -125,6 +125,7 @@
 	</method>
 
 	<method name = "set repopath">
+		<field name = "repourl" type = "string" />
 		<field name = "repopath" type = "string" />
 	</method>
 

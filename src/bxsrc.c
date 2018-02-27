@@ -213,6 +213,7 @@ bxsrc_init(const char *xbps_src, int *fds, char *const *args, char *env[], int m
 {
 	pid_t child;
 	int fds_read[2], fds_write[2], fds_error[2];
+	int rc, rcc;
 
 	if (pipe(fds_read) == -1) {
 		perror("Could not pipe()");
@@ -235,30 +236,30 @@ bxsrc_init(const char *xbps_src, int *fds, char *const *args, char *env[], int m
 	case 0: /* You are the child */
 		/* Close all fds except our pipes to fd 0, 1, and 2, then
 		 * clean up and carry on */
-		if (fds_read[1] != 1) {
-			dup2(fds_read[1], 1);
-			if (merge_stderr)
-				dup2(fds_read[1], 2);
-		}
+		rcc = dup2(fds_read[1], 1);
+		assert(rcc == 1);
 		close(fds_read[0]);
 
-		if (fds_write[0] != 0) {
-			dup2(fds_write[0], 0);
-		}
+		dup2(fds_write[0], 0);
 		close(fds_write[1]);
 
-		if (!merge_stderr && fds_error[1] != 1) {
+		if (merge_stderr)
+			dup2(1, 2);
+		else {
 			dup2(fds_error[1], 2);
 			close(fds_error[0]);
 		}
 
-		execve(xbps_src, args, env);
 		errno = 0;
+		rcc = write(1, "GO", 2);
+		assert(rcc == 2);
+		rcc = execve(xbps_src, args, env);
+		assert(rcc == -1);
+		perror("Failed to spawn an xbps-src instance");
 		exit(ERR_CODE_OK);
 	default: /* What a good grown up */
 		/* Now clean up the toys you won't use */
 		fds[0] = fds_read[0];
-		set_fd_o_nonblock(fds[0]);
 		close(fds_read[1]);
 
 		fds[1] = fds_write[1];
@@ -271,6 +272,12 @@ bxsrc_init(const char *xbps_src, int *fds, char *const *args, char *env[], int m
 			close(fds_error[1]);
 		}
 
+		char buf[2];
+		rc = read(fds[0], buf, 2);
+		assert(rc == 2);
+		assert(buf[0] == 'G' && buf[1] == 'O');
+
+		set_fd_o_nonblock(fds[0]);
 		sched_yield(); /* It takes time for the child to mature */
 		return child;
 	}
@@ -292,7 +299,6 @@ bxsrc_init_build(const char *xbps_src, const char *pkg_name, int *fds,
 	xbps_arch[0] = '\0';
 	if (pkg_archs_str[target_arch] != NULL)
 		snprintf(xbps_arch, 30, "XBPS_ARCH=%s", pkg_archs_str[target_arch]);
-	puts(xbps_arch);
 	char *env[] = {xbps_arch, NULL};
 	char *const *args = (target_arch != ARCH_NUM_MAX ? args_with_cross : args_sans_cross);
 
@@ -303,16 +309,21 @@ int
 bxsrc_bootstrap_end(const int fds[], const pid_t c_pid)
 {
 	assert(fds[0] > 2 && fds[1] > 2);
-	char buf[800];
+	char buf[80];
+	buf[79] = '\0';
 	/* Close writing pipe */
 	close(fds[1]);
 	/* Wait for process to end */
 	int retVal = 0;
+	while (read(fds[0], buf, 79) > 0) {
+		fprintf(stderr, "%s", buf);
+		buf[0] = '\0';
+	}
 	waitpid(c_pid, &retVal, 0);
 	/* Close reading pipe */
 	unset_fd_o_nonblock(fds[0]);
-	while (read(fds[0], buf, 799)) {
-		;
+	while (read(fds[0], buf, 79)) {
+		fprintf(stderr, "%s", buf);
 	}
 	close(fds[0]);
 	return retVal;

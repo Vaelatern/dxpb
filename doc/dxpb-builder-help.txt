@@ -12,7 +12,8 @@ Arguments:
   -H <dir>	Hostdir builder can use
   -m <dir>	Masterdir builder can use
   -p <path>	Path to repo, with ./xbps-src present
-  -R <pattern>  Pattern to be passed to mkdtemp() for in-binary ipc:// sockets.
+  -P <url>	URL for upstream of repo with xbps-src present
+  -T <pattern>  Pattern to be passed to mkdtemp() for in-binary ipc:// sockets.
   -W <spec>	Spec following hostarch:targetarch:cost:iscross with :iscross
 		being true if present. host:target:cost for non-cross setups.
 
@@ -22,7 +23,8 @@ The following flags have defaults.
   -k: /etc/dxpb/curve/
   -m: ./masterdir
   -p: ./
-  -R: /var/run/dxpb/tmpsock-XXXXXX
+  -P: https://github.com/voidlinux/void-packages.git
+  -T: /var/run/dxpb/tmpsock-XXXXXX
 
 The following flag is required:
   -W

@@ -99,11 +99,38 @@ bgit_ff(git_repository *repo)
 	git_libgit2_shutdown();
 }
 
-void
-bgit_just_ff(const char *repopath)
+static void
+bgit_clone(const char *url, const char *repopath)
 {
+	git_repository *repo = NULL;
+	git_libgit2_init();
+
+	int rc = git_clone(&repo, url, repopath, NULL);
+	if (rc != 0 && rc != GIT_EEXISTS) {
+		fprintf(stderr, "Couldn't clone remote: %s\n", giterr_last()->message);
+		exit(ERR_CODE_BADGIT);
+	}
+	if (rc == 0) {
+		git_strarray out;
+		rc = git_remote_rename(&out, repo, "origin", "dxpb-remote");
+		assert(rc == 0 || rc == GIT_EEXISTS);
+		git_strarray_free(&out);
+	}
+
+	git_repository_free(repo);
+	git_libgit2_shutdown();
+}
+
+void
+bgit_just_ff(const char *repourl, const char *repopath)
+{
+	assert(repourl);
+	assert(repopath);
+
 	int rc;
 	git_repository *repo = NULL;
+
+	bgit_clone(repourl, repopath);
 
 	git_libgit2_init();
 	rc = git_repository_open(&repo, repopath);
@@ -223,7 +250,7 @@ bgit_proc_changed_pkgs(const char *repopath, const char *xbps_src, int (*cb)(voi
 }
 
 char *
-bgit_get_head_hash(const char *repopath)
+bgit_get_head_hash(const char *repourl, const char *repopath)
 {
 	assert(repopath);
 	assert(GIT_OID_HEXSZ > 0);
@@ -235,6 +262,8 @@ bgit_get_head_hash(const char *repopath)
 		perror("Could not allocate memory for a shasum");
 		exit(ERR_CODE_NOMEM);
 	}
+
+	bgit_clone(repourl, repopath);
 
 	int rc = git_libgit2_init();
 	assert(rc > 0);

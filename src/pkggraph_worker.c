@@ -43,12 +43,13 @@ typedef struct {
 	client_args_t *args;        //  Arguments from methods
 
 	//  Add specific properties for your application
-	int bootstrap_wanted;
 	char *repopath;
+	char *repourl;
 	enum pkg_archs hostarch;
 	enum pkg_archs targetarch;
-	uint8_t iscross;
 	uint16_t cost;
+	uint8_t iscross;
+	int bootstrap_wanted : 1;
 } client_t;
 
 //  Include the generated client engine
@@ -60,8 +61,9 @@ typedef struct {
 static int
 client_initialize (client_t *self)
 {
-	self->bootstrap_wanted = 0;
+	self->bootstrap_wanted = 1; // Also set with flag_bootstrap_wanted
 	self->repopath = NULL;
+	self->repourl = NULL;
 	self->hostarch = ARCH_NUM_MAX;
 	self->targetarch = ARCH_NUM_MAX;
 	self->iscross = 0;
@@ -74,9 +76,8 @@ client_initialize (client_t *self)
 static void
 client_terminate (client_t *self)
 {
-	if (self->repopath)
-		free(self->repopath);
-	self->repopath = NULL;
+	FREE(self->repopath);
+	FREE(self->repourl);
 }
 
 static int
@@ -280,7 +281,9 @@ set_timeout_low (client_t *self)
 static void
 do_git_ff (client_t *self)
 {
-	bgit_just_ff(self->repopath);
+	assert(self->repourl);
+	assert(self->repopath);
+	bgit_just_ff(self->repourl, self->repopath);
 }
 
 //  ---------------------------------------------------------------------------
@@ -319,8 +322,13 @@ static void
 set_repopath_to_provided (client_t *self)
 {
 	assert(self);
+	assert(self->args->repopath);
 	self->repopath = strdup(self->args->repopath);
 	assert(self->repopath);
+	assert(self->args->repourl);
+	self->repourl = strdup(self->args->repourl);
+	assert(self->repourl);
+	bgit_just_ff(self->repourl, self->repopath);
 }
 
 //  ---------------------------------------------------------------------------

@@ -65,7 +65,7 @@ int
 
 //  No explanation
 int
-    pkggraph_worker_set_repopath (pkggraph_worker_t *self, const char *repopath);
+    pkggraph_worker_set_repopath (pkggraph_worker_t *self, const char *repourl, const char *repopath);
 
 //  No explanation
 //  Returns >= 0 if successful, -1 if interrupted.
