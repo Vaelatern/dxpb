@@ -325,13 +325,13 @@ bpkg_read_begin(const char *xbps_src, const char *name)
 void
 bpkg_read_step(const char *xbps_src, struct pkg_importer *info)
 {
-	if (info->to_send != NULL || info->archnow > ARCH_HOST) {
+	if (info->to_send != NULL) {
 		bpkg_destroy(info->to_send);
 		info->to_send = NULL;
 	}
 	/* Base case */
-	if (info->archnow == ARCH_NUM_MAX)
-		return;
+	if (info->archnow > ARCH_HOST)
+		goto end;
 
 	assert(!(info->is_noarch && (info->archnow != ARCH_NOARCH)));
 
@@ -348,7 +348,8 @@ bpkg_read_step(const char *xbps_src, struct pkg_importer *info)
 				info->is_subpkg ? info->actual_name : "",
 				info->archnow, info->is_subpkg);
 
-	if (info->archnext == ARCH_NUM_MAX)
+end:
+	if (info->archnext >= ARCH_HOST)
 		info->archnow = ARCH_NUM_MAX;
 	else if (info->archnow == ARCH_NOARCH && info->is_noarch)
 		info->archnow = ARCH_NUM_MAX;
