@@ -1,0 +1,77 @@
+image: voidlinux/voidlinux
+stages:
+  - build
+  - test
+
+before_script:
+  - xbps-install -Sy xz
+  - xbps-uhelper fetch https://repo.voidlinux.eu/static/xbps-static-latest.x86_64-musl.tar.xz
+  - tar -xf xbps-static-latest.x86_64-musl.tar.xz
+  - export PATH="$(pwd)/usr/bin:$PATH"
+  - xbps-install -Sy
+  - xbps-install -yu
+  - xbps-install -yu
+  - xbps-install -yu
+  - xbps-install -y base-devel zeromq-devel czmq-devel libxbps-devel sqlite-devel libbsd-devel libgit2-devel graphviz-devel pkg-config clang git check-devel
+
+do-gcc-build:
+  stage: build
+  script:
+    - cd src
+    - make CC=cc clean main harness
+
+do-build:
+  stage: build
+  script:
+    - cd src
+    - make CC=clang clean main harness
+
+module-tests:
+  stage: test
+  script:
+    - cd src
+    - make test
+
+harness-builder:
+  stage: test
+  script:
+    - cd src
+    - ./harness builder
+
+harness-builder2:
+  stage: test
+  script:
+    - cd src
+    - ./harness builder2
+
+harness-frontend:
+  stage: test
+  script:
+    - cd src
+    - ./harness frontend
+
+harness-grapher:
+  stage: test
+  script:
+    - cd src
+    - ./harness grapher
+
+harness-hostdir-master:
+  stage: test
+  script:
+    - cd src
+    - ./harness hostdir-master
+
+harness-hostdir:
+  stage: test
+  script:
+    - cd src
+    - ./harness hostdir
+
+harness-pkgimport-master:
+  stage: test
+  script:
+    - cd src
+    - ./harness pkgimport-master
+
+
