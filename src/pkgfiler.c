@@ -897,8 +897,9 @@ postprocess_chunk (client_t *self)
 		}
 
 		uint32_t parA = 0, parB = 0;
-		char *newfilepath = bstring_add(NULL, self->server->repodir,
-				&parA, &parB);
+		char *newfilepath = NULL;
+		newfilepath = bstring_add(newfilepath, self->server->repodir, &parA,
+				&parB);
 		if (newfilepath[parB] != '/')
 			newfilepath = bstring_add(newfilepath, "/", &parA, &parB);
 		if (fetch->subpath[1] != '\0') // if length of 1, == "/"
@@ -908,6 +909,7 @@ postprocess_chunk (client_t *self)
 		newfilepath = bstring_add(newfilepath, filename, &parA, &parB);
 
 		rc = bfs_rename(fetch->filepath, newfilepath);
+		FREE(newfilepath);
 		if (rc != 0) {
 			perror("Error renaming file - this should be handled properly");
 			exit(ERR_CODE_BAD);
@@ -931,7 +933,6 @@ sendmemo:	FREE(checksum); // located here because C wants a statement here.
 		zlist_append(self->server->followups, memo);
 		memo = NULL; // not free!
 
-		FREE(newfilepath);
 		FREE(fetch->filepath);
 		FREE(fetch->subpath);
 		FREE(fetch->pkgname);
