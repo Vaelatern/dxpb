@@ -21,6 +21,7 @@ args=""
 [ -n "$HOSTDIR" ] && args="$args -H $HOSTDIR"
 [ -n "$MASTERDIR" ] && args="$args -m $MASTERDIR"
 [ -n "$XBPS_SRC" ] && args="$args -p $REPODIR"
+[ -n "$REPOREMOTE" ] && args="$args -P $REPOREMOTE"
 [ -n "$ENDPOINT" ] && args="$args -g $ENDPOINT"
 
 [ -n "$WRKDIR" ] && cd "$WRKDIR"

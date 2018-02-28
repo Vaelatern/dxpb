@@ -16,6 +16,7 @@ unset USER GROUP ETCDIR WKRDIR REPODIR XBPSSRC ENDPOINT PUBPOINT LOGFILE
 
 args=""
 [ -n "$REPODIR" ] && args="${args} -p $REPODIR"
+[ -n "$REPOREMOTE" ] && args="${args} -P $REPOREMOTE"
 [ -n "$XBPSSRC" ] && args="${args} -x $XBPSSRC"
 [ -n "$ENDPOINT" ] && args="${args} -i $ENDPOINT"
 [ -n "$PUBPOINT" ] && args="${args} -I $PUBPOINT"
