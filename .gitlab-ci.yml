@@ -12,7 +12,7 @@ before_script:
   - xbps-install -yu
   - xbps-install -yu
   - xbps-install -yu
-  - xbps-install -y base-devel zeromq-devel czmq-devel libxbps-devel sqlite-devel libbsd-devel libgit2-devel graphviz-devel pkg-config clang git check-devel
+  - xbps-install -y base-devel zeromq-devel czmq-devel libxbps-devel sqlite-devel libbsd-devel libgit2-devel graphviz-devel pkg-config clang git check-devel gsl-ucg
 
 do-gcc-build:
   stage: build
