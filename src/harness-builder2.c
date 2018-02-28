@@ -182,8 +182,11 @@ main(int argc, char * const *argv)
 	int rc;
 
 	rc = mkdir(varrundir, S_IRWXU);
+	assert(rc == 0);
 	rc = mkdir(repopath, S_IRWXU);
+	assert(rc == 0);
 	rc = mkdir(ssldir, S_IRWXU);
+	assert(rc == 0);
 
 	prologue(argv[0]);
 
