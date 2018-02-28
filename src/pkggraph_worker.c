@@ -49,7 +49,7 @@ typedef struct {
 	enum pkg_archs targetarch;
 	uint16_t cost;
 	uint8_t iscross;
-	int bootstrap_wanted : 1;
+	uint8_t bootstrap_wanted : 1;
 } client_t;
 
 //  Include the generated client engine
