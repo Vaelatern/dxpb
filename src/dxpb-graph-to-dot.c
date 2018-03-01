@@ -62,7 +62,7 @@ run(int flags, const char *from, const char *to)
 		printf("Creating dot graph...\n");
 	Agraph_t *dot = bdot_from_graph(grph);
 
-	if (!to) {
+	if (to) {
 		if (verbose)
 			printf("Saving to file %s ...\n", to);
 		bdot_save_graph(dot, to);
