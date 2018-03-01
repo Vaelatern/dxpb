@@ -159,7 +159,7 @@ bgraph_find_pkg(zhash_t *arch, zhash_t *noarch, const char *pkgname)
 	assert(pkgname);
 	if (arch != NULL)
 		retVal = zhash_lookup(arch, pkgname);
-	else if (noarch != NULL && retVal == NULL)
+	if (noarch != NULL && retVal == NULL)
 		retVal = zhash_lookup(noarch, pkgname);
 	return retVal;
 }
@@ -226,8 +226,7 @@ bgraph_resolve_wneed(bgraph hay, bgraph allhay, bwords curwords, void *ineed, vo
 		curpkg = bgraph_find_pkg(hay, allhay, curpkgname);
 		if (curpkg == NULL)
 			goto badwant;
-		free(curpkgname); /* mandated by the xbps functions */
-		curpkgname = NULL;
+		FREE(curpkgname); /* mandated by the xbps functions */
 		zlist_append(ineed, bgraph_new_need(curwords->words[i], curpkg));
 		zlist_append(needs_me, me);
 	}
