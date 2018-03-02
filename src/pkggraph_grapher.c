@@ -216,14 +216,10 @@ prepare_workercanhelp_from_pipe (client_t *self)
 	pkggraph_msg_set_pkgname(self->message, tosend->pkgname);
 	pkggraph_msg_set_version(self->message, tosend->version);
 	pkggraph_msg_set_arch(self->message, tosend->arch);
-	free(tosend->pkgname);
-	tosend->pkgname = NULL;
-	free(tosend->version);
-	tosend->version = NULL;
-	free(tosend->arch);
-	tosend->arch = NULL;
-	free(tosend);
-	tosend = NULL;
+	FREE(tosend->pkgname);
+	FREE(tosend->version);
+	FREE(tosend->arch);
+	FREE(tosend);
 }
 
 
@@ -252,9 +248,13 @@ store_workercanhelp_for_later_sending (client_t *self)
 	}
 	tosave->addr = self->args->addr;
 	tosave->check = self->args->check;
-	tosave->pkgname = self->args->pkgname;
-	tosave->version = self->args->version;
-	tosave->arch = self->args->arch;
+	tosave->pkgname = strdup(self->args->pkgname);
+	tosave->version = strdup(self->args->version);
+	tosave->arch = strdup(self->args->arch);
+	tosave->type = PKGGRAPH_MSG_WORKERCANHELP;
+	assert(tosave->pkgname);
+	assert(tosave->version);
+	assert(tosave->arch);
 	zlist_append(self->msgs_to_send, tosave);
 }
 
