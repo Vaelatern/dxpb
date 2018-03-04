@@ -95,7 +95,7 @@ START_TEST(test_basic_bgraph_with_pkg_type_replacement)
 	for (enum pkg_archs i = 0; i <= ARCH_HOST; i++) {
 		list = bgraph_what_next_for_arch(grph, i);
 		ck_assert_ptr_nonnull(list);
-		ck_assert_int_eq(zlist_size(list), 1);
+		ck_assert_int_eq(zlist_size(list), i != ARCH_NOARCH && i != ARCH_HOST);
 		zlist_destroy(&list);
 	}
 
