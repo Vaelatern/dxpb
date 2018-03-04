@@ -15,7 +15,6 @@ COMPILE.c = $(CC) $(LOCAL_CFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
 .c.o:
 	$(COMPILE.c) $(OUTPUT_OPTION) $<
 
-
 ####################################################################
 #  Layout: Vars, main, testing, actual rules, good rules to have   #
 ####################################################################
@@ -123,7 +122,7 @@ license.inc: ../COPYING
 	xxd -i $< $@
 
 dxpb-version.h: ../CHANGELOG.md
-	awk '/## [0-9]+\.[0-9]+\.[0-9]+ -/ { print "#define DXPB_VERSION \"" $$2 "\""; exit }' ../CHANGELOG.md >dxpb-version.h
+	awk '/## [0-9]+\.[0-9]+\.[0-9]+[\.0-9]* -/ { print "#define DXPB_VERSION \"" $$2 "\""; exit }' ../CHANGELOG.md >dxpb-version.h
 
 ../README.md: ../doc/dxpb.7
 	mandoc -T markdown ../doc/dxpb.7 >../README.md
@@ -172,7 +171,6 @@ valgrind_check_%: check_%
 
 testdb: LDLIBS += -lsqlite3 -larchive -lxbps
 testdb: pkgimport_msg.o bxsrc.o bxbps.o bstring.o bwords.o bgraph.o bxpkg.o bdb.o
-
 
 ##################################
 #### Rules for zproto things #####
@@ -303,7 +301,6 @@ install-runit-scripts: install-bin
 	cp -r ../runsv/* $(DESTDIR)$(SVDIR)
 
 install: install-bin install-doc install-license install-runit-scripts
-
 
 ##################################
 #             EOF                #
