@@ -142,7 +142,6 @@ bxsrc_get_log(int fds[], uint32_t max_size, int *logDone)
 	return retVal;
 }
 
-
 int
 bxsrc_does_exist(const char *xbps_src, const char *pkg_name)
 {
@@ -329,7 +328,6 @@ bxsrc_bootstrap_end(const int fds[], const pid_t c_pid)
 	return retVal;
 }
 
-
 int
 bxsrc_run_bootstrap(const char *xbps_src, const char *masterdir,
 		const char *host_arch, int iscross)
@@ -506,6 +504,13 @@ bxsrc_query_pkgnames(const char *xbps_src, const char *pkg)
 	pid_t c_pid = bxsrc_init_read(xbps_src, pkg, fds, ARCH_NOARCH, ARCH_NUM_MAX);
 	bwords retWords = bxsrc_q_to_words(fds, "subpackages");
 	bwords tmp = bxsrc_q_to_words(fds, "pkgname");
+	if (bxsrc_did_err(fds)) {
+		bwords_destroy(&retWords, 0);
+		retWords = bwords_new();
+		retWords = bwords_append_word(retWords, pkg, 0);
+		bxsrc_close(fds, c_pid);
+		return retWords;
+	}
 	bxsrc_close(fds, c_pid);
 	if (!(tmp->words[0] != NULL && tmp->words[1] == NULL)) {
 		perror("Bad package has many words in its pkgname");
