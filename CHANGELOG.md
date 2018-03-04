@@ -1,11 +1,21 @@
 # Changelog
 
-## 0.0.11.2 - 2018-02-26 - The Next One
+## 0.0.12 - 2018-03-03 - The one which probably works now
 ### Overview
 - Flags have been changed for consistency of purpose across all daemons.
 - There is now a manpage for dxpb, which will eventually be joined by more.
 - Encrypted communications are now used if server keys are present.
 - Attempting to assign workers with none available doesn't crash the grapher.
+- The graph now doesn't leak memory when packages change to noarch.
+- Now only one ARCH_TARGET package is created, improving quality of pkgimport.
+- Job assignment is greatly improved, works now, and now any builder can be
+  assigned a noarch package if there are no ready packages to be built in their
+  native architecture.
+- Workers requiring git repos will now do the clone themselves. This means
+  a new flag was introduced.
+- dxpb-graph-to-pkg now can output .dot to standard output. No news yet on
+  reading sqlite3 databases from standard input, to use dxpb-graph-to-pkg as
+  a filter in a pipeline.
 
 ## 0.0.11 - 2018-02-08 - The one where we are not a cookie monster
 ### Overview
