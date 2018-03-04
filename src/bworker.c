@@ -294,7 +294,7 @@ bworker_subgroup_insert(struct bworksubgroup *grp, uint16_t addr,
 		uint32_t check, enum pkg_archs arch, enum pkg_archs hostarch,
 		uint8_t iscross, uint16_t cost)
 {
-	assert(grp->grp->direct_use);
+	assert(!grp->grp->direct_use);
 	struct bworkgroup *topgrp = grp->grp;
 	struct bworker *wrkr = NULL;
 	uint16_t *i = NULL, j = 0;
