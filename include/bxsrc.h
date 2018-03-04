@@ -24,3 +24,4 @@ bwords		 bxsrc_query_pkgnames(const char *, const char *);
 zchunk_t 	*bxsrc_get_log(int[], uint32_t, int *);
 char		*bxsrc_pkg_version(const char *, const char *);
 int		 bxsrc_run_bootstrap(const char *, const char *, const char *, int);
+int		 bxsrc_run_dumb_bootstrap(const char *);

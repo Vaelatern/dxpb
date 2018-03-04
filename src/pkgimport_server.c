@@ -19,6 +19,9 @@
 #include "dxpb.h"
 #include "bgit.h"
 #include "bfs.h"
+#include "bwords.h"
+#include "bxpkg.h"
+#include "bxsrc.h"
 
 //  ---------------------------------------------------------------------------
 //  Forward declarations for the two main classes we use here
@@ -518,7 +521,6 @@ grab_tmppkg_and_process (client_t *self)
 	free(tmp);
 }
 
-
 //  ---------------------------------------------------------------------------
 //  ensure_all_configuration_is_complete
 //
@@ -542,8 +544,9 @@ ensure_all_configuration_is_complete (client_t *self)
 		exit(ERR_CODE_BAD);
 	}
 	self->server->curhash = bgit_get_head_hash(self->server->repourl, self->server->repopath);
-}
 
+	bxsrc_run_dumb_bootstrap(self->server->xbps_src);
+}
 
 //  ---------------------------------------------------------------------------
 //  remove_self_from_worker_list
