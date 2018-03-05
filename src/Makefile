@@ -58,8 +58,8 @@ HARNESS_OBJECTS = harness-grapher.o \
 	harness-builder2.o \
 	harness-frontend.o \
 	harness-pkgimport-master.o
-TEST_BINARIES = check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps check_brepowatch usebfs usebgit
-TEST_OBJECTS = check_bgraph.o check_bwords.o check_bstring.o check_btranslate.o check_bpkg.o check_bxbps.o check_brepowatch.o
+TEST_BINARIES = check_bworker check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps check_brepowatch usebfs usebgit
+TEST_OBJECTS = check_bworker.o check_bgraph.o check_bwords.o check_bstring.o check_btranslate.o check_bpkg.o check_bxbps.o check_brepowatch.o
 OBJECTS = \
 	bbuilder.o \
 	bdb.o \
@@ -137,7 +137,8 @@ check_bpkg: check_bpkg.o pkgimport_msg.o bstring.o bxsrc.o bfs.o bxbps.o bwords.
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 	./$@
 
-check_bworker: check_bworker.o pkgimport_msg.o bwords.o bxsrc.o bstring.o bpkg.o
+check_bworker: LDLIBS+= -lbsd
+check_bworker: check_bworker.o pkgimport_msg.o bwords.o bxsrc.o bstring.o bpkg.o bxpkg.o
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 	./$@
 

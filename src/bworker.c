@@ -16,9 +16,8 @@
 
 static void bworker_subgroup_free(struct bworksubgroup **);
 static int bworker_subgroup_assign_slot(struct bworkgroup *, struct bworksubgroup *);
-static void bworker_destroy(struct bworker **);
-static struct bworker *bworker_reinit(struct bworker *, uint16_t, uint32_t, enum pkg_archs, enum pkg_archs, uint8_t, uint16_t);
-static struct bworker *bworker_new(uint16_t, uint32_t, enum pkg_archs, enum pkg_archs, uint8_t, uint16_t);
+static struct bworker *bworker_reinit(struct bworker *, uint16_t, uint16_t, uint32_t, enum pkg_archs, enum pkg_archs, uint8_t, uint16_t);
+static struct bworker *bworker_new(uint16_t, uint16_t, uint32_t, enum pkg_archs, enum pkg_archs, uint8_t, uint16_t);
 
 /* Workgroup */
 
@@ -30,6 +29,7 @@ bworker_group_new(void)
 	if (retVal == NULL)
 		exit(ERR_CODE_NOMEM);
 
+	retVal->num_subs = retVal->num_subs_alloced = 0;
 	retVal->direct_use = 1;
 	retVal->num_workers = 0;
 
@@ -39,8 +39,20 @@ bworker_group_new(void)
 struct bworker *
 bworker_from_my_addr(struct bworkgroup *group, uint16_t addr, uint32_t check)
 {
-	if (group->workers[addr] != NULL && group->workers[addr]->mycheck == check)
+	if (addr < group->num_workers && group->workers[addr] != NULL &&
+			group->workers[addr]->mycheck == check && group->workers[addr]->addr != UINT16_MAX)
 		return group->workers[addr];
+	return NULL;
+}
+
+struct bworker *
+bworker_from_sub_remote_addr(struct bworksubgroup *group, uint16_t addr, uint32_t check)
+{
+	uint16_t *i;
+	for (i = zlist_first(group->addrs); i; i = zlist_next(group->addrs)) {
+		if (group->grp->workers[*i]->addr == addr && group->grp->workers[*i]->check == check)
+			return group->grp->workers[*i];
+	}
 	return NULL;
 }
 
@@ -62,13 +74,12 @@ bworker_group_destroy(struct bworkgroup **byebye)
 		bworker_subgroup_free(&(bye->subs[i]));
 	for (size_t i = 0; i < bye->num_workers; i++) {
 		bworker_job_remove(bye->workers[i]);
-		bworker_destroy(&(bye->workers[i]));
+		FREE(bye->workers[i]);
 	}
-	free(bye->workers);
-	free(bye->owners);
-	free(bye->subs);
-	free(*byebye);
-	*byebye = NULL;
+	FREE(bye->workers);
+	FREE(bye->owners);
+	FREE(bye->subs);
+	FREE(*byebye);
 }
 
 /* Ultimately, ensure we can put a worker at grp->workers[grp->num_workers] */
@@ -102,7 +113,7 @@ bworker_group_insert(struct bworkgroup *grp, uint16_t addr, uint32_t check,
 	for (uint16_t i = 0; i < grp->num_workers; i++) { // Reusing worker
 		if (grp->workers[i]->addr == UINT16_MAX) {
 			myguy = grp->workers[i];
-			bworker_reinit(myguy, addr, check, arch, hostarch, iscross, cost);
+			bworker_reinit(myguy, i, addr, check, arch, hostarch, iscross, cost);
 			return i;
 		}
 	}
@@ -111,7 +122,10 @@ bworker_group_insert(struct bworkgroup *grp, uint16_t addr, uint32_t check,
 
 	bworker_ensure_can_add_worker(grp);
 
-	grp->workers[grp->num_workers++] = bworker_new(addr, check, arch, hostarch, iscross, cost);
+	grp->workers[grp->num_workers] = bworker_new(grp->num_workers,
+							addr, check, arch,
+							hostarch, iscross, cost);
+	grp->num_workers++;
 	return grp->num_workers - 1;
 }
 
@@ -148,7 +162,7 @@ bworker_subgroup_new(struct bworkgroup *grp)
 /* Worker */
 
 static struct bworker *
-bworker_reinit(struct bworker *wrkr, uint16_t addr, uint32_t check,
+bworker_reinit(struct bworker *wrkr, uint16_t myaddr, uint16_t addr, uint32_t check,
 		enum pkg_archs arch, enum pkg_archs hostarch, uint8_t iscross, uint16_t cost)
 {
 	wrkr->addr = addr;
@@ -161,13 +175,14 @@ bworker_reinit(struct bworker *wrkr, uint16_t addr, uint32_t check,
 	FREE(wrkr->job.ver);
 	wrkr->job.arch = ARCH_NUM_MAX;
 
+	wrkr->myaddr = myaddr;
 	wrkr->mycheck = arc4random();
 
 	return wrkr;
 }
 
 static struct bworker *
-bworker_new(uint16_t addr, uint32_t check, enum pkg_archs arch,
+bworker_new(uint16_t myaddr, uint16_t addr, uint32_t check, enum pkg_archs arch,
 		enum pkg_archs hostarch, uint8_t iscross, uint16_t cost)
 {
 	struct bworker *retVal = malloc(sizeof(struct bworker));
@@ -176,7 +191,7 @@ bworker_new(uint16_t addr, uint32_t check, enum pkg_archs arch,
 		exit(ERR_CODE_NOMEM);
 	}
 
-	return bworker_reinit(retVal, addr, check, arch, hostarch, iscross, cost);
+	return bworker_reinit(retVal, myaddr, addr, check, arch, hostarch, iscross, cost);
 }
 
 static void
@@ -192,13 +207,6 @@ void
 bworker_group_remove(struct bworker *gone)
 {
 	bworker_clear(gone);
-}
-
-static void
-bworker_destroy(struct bworker **todie)
-{
-	free(*todie);
-	*todie = NULL;
 }
 
 /* This is so a non-fixed-size bworker is possible, since all subgroups
@@ -283,12 +291,22 @@ bworker_subgroup_free(struct bworksubgroup **sacrifice)
 	*sacrifice = NULL;
 }
 
+void
+bworker_subgroup_insert_addr(struct bworksubgroup *grp, uint16_t addr)
+{
+	uint16_t *tmp = malloc(sizeof(uint16_t));
+	assert(tmp);
+	*tmp = addr;
+	zlist_append(grp->addrs, tmp);
+}
+
 /*
  * Use multiple return to simplify execution. First try to reinit
  * a pre-existing memory structure which has fallen into disuse, first for the
  * subgroup, then for all subgroups. Then, if all else fails, make a new worker
  * structure and use that
  */
+
 uint16_t
 bworker_subgroup_insert(struct bworksubgroup *grp, uint16_t addr,
 		uint32_t check, enum pkg_archs arch, enum pkg_archs hostarch,
@@ -306,7 +324,7 @@ bworker_subgroup_insert(struct bworksubgroup *grp, uint16_t addr,
 			j = *i;
 
 	if (i) {
-		bworker_reinit(wrkr, addr, check, arch, hostarch, iscross, cost);
+		bworker_reinit(wrkr, *i, addr, check, arch, hostarch, iscross, cost);
 		return *i;
 	}
 
@@ -316,12 +334,13 @@ bworker_subgroup_insert(struct bworksubgroup *grp, uint16_t addr,
 	// "failed" *i value
 	for (; j < topgrp->num_workers; j++) {
 		if (topgrp->owners[j] == NULL) { // time to adopt it
+			bworker_subgroup_insert_addr(grp, j);
 			topgrp->owners[j] = grp;
 			if (topgrp->workers[j] == NULL)
-				topgrp->workers[j] = bworker_new(addr, check,
+				topgrp->workers[j] = bworker_new(j, addr, check,
 						arch, hostarch, iscross, cost);
 			else
-				bworker_reinit(topgrp->workers[j], addr, check,
+				bworker_reinit(topgrp->workers[j], j, addr, check,
 						arch, hostarch, iscross, cost);
 			return j;
 		}
@@ -331,9 +350,12 @@ bworker_subgroup_insert(struct bworksubgroup *grp, uint16_t addr,
 
 	bworker_ensure_can_add_worker(topgrp);
 
-	topgrp->workers[topgrp->num_workers++] = bworker_new(addr, check, arch,
+	topgrp->workers[topgrp->num_workers] = bworker_new(topgrp->num_workers,
+							addr, check, arch,
 							hostarch, iscross, cost);
-
+	topgrp->owners[topgrp->num_workers] = grp;
+	bworker_subgroup_insert_addr(grp, topgrp->num_workers);
+	topgrp->num_workers++;
 	return topgrp->num_workers - 1;
 }
 

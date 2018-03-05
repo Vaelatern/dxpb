@@ -27,6 +27,7 @@
 struct bworker {
 	/* Array index will be what upstream, aka further *
 	 * from the worker, thinks the addr is.           */
+	uint16_t	myaddr;
 	/* What downstream says the addr is.               *
 	 * Almost definitely not what we think the addr is */
 	uint16_t	addr;
