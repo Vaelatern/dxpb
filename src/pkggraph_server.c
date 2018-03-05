@@ -106,6 +106,7 @@ server_initialize (server_t *self)
 	self->storage = NULL;
 	self->pub = NULL;
 	self->pubpath = NULL;
+	engine_configure(self, "server/timeout", "30000");
 	return 0;
 }
 
@@ -245,7 +246,6 @@ register_storage (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  all_workers_should_bootstrap_update
 //
@@ -256,7 +256,6 @@ all_workers_should_bootstrap_update (client_t *self)
 	engine_broadcast_event(self->server, self, been_ordered_to_update_bootstrap_event);
 }
 
-
 //  ---------------------------------------------------------------------------
 //  register_worker_as_ready_to_help
 //
@@ -264,16 +263,22 @@ all_workers_should_bootstrap_update (client_t *self)
 static void
 register_worker_as_ready_to_help (client_t *self)
 {
+	enum pkg_archs targetarch = bpkg_enum_lookup(pkggraph_msg_targetarch(self->message));
+	enum pkg_archs hostarch = bpkg_enum_lookup(pkggraph_msg_hostarch(self->message));
+	if (targetarch == ARCH_NUM_MAX || hostarch == ARCH_NUM_MAX)
+		return;
+
 	bworker_subgroup_insert(self->subgroup, pkggraph_msg_addr(self->message),
 			pkggraph_msg_check(self->message),
-			bpkg_enum_lookup(pkggraph_msg_arch(self->message)),
-			bpkg_enum_lookup(pkggraph_msg_hostarch(self->message)),
+			targetarch,
+			hostarch,
 			pkggraph_msg_iscross(self->message),
 			pkggraph_msg_cost(self->message));
 
 	struct bworker *wrkr = bworker_from_remote_addr(self->server->workers,
 			pkggraph_msg_addr(self->message),
 			pkggraph_msg_check(self->message));
+	assert(wrkr);
 
 	/* Handling for a possibly absent grapher */
 	struct memo *memo = malloc(sizeof(struct memo));
@@ -282,17 +287,19 @@ register_worker_as_ready_to_help (client_t *self)
 		exit(ERR_CODE_NOMEM);
 	}
 	memo->msgid = PKGGRAPH_MSG_ICANHELP;
-	memo->addr = wrkr->addr;
+	memo->addr = wrkr->myaddr;
+	printf("Myaddr: %d\tAddr: %d\n", wrkr->myaddr, wrkr->addr);
 	memo->check = wrkr->mycheck;
 	memo->targetarch = pkg_archs_str[wrkr->arch];
+	assert(memo->targetarch);
 	memo->hostarch = pkg_archs_str[wrkr->hostarch];
+	assert(memo->hostarch);
 	memo->iscross = wrkr->iscross;
 	memo->cost = wrkr->cost;
 	zlist_append(self->server->memos_to_grapher, memo);
 
 	wrkr = NULL; // Not destroying, just putting away
 }
-
 
 //  ---------------------------------------------------------------------------
 //  notify_grapher_if_he_s_around
@@ -304,7 +311,6 @@ notify_grapher_if_he_s_around (client_t *self)
 	if (self->server->grapher)
 		engine_send_event(self->server->grapher, you_ve_got_a_memo_event);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  act_on_job_return
@@ -377,7 +383,6 @@ act_on_job_return (client_t *self)
 				memo->addr, memo->check));
 }
 
-
 //  ---------------------------------------------------------------------------
 //  route_log
 //
@@ -406,7 +411,6 @@ route_log (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  remove_self_as_grapher
 //
@@ -422,7 +426,6 @@ remove_self_as_grapher (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  grab_a_log_chunk
 //
@@ -437,6 +440,7 @@ grab_a_log_chunk (client_t *self)
 	free(tmp->name);
 	pkggraph_msg_set_version(self->message, tmp->ver);
 	free(tmp->ver);
+	assert(tmp->arch);
 	pkggraph_msg_set_arch(self->message, tmp->arch);
 	free(tmp->arch);
 	if (tmp->logs) {
@@ -448,7 +452,6 @@ grab_a_log_chunk (client_t *self)
 
 	free(tmp);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  post_process_sending_log_chunk
@@ -465,7 +468,6 @@ post_process_sending_log_chunk (client_t *self)
 	// This works because the reactor will process events in a tight loop.
 }
 
-
 //  ---------------------------------------------------------------------------
 //  transform_worker_job_for_assignment
 //
@@ -479,6 +481,7 @@ transform_worker_job_for_assignment (client_t *self)
 	pkggraph_msg_set_check(self->message, wrkr->check);
 	pkggraph_msg_set_pkgname(self->message, wrkr->job.name);
 	pkggraph_msg_set_version(self->message, wrkr->job.ver);
+	assert(pkg_archs_str[wrkr->job.arch] != NULL);
 	pkggraph_msg_set_arch(self->message, pkg_archs_str[wrkr->job.arch]);
 	if (self->server->pub) {
 		zstr_sendm(self->server->pub, "TRACE");
@@ -486,7 +489,6 @@ transform_worker_job_for_assignment (client_t *self)
 	}
 	wrkr = NULL;
 }
-
 
 //  ---------------------------------------------------------------------------
 //  confirm_worker_still_valid
@@ -501,7 +503,6 @@ confirm_worker_still_valid (client_t *self)
 	if (!wrkr)
 		engine_set_exception(self, tell_grapher_worker_gone_event);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  tell_the_worker_to_start_work
@@ -532,7 +533,6 @@ tell_the_worker_to_start_work (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  parse_memo
 //
@@ -552,6 +552,7 @@ parse_memo (client_t *self)
 		pkggraph_msg_set_cause(self->message, memo->cause);
 		pkggraph_msg_set_pkgname(self->message, memo->pkgname);
 		pkggraph_msg_set_version(self->message, memo->version);
+		assert(memo->arch);
 		pkggraph_msg_set_arch(self->message, memo->arch);
 		engine_set_next_event(self, tell_grapher_job_ended_event);
 		free(memo->pkgname);
@@ -564,7 +565,8 @@ parse_memo (client_t *self)
 	case PKGGRAPH_MSG_ICANHELP:
 		pkggraph_msg_set_addr(self->message, memo->addr);
 		pkggraph_msg_set_check(self->message, memo->check);
-		pkggraph_msg_set_arch(self->message, memo->targetarch);
+		assert(memo->targetarch);
+		pkggraph_msg_set_targetarch(self->message, memo->targetarch);
 		pkggraph_msg_set_cost(self->message, memo->cost);
 		pkggraph_msg_set_hostarch(self->message, memo->hostarch);
 		pkggraph_msg_set_iscross(self->message, memo->iscross);
@@ -587,7 +589,6 @@ parse_memo (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  set_event_if_more_memos
 //
@@ -606,7 +607,6 @@ set_event_if_more_memos (client_t *self)
 		self->memos_handled = 0;
 }
 
-
 //  ---------------------------------------------------------------------------
 //  remove_all_workers
 //
@@ -616,7 +616,6 @@ remove_all_workers (client_t *self)
 {
 	bworker_subgroup_destroy(&self->subgroup);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  remove_worker
@@ -636,7 +635,7 @@ remove_worker (client_t *self)
 		exit(ERR_CODE_NOMEM);
 	}
 	memo->msgid = PKGGRAPH_MSG_FORGET_ABOUT_ME;
-	memo->addr = wrkr->addr;
+	memo->addr = wrkr->myaddr;
 	memo->check = wrkr->mycheck;
 	zlist_append(self->server->memos_to_grapher, memo);
 
@@ -646,7 +645,6 @@ remove_worker (client_t *self)
 		zstr_sendf(self->server->pub, "Bworker removed");
 	}
 }
-
 
 //  ---------------------------------------------------------------------------
 //  tell_logger_to_reset_log
@@ -673,7 +671,6 @@ tell_logger_to_reset_log (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  establish_subgroup
 //
@@ -684,7 +681,6 @@ establish_subgroup (client_t *self)
 	self->subgroup = bworker_subgroup_new(self->server->workers);
 	self->subgroup->owner = self;
 }
-
 
 //  ---------------------------------------------------------------------------
 //  ensure_all_configuration_is_complete
@@ -700,7 +696,6 @@ ensure_all_configuration_is_complete (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  remove_self_as_worker
 //
@@ -713,7 +708,6 @@ remove_self_as_worker (client_t *self)
 		zstr_sendf(self->server->pub, "Removing a worker");
 	}
 }
-
 
 //  ---------------------------------------------------------------------------
 //  remove_self_as_storage
@@ -730,7 +724,6 @@ remove_self_as_storage (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  assert_is_grapher
 //
@@ -738,10 +731,9 @@ remove_self_as_storage (client_t *self)
 static void
 assert_is_grapher (client_t *self)
 {
-	if (self->server->grapher == self)
+	if (self->server->grapher != self)
 		engine_set_exception(self, killmenow_event);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  assert_is_storage

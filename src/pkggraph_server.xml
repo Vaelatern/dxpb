@@ -40,6 +40,10 @@
 	</state>
 
 	<state name = "i am the grapher" inherit = "defaults">
+		<before>
+			<action name = "assert is grapher" />
+			<action name = "notify grapher if he's around" />
+		</before>
 		<event name = "UPDATE BOOTSTRAP">
 			<action name = "assert is grapher" />
 			<action name = "all workers should bootstrap-update" />
@@ -66,7 +70,7 @@
 		</event>
 		<event name = "tell grapher worker can help">
 			<action name = "assert is grapher" />
-			<action name = "send" message = "WORKERCANHELP" />
+			<action name = "send" message = "ICANHELP" />
 			<action name = "set event if more memos" />
 		</event>
 		<event name = "expired">
@@ -134,14 +138,13 @@
 			<action name = "post process sending log chunk" />
 		</event>
 		<event name = "*" next = "start">
-			<action name = "send" message = "INVALID" />
+			<action name = "send" message = "IFORGOTU" />
 			<action name = "remove self as storage" />
 		</event>
 	</state>
 
 	<state name = "defaults">
-		<event name = "*" next = "start">
-			killmenow should find this state.
+		<event name = "killmenow">
 			<action name = "send" message = "INVALID" />
 		</event>
 		<event name = "PING">
@@ -155,6 +158,10 @@
 		</event>
 		<event name = "ROGER">
 			no-op
+		</event>
+		<event name = "*" next = "start">
+			killmenow should find this state.
+			<action name = "send" message = "IFORGOTU" />
 		</event>
 	</state>
 

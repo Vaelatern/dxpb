@@ -56,9 +56,9 @@ typedef enum {
     send_the_log_event = 20,
     send_resetlog_event = 21,
     send_loghere_event = 22,
-    ping_event = 23,
-    roger_event = 24,
-    killmenow_event = 25
+    killmenow_event = 23,
+    ping_event = 24,
+    roger_event = 25
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -99,9 +99,9 @@ s_event_name [] = {
     "send_the_log",
     "send_resetlog",
     "send_loghere",
+    "killmenow",
     "PING",
-    "ROGER",
-    "killmenow"
+    "ROGER"
 };
 
 //  ---------------------------------------------------------------------------
@@ -194,11 +194,11 @@ static void
 static void
     remove_self_as_grapher (client_t *self);
 static void
+    notify_grapher_if_he_s_around (client_t *self);
+static void
     remove_all_workers (client_t *self);
 static void
     register_worker_as_ready_to_help (client_t *self);
-static void
-    notify_grapher_if_he_s_around (client_t *self);
 static void
     remove_worker (client_t *self);
 static void
@@ -602,6 +602,18 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                     if (!self->exception)
                         self->state = i_am_the_grapher_state;
+                    if (!self->exception) {
+                        //  assert is grapher
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
+                        assert_is_grapher (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  notify grapher if he's around
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ notify grapher if he's around", self->log_prefix);
+                        notify_grapher_if_he_s_around (&self->client);
+                    }
                 }
                 else
                 if (self->event == imaworker_event) {
@@ -654,6 +666,20 @@ s_client_execute (s_client_t *self, event_t event)
                         self->state = i_am_storage_state;
                 }
                 else
+                if (self->event == killmenow_event) {
+                    if (!self->exception) {
+                        //  send INVALID
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send INVALID",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_INVALID);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
                 if (self->event == ping_event) {
                     if (!self->exception) {
                         //  send ROGER
@@ -692,11 +718,11 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_INVALID);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkggraph_msg_print (self->server->message);
                         pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
@@ -825,11 +851,11 @@ s_client_execute (s_client_t *self, event_t event)
                         assert_is_grapher (&self->client);
                     }
                     if (!self->exception) {
-                        //  send WORKERCANHELP
+                        //  send ICANHELP
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send WORKERCANHELP",
+                            zsys_debug ("%s:         $ send ICANHELP",
                                 self->log_prefix);
-                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_WORKERCANHELP);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_ICANHELP);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkggraph_msg_print (self->server->message);
                         pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
@@ -855,6 +881,20 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ terminate", self->log_prefix);
                         self->next_event = terminate_event;
+                    }
+                }
+                else
+                if (self->event == killmenow_event) {
+                    if (!self->exception) {
+                        //  send INVALID
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send INVALID",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_INVALID);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
                     }
                 }
                 else
@@ -893,11 +933,11 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_INVALID);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkggraph_msg_print (self->server->message);
                         pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
@@ -1051,6 +1091,20 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == killmenow_event) {
+                    if (!self->exception) {
+                        //  send INVALID
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send INVALID",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_INVALID);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
                 if (self->event == ping_event) {
                     if (!self->exception) {
                         //  send ROGER
@@ -1168,6 +1222,20 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == killmenow_event) {
+                    if (!self->exception) {
+                        //  send INVALID
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send INVALID",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_INVALID);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
                 if (self->event == ping_event) {
                     if (!self->exception) {
                         //  send ROGER
@@ -1206,11 +1274,11 @@ s_client_execute (s_client_t *self, event_t event)
                 else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_INVALID);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkggraph_msg_print (self->server->message);
                         pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
@@ -1228,6 +1296,20 @@ s_client_execute (s_client_t *self, event_t event)
                 break;
 
             case defaults_state:
+                if (self->event == killmenow_event) {
+                    if (!self->exception) {
+                        //  send INVALID
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send INVALID",
+                                self->log_prefix);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_INVALID);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkggraph_msg_print (self->server->message);
+                        pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkggraph_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
                 if (self->event == ping_event) {
                     if (!self->exception) {
                         //  send ROGER
@@ -1263,14 +1345,14 @@ s_client_execute (s_client_t *self, event_t event)
                 else
                 if (self->event == roger_event) {
                 }
-                {
+                else {
                     //  Handle unexpected protocol events
                     if (!self->exception) {
-                        //  send INVALID
+                        //  send IFORGOTU
                         if (self->server->verbose)
-                            zsys_debug ("%s:         $ send INVALID",
+                            zsys_debug ("%s:         $ send IFORGOTU",
                                 self->log_prefix);
-                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_INVALID);
+                        pkggraph_msg_set_id (self->server->message, PKGGRAPH_MSG_IFORGOTU);
                         zsys_debug ("%s: Send message to client", self->log_prefix);
                         pkggraph_msg_print (self->server->message);
                         pkggraph_msg_set_routing_id (self->server->message, self->routing_id);
