@@ -30,7 +30,7 @@ help(void)
 }
 
 int
-run(int flags, const char *from, const char *to)
+run(int flags, const char *from, const char *to, const char *arch)
 {
 	assert(from);
 	int verbose = flags & VERBOSE_FLAG;
@@ -60,7 +60,11 @@ run(int flags, const char *from, const char *to)
 
 	if (verbose)
 		printf("Creating dot graph...\n");
-	Agraph_t *dot = bdot_from_graph(grph);
+	Agraph_t *dot = NULL;
+	if (arch == NULL)
+		dot = bdot_from_graph(grph);
+	else
+		dot = bdot_from_graph_for_arch(grph, arch);
 
 	if (to) {
 		if (verbose)
@@ -79,11 +83,11 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "hLvt:f:";
+	const char *optstring = "hLva:t:f:";
 	char *default_dbpath = DEFAULT_DBPATH;
 	char *dbpath = NULL;
 	char *graphpath = NULL;
-
+	char *arch = NULL;
 
 	while ((c = getopt(argc, argv, optstring)) != -1) {
 		switch(c) {
@@ -92,6 +96,9 @@ main(int argc, char * const *argv)
 			break;
 		case 't':
 			graphpath = optarg;
+			break;
+		case 'a':
+			arch = optarg;
 			break;
 		case 'h':
 			help();
@@ -122,5 +129,5 @@ main(int argc, char * const *argv)
 	if (!dbpath)
 		dbpath = default_dbpath;
 
-	return run(flags, dbpath, graphpath);
+	return run(flags, dbpath, graphpath, arch);
 }

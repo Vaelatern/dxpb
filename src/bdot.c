@@ -7,6 +7,7 @@
 
 #include <graphviz/cgraph.h>
 #include <czmq.h>
+#include "dxpb.h"
 #include "bstring.h"
 #include "bwords.h"
 #include "bxpkg.h"
@@ -32,6 +33,64 @@ bdot_pkg_to_node(Agraph_t *graph, struct pkg *pkg)
 	free(name);
 	name = NULL;
 	assert(rV != NILnode);
+	return rV;
+}
+
+Agraph_t *
+bdot_from_graph_for_arch(bgraph grph, const char *archstr)
+{
+	assert(archstr);
+	char *archname = NULL;
+	zhash_t *arch = NULL;
+	struct pkg *pkg = NULL;
+	struct pkg_need *needpkg = NULL;
+	Agraph_t *perarch = NULL;
+	Agnode_t *node = NULL;
+
+	Agraph_t *rV = agopen("dxpb-pkgs", Agdirected, NULL);
+
+	/* First pass. Need all the nodes before I can make edges */
+	for (arch = zhash_first(grph); arch; arch = zhash_next(grph)) {
+		if (strcmp(zhash_cursor(grph), pkg_archs_str[ARCH_NOARCH]) != 0 &&
+				strcmp(zhash_cursor(grph), archstr) != 0)
+			continue;
+		archname = strdup(zhash_cursor(grph));
+		perarch = agsubg(rV, archname, 1);
+		for (pkg = zhash_first(arch); pkg; pkg = zhash_next(arch)) {
+			node = bdot_pkg_to_node(perarch, pkg);
+			assert(node != NILnode);
+		}
+		FREE(archname);
+	}
+
+	/* Second pass */
+	Agedge_t *edge;
+	for (arch = zhash_first(grph); arch; arch = zhash_next(grph)) {
+		if (strcmp(zhash_cursor(grph), pkg_archs_str[ARCH_NOARCH]) != 0 &&
+				strcmp(zhash_cursor(grph), archstr) != 0)
+			continue;
+		for (pkg = zhash_first(arch); pkg; pkg = zhash_next(arch)) {
+			node = bdot_pkg_to_node(rV, pkg);
+			for (needpkg = zlist_first(pkg->needs); needpkg;
+					needpkg = zlist_next(pkg->needs)) {
+				edge = agedge(rV,
+						bdot_pkg_to_node(rV, needpkg->pkg),
+						node,
+						NULL,
+						1);
+				assert(edge != NILedge);
+			}
+			for (needpkg = zlist_first(pkg->cross_needs); needpkg;
+					needpkg = zlist_next(pkg->cross_needs)) {
+				edge = agedge(rV,
+						bdot_pkg_to_node(rV, needpkg->pkg),
+						node,
+						NULL,
+						1);
+				assert(edge != NILedge);
+			}
+		}
+	}
 	return rV;
 }
 

@@ -80,6 +80,7 @@ See:
 
 **dxpb-graph-to-dot**
 \[**-hL**]
+\[**-a**&nbsp;*arch*]
 \[**-f**&nbsp;*package-db*]
 \[**-t**&nbsp;*target-file*]
 
@@ -111,6 +112,10 @@ also requires certain resources.
 
 The dxpb family of binaries accepts certain flags, and aims for consistency
 among all daemons (though not necessarily for utilities).
+
+**-a**
+
+> Specific arch in a format xbps-src will accept
 
 **-h**
 
@@ -333,4 +338,4 @@ might be fixed.
 zmq\_tcp(7)
 zmq\_curve(7)
 
-Void Linux - March 2, 2018
+Void Linux - March 5, 2018
