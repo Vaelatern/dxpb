@@ -12,6 +12,8 @@
 #include "bstring.h"
 #include "bfs.h"
 #include "pkggraph_msg.h"
+#include "bwords.h"
+#include "bxpkg.h"
 
 #include "dxpb-common.h"
 
@@ -37,22 +39,28 @@ run(const char *endpoint, const char *pubpoint, const char *ssldir)
 	(void) ssldir;
 	assert(endpoint);
 	assert(pubpoint);
-	int rc;
+	int rc, i;
+	uint32_t checks[2];
 
 	pkggraph_msg_t *msg = pkggraph_msg_new();
 
+	zsock_t *wrkr[2];
+	zsock_t *storage  = zsock_new(ZMQ_DEALER);
 	zsock_t *grphr  = zsock_new(ZMQ_DEALER);
-	zsock_t *wrkr1  = zsock_new(ZMQ_DEALER);
-	zsock_t *wrkr2  = zsock_new(ZMQ_DEALER);
+	wrkr[0]  = zsock_new(ZMQ_DEALER);
+	wrkr[1]  = zsock_new(ZMQ_DEALER);
+	assert(storage);
 	assert(grphr);
-	assert(wrkr1);
-	assert(wrkr2);
+	assert(wrkr[0]);
+	assert(wrkr[1]);
 
+	rc = zsock_attach(storage, endpoint, false);
+	assert(rc == 0);
 	rc = zsock_attach(grphr, endpoint, false);
 	assert(rc == 0);
-	rc = zsock_attach(wrkr1, endpoint, false);
+	rc = zsock_attach(wrkr[0], endpoint, false);
 	assert(rc == 0);
-	rc = zsock_attach(wrkr2, endpoint, false);
+	rc = zsock_attach(wrkr[1], endpoint, false);
 	assert(rc == 0);
 
 #define SEND(this, sock)	{ \
@@ -72,7 +80,6 @@ run(const char *endpoint, const char *pubpoint, const char *ssldir)
 					zpoller_destroy(&p); \
 				}
 
-
 #define TOMSG(str)		     PKGGRAPH_MSG_##str
 #define SETMSG(what, msg, to) 	     pkggraph_msg_set_##what(msg, to)
 #define ASSERTMSG(what, msg, eq)     assert(pkggraph_msg_##what(msg) == eq)
@@ -80,41 +87,126 @@ run(const char *endpoint, const char *pubpoint, const char *ssldir)
 
 	/* And now we get to work */
 
-	SEND(TOMSG(PING), grphr);
-	GET(msg, grphr);
+	SEND(TOMSG(PING), storage);
+	GET(msg, storage);
 	ASSERTMSG(id, msg, TOMSG(IFORGOTU));
 
+	SEND(TOMSG(HELLO), storage);
+	GET(msg, storage);
+	ASSERTMSG(id, msg, TOMSG(ROGER));
+
+	SEND(TOMSG(IAMSTORAGE), storage);
+	GET(msg, storage);
+	ASSERTMSG(id, msg, TOMSG(ROGER));
+
+	SEND(TOMSG(PING), storage);
+	GET(msg, storage);
+	ASSERTMSG(id, msg, TOMSG(ROGER));
+
+	SEND(TOMSG(HELLO), storage);
+	GET(msg, storage);
+	ASSERTMSG(id, msg, TOMSG(ROGER));
+
+	SEND(TOMSG(IAMSTORAGE), storage);
+	GET(msg, storage);
+	ASSERTMSG(id, msg, TOMSG(ROGER));
+
+	SEND(TOMSG(PING), storage);
+	GET(msg, storage);
+	ASSERTMSG(id, msg, TOMSG(ROGER));
+
+	SEND(TOMSG(HELLO), wrkr[0]);
+	GET(msg, wrkr[0]);
+	ASSERTMSG(id, msg, TOMSG(ROGER));
+
+	SEND(TOMSG(IMAWORKER), wrkr[0]);
+	GET(msg, wrkr[0]);
+	ASSERTMSG(id, msg, TOMSG(ROGER));
+
+	SEND(TOMSG(HELLO), wrkr[1]);
+	GET(msg, wrkr[1]);
+	ASSERTMSG(id, msg, TOMSG(ROGER));
+
+	SEND(TOMSG(IMAWORKER), wrkr[1]);
+	GET(msg, wrkr[1]);
+	ASSERTMSG(id, msg, TOMSG(ROGER));
+
+	SETMSG(targetarch, msg, pkg_archs_str[ARCH_X86_64]);
+	SETMSG(hostarch, msg, pkg_archs_str[ARCH_X86_64]);
+	SETMSG(iscross, msg, 0);
+	SETMSG(cost, msg, 100);
+	SETMSG(addr, msg, 0);
+	SETMSG(check, msg, 0);
+	SEND(TOMSG(ICANHELP), wrkr[0]);
+	SETMSG(targetarch, msg, pkg_archs_str[ARCH_X86_64_MUSL]);
+	SEND(TOMSG(ICANHELP), wrkr[1]);
+
 	SEND(TOMSG(HELLO), grphr);
 	GET(msg, grphr);
 	ASSERTMSG(id, msg, TOMSG(ROGER));
 
-	SEND(TOMSG(IAMSTORAGE), grphr);
+	SEND(TOMSG(IMTHEGRAPHER), grphr);
 	GET(msg, grphr);
 	ASSERTMSG(id, msg, TOMSG(ROGER));
 
-	SEND(TOMSG(PING), grphr);
-	GET(msg, grphr);
-	ASSERTMSG(id, msg, TOMSG(ROGER));
+	for (i = 0; i < 2; i++) {
+		GET(msg, grphr);
+		ASSERTMSG(id, msg, TOMSG(ICANHELP));
+		ASSERTMSGSTR(targetarch, msg, pkg_archs_str[ARCH_X86_64 + i]);
+		checks[i] = pkggraph_msg_check(msg);
+	}
 
-	SEND(TOMSG(HELLO), grphr);
+	SETMSG(pkgname, msg, "foo");
+	SETMSG(version, msg, "0.0.1");
+	SETMSG(arch, msg, pkg_archs_str[ARCH_X86_64_MUSL]);
+	SETMSG(check, msg, checks[0]);
+	SETMSG(addr, msg, 1);
+	SEND(TOMSG(WORKERCANHELP), grphr);
 	GET(msg, grphr);
-	ASSERTMSG(id, msg, TOMSG(ROGER));
+	ASSERTMSG(id, msg, TOMSG(FORGET_ABOUT_ME));
+	ASSERTMSG(check, msg, checks[0]);
+	ASSERTMSG(addr, msg, 1);
 
-	SEND(TOMSG(IAMSTORAGE), grphr);
+	SETMSG(pkgname, msg, "foo");
+	SETMSG(version, msg, "0.0.1");
+	SETMSG(arch, msg, pkg_archs_str[ARCH_X86_64_MUSL]);
+	SETMSG(check, msg, checks[0]);
+	SETMSG(addr, msg, 100);
+	SEND(TOMSG(WORKERCANHELP), grphr);
 	GET(msg, grphr);
-	ASSERTMSG(id, msg, TOMSG(ROGER));
+	ASSERTMSG(id, msg, TOMSG(FORGET_ABOUT_ME));
+	ASSERTMSG(check, msg, checks[0]);
+	ASSERTMSG(addr, msg, 100);
 
-	SEND(TOMSG(PING), grphr);
-	GET(msg, grphr);
-	ASSERTMSG(id, msg, TOMSG(ROGER));
+	for (i = 1; i >= 0; i--) {
+		SETMSG(pkgname, msg, "foo");
+		SETMSG(version, msg, "0.0.1");
+		SETMSG(arch, msg, pkg_archs_str[ARCH_X86_64 + i]);
+		SETMSG(check, msg, checks[i]);
+		SETMSG(addr, msg, i);
+		SEND(TOMSG(WORKERCANHELP), grphr);
+		GET(msg, wrkr[i]);
+		ASSERTMSG(id, msg, TOMSG(WORKERCANHELP));
+		ASSERTMSGSTR(pkgname, msg, "foo");
+		ASSERTMSGSTR(version, msg, "0.0.1");
+		ASSERTMSGSTR(arch, msg, pkg_archs_str[ARCH_X86_64 + i]);
+		ASSERTMSG(check, msg, 0);
+		ASSERTMSG(addr, msg, 0);
+		GET(msg, storage);
+		ASSERTMSG(id, msg, TOMSG(RESETLOG));
+		ASSERTMSGSTR(pkgname, msg, "foo");
+		ASSERTMSGSTR(version, msg, "0.0.1");
+		ASSERTMSGSTR(arch, msg, pkg_archs_str[ARCH_X86_64 + i]);
+	}
 
 	/* Work over, let's clean up. */
 
 	pkggraph_msg_destroy(&msg);
 
+	zsock_destroy(&storage);
 	zsock_destroy(&grphr);
-	zsock_destroy(&wrkr1);
-	zsock_destroy(&wrkr2);
+	zsock_destroy(&wrkr[0]);
+	zsock_destroy(&wrkr[1]);
 
 	return 0;
 }

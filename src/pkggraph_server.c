@@ -275,7 +275,7 @@ register_worker_as_ready_to_help (client_t *self)
 			pkggraph_msg_iscross(self->message),
 			pkggraph_msg_cost(self->message));
 
-	struct bworker *wrkr = bworker_from_remote_addr(self->server->workers,
+	struct bworker *wrkr = bworker_from_sub_remote_addr(self->subgroup,
 			pkggraph_msg_addr(self->message),
 			pkggraph_msg_check(self->message));
 	assert(wrkr);
@@ -288,7 +288,6 @@ register_worker_as_ready_to_help (client_t *self)
 	}
 	memo->msgid = PKGGRAPH_MSG_ICANHELP;
 	memo->addr = wrkr->myaddr;
-	printf("Myaddr: %d\tAddr: %d\n", wrkr->myaddr, wrkr->addr);
 	memo->check = wrkr->mycheck;
 	memo->targetarch = pkg_archs_str[wrkr->arch];
 	assert(memo->targetarch);

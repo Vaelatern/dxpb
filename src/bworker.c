@@ -185,7 +185,7 @@ static struct bworker *
 bworker_new(uint16_t myaddr, uint16_t addr, uint32_t check, enum pkg_archs arch,
 		enum pkg_archs hostarch, uint8_t iscross, uint16_t cost)
 {
-	struct bworker *retVal = malloc(sizeof(struct bworker));
+	struct bworker *retVal = calloc(1, sizeof(struct bworker));
 	if (!retVal) {
 		perror("Could not allocate a new worker");
 		exit(ERR_CODE_NOMEM);

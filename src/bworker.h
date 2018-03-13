@@ -96,3 +96,4 @@ struct bworker		*bworker_from_remote_addr(struct bworkgroup *, uint16_t, uint32_
 struct bworkermatch	*bworker_grp_pkg_matches(struct bworkgroup *, struct pkg *);
 void			 bworker_group_remove(struct bworker *);
 void			*bworker_owner_from_my_addr(struct bworkgroup *, uint16_t, uint32_t);
+struct bworker		*bworker_from_sub_remote_addr(struct bworksubgroup *, uint16_t, uint32_t);
