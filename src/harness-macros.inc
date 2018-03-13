@@ -9,6 +9,10 @@
 #define GSEND(WHAT) SEND(graph, GRAPH, WHAT, graph_msg, graph)
 #define FSEND(WHAT) SEND(files, FILES, WHAT, file_msg, file)
 
+#define IWSEND(WHAT, WHERE) SEND(import, IMPORT, WHAT, import_msg, WHERE)
+#define GWSEND(WHAT, WHERE) SEND(graph, GRAPH, WHAT, graph_msg, WHERE)
+#define FWSEND(WHAT, WHERE) SEND(files, FILES, WHAT, file_msg, WHERE)
+
 #define SET(type, what, msg, to) pkg##type##_msg_set_##what(msg, to)
 #define ISET(what, to) SET(import, what, import_msg, to)
 #define GSET(what, to) SET(graph, what, graph_msg, to)
@@ -27,6 +31,10 @@
 #define IGET()	GET(import, import_msg, import)
 #define GGET()	GET(graph, graph_msg, graph)
 #define FGET()	GET(files, file_msg, file)
+
+#define IWGET(sock)	GET(import, import_msg, sock)
+#define GWGET(sock)	GET(graph, graph_msg, sock)
+#define FWGET(sock)	GET(files, file_msg, sock)
 
 #define IF(type, msg, field, goal) if(pkg##type##_msg_##field(msg) == goal)
 #define IIF(field, goal) IF(import, import_msg, field, goal)

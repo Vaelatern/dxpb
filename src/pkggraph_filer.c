@@ -73,7 +73,6 @@ client_terminate (client_t *self)
 	self->logfd = -1;
 }
 
-
 //  ---------------------------------------------------------------------------
 //  Selftest
 
@@ -93,7 +92,6 @@ pkggraph_filer_test (bool verbose)
     printf ("OK\n");
 }
 
-
 //  ---------------------------------------------------------------------------
 //  connect_to_server
 //
@@ -112,7 +110,6 @@ connect_to_server (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  complain_about_connection_error
 //
@@ -123,7 +120,6 @@ complain_about_connection_error (client_t *self)
 	ZPROTO_UNUSED(self);
 }
 
-
 //  ---------------------------------------------------------------------------
 //  write_log_to_file
 //
@@ -133,26 +129,36 @@ write_log_to_file (client_t *self)
 {
 	assert(self->logdir);
 	assert(self->logfd >= 0);
-
-	int pkgdir = openat(self->logfd, pkggraph_msg_pkgname(self->message),
-			O_RDWR | O_DIRECTORY | O_CREAT, 0755);
-	if (pkgdir < 0) {
-		perror("Couldn't open log directory for a package");
-		exit(ERR_CODE_BADDIR);
+	int pkgdir, rc, verdir, destfd;
+	pkgdir = verdir = destfd = rc = 0;
+	{
+		errno = 0;
+		rc = mkdirat(self->logfd, pkggraph_msg_pkgname(self->message), 0755);
+		assert(rc == 0 || errno == EEXIST);
+		pkgdir = openat(self->logfd, pkggraph_msg_pkgname(self->message),
+				O_DIRECTORY, 0755);
+		if (pkgdir < 0) {
+			perror("Couldn't open log directory for a package");
+			exit(ERR_CODE_BADDIR);
+		}
 	}
-
-	int verdir = openat(pkgdir, pkggraph_msg_version(self->message),
-			O_RDWR | O_DIRECTORY | O_CREAT, 0755);
-	if (verdir < 0) {
-		perror("Couldn't open log directory for a package's version");
-		exit(ERR_CODE_BADDIR);
+	{
+		rc = mkdirat(pkgdir, pkggraph_msg_version(self->message), 0755);
+		assert(rc == 0 || errno == EEXIST);
+		verdir = openat(pkgdir, pkggraph_msg_version(self->message),
+				O_DIRECTORY, 0755);
+		if (verdir < 0) {
+			perror("Couldn't open log directory for a package's version");
+			exit(ERR_CODE_BADDIR);
+		}
 	}
-
-	int destfd = openat(verdir, pkggraph_msg_arch(self->message),
-			O_WRONLY | O_APPEND | O_CREAT, 0644);
-	if (destfd < 0) {
-		perror("Couldn't open log file for a package's version and arch");
-		exit(ERR_CODE_BADDIR);
+	{
+		destfd = openat(verdir, pkggraph_msg_arch(self->message),
+				O_WRONLY | O_APPEND | O_CREAT, 0644);
+		if (destfd < 0) {
+			perror("Couldn't open log file for a package's version and arch for log entry");
+			exit(ERR_CODE_BADDIR);
+		}
 	}
 
 	// Don't handle failures except to crash hard
@@ -202,7 +208,6 @@ close:
 	close(pkgdir);
 }
 
-
 //  ---------------------------------------------------------------------------
 //  cease_all_operations
 //
@@ -212,7 +217,6 @@ cease_all_operations (client_t *self)
 {
 	ZPROTO_UNUSED(self);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  set_logdir_to_provided
@@ -238,7 +242,6 @@ set_logdir_to_provided (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  truncate_log
 //
@@ -248,23 +251,36 @@ truncate_log (client_t *self)
 {
 	assert(self->logdir);
 	assert(self->logfd >= 0);
-	int pkgdir = openat(self->logfd, pkggraph_msg_pkgname(self->message),
-			O_RDWR | O_DIRECTORY | O_CREAT, 0755);
-	if (pkgdir < 0) {
-		perror("Couldn't open log directory for a package");
-		exit(ERR_CODE_BADDIR);
+	int pkgdir, rc, verdir, destfd;
+	pkgdir = verdir = destfd = rc = 0;
+	{
+		errno = 0;
+		rc = mkdirat(self->logfd, pkggraph_msg_pkgname(self->message), 0755);
+		assert(rc == 0 || errno == EEXIST);
+		pkgdir = openat(self->logfd, pkggraph_msg_pkgname(self->message),
+				O_DIRECTORY, 0755);
+		if (pkgdir < 0) {
+			perror("Truncating, couldn't open log directory for a package");
+			exit(ERR_CODE_BADDIR);
+		}
 	}
-	int verdir = openat(pkgdir, pkggraph_msg_version(self->message),
-			O_RDWR | O_DIRECTORY | O_CREAT, 0755);
-	if (verdir < 0) {
-		perror("Couldn't open log directory for a package's version");
-		exit(ERR_CODE_BADDIR);
+	{
+		rc = mkdirat(pkgdir, pkggraph_msg_version(self->message), 0755);
+		assert(rc == 0 || errno == EEXIST);
+		verdir = openat(pkgdir, pkggraph_msg_version(self->message),
+				O_DIRECTORY, 0755);
+		if (verdir < 0) {
+			perror("Truncating, couldn't open log directory for a package's version");
+			exit(ERR_CODE_BADDIR);
+		}
 	}
-	int destfd = openat(verdir, pkggraph_msg_arch(self->message),
-			O_WRONLY | O_TRUNC | O_CREAT, 0644);
-	if (destfd < 0) {
-		perror("Couldn't open log file for a package's version and arch");
-		exit(ERR_CODE_BADDIR);
+	{
+		destfd = openat(verdir, pkggraph_msg_arch(self->message),
+				O_WRONLY | O_TRUNC | O_CREAT, 0644);
+		if (destfd < 0) {
+			perror("Couldn't create log file for a package's version and arch");
+			exit(ERR_CODE_BADDIR);
+		}
 	}
 	close(destfd);
 	close(verdir);
@@ -278,7 +294,6 @@ truncate_log (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  set_pub_to_provided
 //
@@ -291,7 +306,6 @@ set_pub_to_provided (client_t *self)
 	self->pub = zsock_new_pub(self->args->pubpath);
 	bfs_ensure_sock_perms(self->args->pubpath);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  set_ssl_client_keys

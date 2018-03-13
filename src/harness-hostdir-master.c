@@ -72,7 +72,7 @@ run(const char *ssldir, const char *sdir, const char *rdir,
 
 	zsock_t *graph = zsock_new (ZMQ_ROUTER);
 	zsock_t *file  = zsock_new (ZMQ_DEALER);
-	zsock_t *file2  = zsock_new (ZMQ_DEALER);
+	zsock_t *file2 = zsock_new (ZMQ_DEALER);
 	assert(graph);
 	assert(file);
 	assert(file2);
@@ -81,153 +81,191 @@ run(const char *ssldir, const char *sdir, const char *rdir,
 	zsock_attach(file, file_end, false);
 	zsock_attach(file2, file_end, false);
 
-#define SEND(this, msg, sock)        { \
-					pkgfiles_msg_set_id(msg, this); \
-					rc = pkgfiles_msg_send(msg, sock); \
-					assert(rc == 0); \
-				}
+	zchunk_t *chunk = NULL;
 
-#define GET(mymsg, sock)        { \
-					zpoller_t *p = zpoller_new(sock, NULL); \
-					(void) zpoller_wait(p, 10*1000); \
-					assert(!zpoller_expired(p)); \
-					if (zpoller_terminated(p)) \
-					exit(-1); \
-					rc = pkgfiles_msg_recv(mymsg, sock); \
-					assert(rc == 0); \
-					zpoller_destroy(&p); \
-				}
-
-
-#define TOMSG(str)                   PKGFILES_MSG_##str
-#define SETMSG(what, msg, to)        pkgfiles_msg_set_##what(msg, to)
-#define ASSERTMSG(what, msg, eq)     assert(pkgfiles_msg_##what(msg) == eq)
-#define ASSERTMSGSTR(what, msg, eq)     assert(strcmp(pkgfiles_msg_##what(msg), eq) == 0)
+#include "harness-macros.inc"
 
 	/* And now we get to work */
 
-	SEND(TOMSG(HELLO), file_msg, file);
-	GET(file_msg, file);
-	ASSERTMSG(id, file_msg, TOMSG(ROGER));
-	SETMSG(pkgname, file_msg, "foo");
-	SETMSG(version, file_msg, DXPB_VERSION);
-	SETMSG(arch, file_msg, "noarch");
-	SEND(TOMSG(ISPKGHERE), file_msg, file);
-	GET(file_msg, file);
-	ASSERTMSG(id, file_msg, TOMSG(PKGNOTHERE));
-	ASSERTMSGSTR(pkgname, file_msg, "foo");
-	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
-	ASSERTMSGSTR(arch, file_msg, "noarch");
+	GGET();
+	GSRTID(HELLO);
+	GSEND(ROGER);
+
+	GGET();
+	GSRTID(IAMSTORAGE);
+	GSEND(ROGER);
+
+	GSET(pkgname, "abc");
+	GSET(version, "0.efg");
+	GSET(arch, "noarch");
+	GSEND(RESETLOG);
+	GGET();
+	GSRTID(ROGER);
+
+	GSET(pkgname, "abc");
+	GSET(version, "0.efg");
+	GSET(arch, "noarch");
+	GSEND(RESETLOG);
+	GGET();
+	GSRTID(ROGER);
+
+	GSET(pkgname, "def");
+	GSET(version, "0.ghi");
+	GSET(arch, "x86_64");
+	GSEND(RESETLOG);
+	GGET();
+	GSRTID(ROGER);
+
+	chunk = zchunk_slurp("/usr/share/licenses/BSD", 2000);
+	GSET(pkgname, "abc");
+	GSET(version, "0.efg");
+	GSET(arch, "noarch");
+	GSET(logs, &chunk);
+	GSEND(LOGHERE);
+	GGET();
+	GSRTID(ROGER);
+
+	FILE *fp = fopen("/usr/share/licenses/Apache-2.0", "r");
+	while (fp != NULL) {
+		chunk = zchunk_read(fp, 3);
+		if (zchunk_size(chunk) == 0) {
+			fclose(fp);
+			fp = NULL;
+		}
+		GSET(pkgname, "def");
+		GSET(version, "0.ghi");
+		GSET(arch, "x86_64");
+		GSET(logs, &chunk);
+		GSEND(LOGHERE);
+		GGET();
+		GSRTID(ROGER);
+	}
+
+	FSEND(HELLO);
+	FGET();
+	FSRTID(ROGER);
+	FSET(pkgname, "foo");
+	FSET(version, DXPB_VERSION);
+	FSET(arch, "noarch");
+	FSEND(ISPKGHERE);
+	FGET();
+	FSRTID(PKGNOTHERE);
+	FSRTS(pkgname, "foo");
+	FSRTS(version, DXPB_VERSION);
+	FSRTS(arch, "noarch");
 
 	bfs_touch(pkgpath);
 
-	SETMSG(pkgname, file_msg, "foo");
-	SETMSG(version, file_msg, DXPB_VERSION);
-	SETMSG(arch, file_msg, "noarch");
-	SEND(TOMSG(ISPKGHERE), file_msg, file);
-	GET(file_msg, file);
-	ASSERTMSG(id, file_msg, TOMSG(PKGHERE));
-	ASSERTMSGSTR(pkgname, file_msg, "foo");
-	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
-	ASSERTMSGSTR(arch, file_msg, "noarch");
-	SETMSG(pkgname, file_msg, "foo");
-	SETMSG(version, file_msg, DXPB_VERSION);
-	SETMSG(arch, file_msg, "x86_64");
-	SEND(TOMSG(ISPKGHERE), file_msg, file);
-	SETMSG(arch, file_msg, "x86_64-musl");
-	SEND(TOMSG(ISPKGHERE), file_msg, file);
-	SETMSG(arch, file_msg, "i686");
-	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	FSET(pkgname, "foo");
+	FSET(version, DXPB_VERSION);
+	FSET(arch, "noarch");
+	FSEND(ISPKGHERE);
+	FGET();
+	FSRTID(PKGHERE);
+	FSRTS(pkgname, "foo");
+	FSRTS(version, DXPB_VERSION);
+	FSRTS(arch, "noarch");
+	FSET(pkgname, "foo");
+	FSET(version, DXPB_VERSION);
+	FSET(arch, "x86_64");
+	FSEND(ISPKGHERE);
+	FSET(arch, "x86_64-musl");
+	FSEND(ISPKGHERE);
+	FSET(arch, "i686");
+	FSEND(ISPKGHERE);
 	for (int i = 0; i < 3; i++) {
-		GET(file_msg, file);
-		ASSERTMSG(id, file_msg, TOMSG(PKGNOTHERE));
-		ASSERTMSGSTR(pkgname, file_msg, "foo");
-		ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
+		FGET();
+		FSRTID(PKGNOTHERE);
+		FSRTS(pkgname, "foo");
+		FSRTS(version, DXPB_VERSION);
 		assert((strcmp(pkgfiles_msg_arch(file_msg), "x86_64") == 0) ||
 			(strcmp(pkgfiles_msg_arch(file_msg), "x86_64-musl") == 0) ||
 			(strcmp(pkgfiles_msg_arch(file_msg), "i686") == 0));
 	}
 
-	SEND(TOMSG(HELLO), file_msg, file2);
-	GET(file_msg, file2);
-	ASSERTMSG(id, file_msg, TOMSG(ROGER));
+	FWSEND(HELLO, file2);
+	FWGET(file2);
+	FSRTID(ROGER);
 
-	SETMSG(pkgname, file_msg, "foo");
-	SETMSG(version, file_msg, DXPB_VERSION);
-	SETMSG(arch, file_msg, "armv6hf");
-	SEND(TOMSG(ISPKGHERE), file_msg, file);
-	GET(file_msg, file2);
-	ASSERTMSG(id, file_msg, TOMSG(ISPKGHERE));
-	ASSERTMSGSTR(pkgname, file_msg, "foo");
-	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
-	ASSERTMSGSTR(arch, file_msg, "armv6hf");
-	SEND(TOMSG(PKGNOTHERE), file_msg, file2);
-	SETMSG(pkgname, file_msg, "foo");
-	SETMSG(version, file_msg, DXPB_VERSION);
-	SETMSG(arch, file_msg, "armv7hf-musl");
-	SEND(TOMSG(ISPKGHERE), file_msg, file);
-	GET(file_msg, file2);
-	ASSERTMSG(id, file_msg, TOMSG(ISPKGHERE));
-	ASSERTMSGSTR(pkgname, file_msg, "foo");
-	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
-	ASSERTMSGSTR(arch, file_msg, "armv7hf-musl");
-	SEND(TOMSG(PKGNOTHERE), file_msg, file2);
-	SETMSG(pkgname, file_msg, "foo");
-	SETMSG(version, file_msg, DXPB_VERSION);
-	SETMSG(arch, file_msg, "aarch64");
-	SEND(TOMSG(ISPKGHERE), file_msg, file);
-	GET(file_msg, file2);
-	ASSERTMSG(id, file_msg, TOMSG(ISPKGHERE));
-	ASSERTMSGSTR(pkgname, file_msg, "foo");
-	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
-	ASSERTMSGSTR(arch, file_msg, "aarch64");
-	SEND(TOMSG(PKGNOTHERE), file_msg, file2);
+	FSET(pkgname, "foo");
+	FSET(version, DXPB_VERSION);
+	FSET(arch, "armv6hf");
+	FSEND(ISPKGHERE);
+	FWGET(file2);
+	FSRTID(ISPKGHERE);
+	FSRTS(pkgname, "foo");
+	FSRTS(version, DXPB_VERSION);
+	FSRTS(arch, "armv6hf");
+	FWSEND(PKGNOTHERE, file2);
+	FSET(pkgname, "foo");
+	FSET(version, DXPB_VERSION);
+	FSET(arch, "armv7hf-musl");
+	FSEND(ISPKGHERE);
+	FWGET(file2);
+	FSRTID(ISPKGHERE);
+	FSRTS(pkgname, "foo");
+	FSRTS(version, DXPB_VERSION);
+	FSRTS(arch, "armv7hf-musl");
+	FWSEND(PKGNOTHERE, file2);
+	FSET(pkgname, "foo");
+	FSET(version, DXPB_VERSION);
+	FSET(arch, "aarch64");
+	FSEND(ISPKGHERE);
+	FWGET(file2);
+	FSRTID(ISPKGHERE);
+	FSRTS(pkgname, "foo");
+	FSRTS(version, DXPB_VERSION);
+	FSRTS(arch, "aarch64");
+	FWSEND(PKGNOTHERE, file2);
 
-	GET(file_msg, file);
-	ASSERTMSG(id, file_msg, TOMSG(PKGNOTHERE));
-	ASSERTMSGSTR(pkgname, file_msg, "foo");
-	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
-	ASSERTMSGSTR(arch, file_msg, "armv6hf");
-	GET(file_msg, file);
-	ASSERTMSG(id, file_msg, TOMSG(PKGNOTHERE));
-	ASSERTMSGSTR(pkgname, file_msg, "foo");
-	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
-	ASSERTMSGSTR(arch, file_msg, "armv7hf-musl");
-	GET(file_msg, file);
-	ASSERTMSG(id, file_msg, TOMSG(PKGNOTHERE));
-	ASSERTMSGSTR(pkgname, file_msg, "foo");
-	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
-	ASSERTMSGSTR(arch, file_msg, "aarch64");
+	FGET();
+	FSRTID(PKGNOTHERE);
+	FSRTS(pkgname, "foo");
+	FSRTS(version, DXPB_VERSION);
+	FSRTS(arch, "armv6hf");
+	FGET();
+	FSRTID(PKGNOTHERE);
+	FSRTS(pkgname, "foo");
+	FSRTS(version, DXPB_VERSION);
+	FSRTS(arch, "armv7hf-musl");
+	FGET();
+	FSRTID(PKGNOTHERE);
+	FSRTS(pkgname, "foo");
+	FSRTS(version, DXPB_VERSION);
+	FSRTS(arch, "aarch64");
 
 	for (int i = 0; i < 6; i++) {
 		sleep(10);
-		SEND(TOMSG(PING), file_msg, file);
-		GET(file_msg, file);
-		ASSERTMSG(id, file_msg, TOMSG(ROGER));
+		FSEND(PING);
+		FGET();
+		FSRTID(ROGER);
+
+		GGET();
+		GSRTID(PING);
+		GSEND(ROGER);
 	}
 
-	SETMSG(pkgname, file_msg, "foo");
-	SETMSG(version, file_msg, DXPB_VERSION);
-	SETMSG(arch, file_msg, "x86_64");
-	SEND(TOMSG(ISPKGHERE), file_msg, file);
-	SETMSG(arch, file_msg, "x86_64-musl");
-	SEND(TOMSG(ISPKGHERE), file_msg, file);
-	SETMSG(arch, file_msg, "i686");
-	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	FSET(pkgname, "foo");
+	FSET(version, DXPB_VERSION);
+	FSET(arch, "x86_64");
+	FSEND(ISPKGHERE);
+	FSET(arch, "x86_64-musl");
+	FSEND(ISPKGHERE);
+	FSET(arch, "i686");
+	FSEND(ISPKGHERE);
 	for (int i = 0; i < 3; i++) {
-		GET(file_msg, file);
-		ASSERTMSG(id, file_msg, TOMSG(PKGNOTHERE));
-		ASSERTMSGSTR(pkgname, file_msg, "foo");
-		ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
+		FGET();
+		FSRTID(PKGNOTHERE);
+		FSRTS(pkgname, "foo");
+		FSRTS(version, DXPB_VERSION);
 		assert((strcmp(pkgfiles_msg_arch(file_msg), "x86_64") == 0) ||
 			(strcmp(pkgfiles_msg_arch(file_msg), "x86_64-musl") == 0) ||
 			(strcmp(pkgfiles_msg_arch(file_msg), "i686") == 0));
 	}
 
-	SEND(TOMSG(HELLO), file_msg, file2);
-	GET(file_msg, file2);
-	ASSERTMSG(id, file_msg, TOMSG(ROGER));
-
+	FWSEND(HELLO, file2);
+	FWGET(file2);
+	FSRTID(ROGER);
 
 	/* Work over, let's clean up. */
 
@@ -253,9 +291,9 @@ main(int argc, char * const *argv)
 	char *repopath = bstring_add(bstring_add(NULL, ourdir, NULL, NULL), "/repo/", NULL, NULL);
 	char *ssldir = "/var/empty/";
 
-	char *file_endpoint = bstring_add(bstring_add(NULL, "ipc://", NULL, NULL), bfs_new_tmpsock(ourdir, "file"), NULL, NULL);
-	char *file_pubpoint = bstring_add(bstring_add(NULL, "ipc://", NULL, NULL), bfs_new_tmpsock(ourdir, "pubFile"), NULL, NULL);
- 	char *graph_endpoint = bstring_add(bstring_add(NULL, "ipc://", NULL, NULL), bfs_new_tmpsock(ourdir, "graph"), NULL, NULL);
+	char *file_endpoint = bstring_add(bstring_add(NULL,  "ipc://", NULL, NULL), bfs_new_tmpsock(ourdir, "file"), NULL, NULL);
+	char *file_pubpoint = bstring_add(bstring_add(NULL,  "ipc://", NULL, NULL), bfs_new_tmpsock(ourdir, "pubFile"), NULL, NULL);
+ 	char *graph_endpoint = "tcp://127.0.0.1:6015";
 	char *graph_pubpoint = bstring_add(bstring_add(NULL, "ipc://", NULL, NULL), bfs_new_tmpsock(ourdir, "pubGraph"), NULL, NULL);
 
 	int rc;

@@ -41,20 +41,23 @@ setup_ssl(void *agent, int (*cb)(void *, const char *, const char *, const char*
 				"*****************************************\n"
 				"*****************************************\n"
 				"*****************************************\n"
-				"***> Couldn't load %s <***\n", servercert);
+				"***********> Couldn't load %s\n"
+				"*****************************************\n"
+				, servercert);
 		rV = -1;
 		goto abort;
 	}
 
-	if (bfs_file_exists(mycert))
-		mine = zcert_load(mycert);
-	else
-		mine = zcert_new();
+	assert(server);
 
 	if (bfs_file_exists(mycert))
-		fprintf(stderr, "***> Just loaded cert from %s <***\n", mycert);
-	else
-		fprintf(stderr, "***> COULD NOT LOAD cert from %s <***\n", mycert);
+		mine = zcert_load(mycert);
+	else {
+		fprintf(stderr, "****> Can't open my cert! As of 2018-03-01 this results in a broken setup\n");
+		exit(ERR_CODE_BAD);
+	}
+
+	assert(mine);
 
 	cb(agent, zcert_secret_txt(mine), zcert_public_txt(mine), zcert_public_txt(server));
 
@@ -65,4 +68,3 @@ abort:
 	FREE(mycert);
 	return rV;
 }
-
