@@ -22,6 +22,7 @@
 #include "pkgfiles_msg.h"
 #include "dxpb.h"
 #include "bwords.h"
+#include "bvirtpkg.h"
 #include "bxpkg.h"
 #include "bpkg.h"
 #include "bgraph.h"
@@ -721,4 +722,18 @@ static void
 set_ssl_client_keys (client_t *self)
 {
         #include "set_ssl_client_keys.inc"
+}
+
+//  ---------------------------------------------------------------------------
+//  record_virtualpkgs
+//
+
+static void
+record_virtualpkgs (client_t *self)
+{
+	char *vpkgs_units = strdup(pkgimport_msg_virtualpkgs(self->message));
+	bwords vpkgs = bwords_from_units(vpkgs_units);
+	bgraph_set_vpkgs(self->pkggraph, bvirtpkg_from_words(vpkgs));
+	bwords_destroy(&vpkgs, 1);
+	FREE(vpkgs_units);
 }

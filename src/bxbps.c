@@ -37,23 +37,18 @@ bxbps_get_pkgname(const char *spec, bgraph graph)
 	 * between the first '-' and the last '_'.
 	 * Vaelatern, 2017-07-06 */
 	retVal = xbps_pkg_name(spec);
-	if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL) {
+	if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL)
 		return retVal;
-	}
 
-	if (retVal != NULL)
-		free(retVal);
+	FREE(retVal);
 
 	/* And then, does it use our special matching? */
 	retVal = xbps_pkgpattern_name(spec);
-	if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL) {
+	if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL)
 		return retVal;
-	}
 
 	fprintf(stderr, "The following spec is unacceptable: %s\n", spec);
-	if (retVal != NULL)
-		free(retVal);
-	retVal = NULL;
+	FREE(retVal);
 
 	return retVal;
 }
@@ -61,6 +56,9 @@ bxbps_get_pkgname(const char *spec, bgraph graph)
 int
 bxbps_spec_match(const char *spec, const char *pkgname, const char *pkgver)
 {
+	if (strncmp(spec, "virtual?", strlen("virtual?")) == 0) // Assume virtual are OK
+		return ERR_CODE_YES;
+
 	int rc = xbps_pkgpattern_match(pkgname, spec);
 	if (rc == -1)
 		return ERR_CODE_BAD;

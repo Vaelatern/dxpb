@@ -103,6 +103,10 @@
     WESEEHASH -
         proto_version       string      Package Import Management Protocol Version 00
         commithash          string      Hash of git HEAD as seen by persistent storage
+
+    HEREVIRTUALPKGS -
+        proto_version       string      Package Import Management Protocol Version 00
+        virtualpkgs         longstr
 */
 
 
@@ -128,6 +132,7 @@
 #define PKGIMPORT_MSG_STABLE                20
 #define PKGIMPORT_MSG_UNSTABLE              21
 #define PKGIMPORT_MSG_WESEEHASH             22
+#define PKGIMPORT_MSG_HEREVIRTUALPKGS       23
 
 #include <czmq.h>
 
@@ -254,6 +259,12 @@ const char *
     pkgimport_msg_commithash (pkgimport_msg_t *self);
 void
     pkgimport_msg_set_commithash (pkgimport_msg_t *self, const char *value);
+
+//  Get/set the virtualpkgs field
+const char *
+    pkgimport_msg_virtualpkgs (pkgimport_msg_t *self);
+void
+    pkgimport_msg_set_virtualpkgs (pkgimport_msg_t *self, const char *value);
 
 //  Self test of this class
 void

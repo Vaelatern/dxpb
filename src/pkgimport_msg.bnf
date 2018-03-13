@@ -1,6 +1,6 @@
 The following ABNF grammar defines the Package Import Managment Protocol:
 
-    pkgimport_msg   = *( HELLO | ROGER | IFORGOTU | RUREADY | READY | RESET | INVALID | RDY2WRK | PING | PLZREADALL | IAMTHEGRAPHER | KTHNKSBYE | STABLESTATUSPLZ | STOP | TURNONTHENEWS | PLZREAD | DIDREAD | PKGINFO | PKGDEL | STABLE | UNSTABLE | WESEEHASH )
+    pkgimport_msg   = *( HELLO | ROGER | IFORGOTU | RUREADY | READY | RESET | INVALID | RDY2WRK | PING | PLZREADALL | IAMTHEGRAPHER | KTHNKSBYE | STABLESTATUSPLZ | STOP | TURNONTHENEWS | PLZREAD | DIDREAD | PKGINFO | PKGDEL | STABLE | UNSTABLE | WESEEHASH | HEREVIRTUALPKGS )
 
     ;  No description
 
@@ -130,6 +130,12 @@ The following ABNF grammar defines the Package Import Managment Protocol:
     WESEEHASH       = signature %d22 proto_version commithash
     proto_version   = string                ; Package Import Management Protocol Version 00
     commithash      = string                ; Hash of git HEAD as seen by persistent storage
+
+    ;  No description
+
+    HEREVIRTUALPKGS = signature %d23 proto_version virtualpkgs
+    proto_version   = string                ; Package Import Management Protocol Version 00
+    virtualpkgs     = longstr               ;
 
     ; Strings are always length + text contents
     string          = number-1 *VCHAR

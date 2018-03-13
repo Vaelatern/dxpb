@@ -20,6 +20,7 @@
 #include "bgit.h"
 #include "bfs.h"
 #include "bwords.h"
+#include "bvirtpkg.h"
 #include "bxpkg.h"
 #include "bxsrc.h"
 #include "blog.h"
@@ -118,9 +119,7 @@ server_terminate (server_t *self)
 {
 	if (self->pub)
 		zsock_destroy(&(self->pub));
-	if (self->pubpath)
-		free(self->pubpath);
-	self->pubpath = NULL;
+	FREE(self->pubpath);
 	zlist_destroy(&(self->workers));
 	zlist_destroy(&(self->toread));
 	zlist_destroy(&(self->curjobs));
@@ -546,4 +545,20 @@ static void
 remove_self_from_worker_list (client_t *self)
 {
 	zlist_remove(self->server->workers, self);
+}
+
+//  ---------------------------------------------------------------------------
+//  attempt_to_read_virtualpkgs_in
+//
+
+static void
+attempt_to_read_virtualpkgs_in (client_t *self)
+{
+	assert(self->server->repopath);
+
+	bwords curState = bvirtpkg_read(self->server->repopath);
+	char *use = bwords_to_units(curState);
+	pkgimport_msg_set_virtualpkgs(self->message, use);
+	bwords_destroy(&curState, 1);
+	FREE(use);
 }

@@ -20,12 +20,15 @@
 
 static void bgraph_destroy_need(struct pkg_need **, struct pkg *);
 
+#define BGRAPH_VPKG_STR "virtual?pkg"
+
 bgraph
 bgraph_new()
 {
 	zhash_t *retVal = zhash_new();
 	enum pkg_archs i = ARCH_NOARCH;
 
+	zhash_insert(retVal, BGRAPH_VPKG_STR, zhash_new());
 	while (pkg_archs_str[i] != NULL && i < ARCH_NUM_MAX) {
 		if (i != ARCH_TARGET)
 			zhash_insert(retVal, pkg_archs_str[i], zhash_new());
@@ -33,6 +36,23 @@ bgraph_new()
 	}
 
 	return retVal;
+}
+
+void
+bgraph_set_vpkgs(bgraph grph, zhash_t *vpkgs)
+{
+	zhash_freefn(vpkgs, BGRAPH_VPKG_STR, free);
+	zhash_t *destroy = zhash_lookup(grph, BGRAPH_VPKG_STR);
+	assert(destroy);
+	zhash_delete(grph, BGRAPH_VPKG_STR);
+	zhash_insert(grph, BGRAPH_VPKG_STR, vpkgs);
+	zhash_destroy(&destroy);
+}
+
+zhash_t *
+bgraph_get_vpkgs(bgraph grph)
+{
+	return zhash_lookup(grph, BGRAPH_VPKG_STR);
 }
 
 static void
@@ -162,6 +182,7 @@ bgraph_find_pkg(zhash_t *arch, zhash_t *noarch, const char *pkgname)
 		retVal = zhash_lookup(arch, pkgname);
 	if (noarch != NULL && retVal == NULL)
 		retVal = zhash_lookup(noarch, pkgname);
+
 	return retVal;
 }
 
@@ -217,13 +238,19 @@ bgraph_pitchfork(bgraph grph, const char *arch, zhash_t **hay, zhash_t **allhay,
 }
 
 static int
-bgraph_resolve_wneed(bgraph hay, bgraph allhay, bwords curwords, void *ineed, void *needs_me, struct pkg *me)
+bgraph_resolve_wneed(bgraph hay, bgraph allhay, zhash_t *virt, bwords curwords, void *ineed, void *needs_me, struct pkg *me)
 {
+	const int virtprefixlen = 8; // strlen("virtual?");
 	struct pkg *curpkg = NULL;
-	for (size_t i = 0; i < curwords->num_words; i++) {
+	size_t i = -1;
+	for (i = 0; i < curwords->num_words; i++) {
 		char *curpkgname = bxbps_get_pkgname(curwords->words[i], allhay);
-		if (curpkgname == NULL)
-			continue;
+		if (curpkgname == NULL && strlen(curwords->words[i]) > virtprefixlen) {
+			char *vpkgname = zhash_lookup(virt, curwords->words[i] + virtprefixlen);
+			curpkgname = bxbps_get_pkgname(vpkgname, allhay);
+			if (curpkgname == NULL)
+				goto badwant;
+		}
 		curpkg = bgraph_find_pkg(hay, allhay, curpkgname);
 		if (curpkg == NULL)
 			goto badwant;
@@ -233,11 +260,13 @@ bgraph_resolve_wneed(bgraph hay, bgraph allhay, bwords curwords, void *ineed, vo
 	}
 	return ERR_CODE_OK;
 badwant:
+	assert(i >= 0);
+	fprintf(stderr, "The following spec is unacceptable: %s\n", curwords->words[i]);
 	return ERR_CODE_BADDEP;
 }
 
 static int
-bgraph_resolve_pkg(bgraph hay, bgraph allhay, bgraph hosthay, struct pkg *subj)
+bgraph_resolve_pkg(bgraph hay, bgraph allhay, bgraph hosthay, zhash_t *virt, struct pkg *subj)
 {
 	assert(allhay);
 	assert(hay);
@@ -250,22 +279,22 @@ bgraph_resolve_pkg(bgraph hay, bgraph allhay, bgraph hosthay, struct pkg *subj)
 
 	int rc;
 
-	rc = bgraph_resolve_wneed(hosthay, allhay, subj->wneeds_cross_host,
+	rc = bgraph_resolve_wneed(hosthay, allhay, virt, subj->wneeds_cross_host,
 			subj->cross_needs, subj->needs_me, subj);
 	if (rc == ERR_CODE_BADDEP)
 		goto badwant;
 
-	rc = bgraph_resolve_wneed(hay, allhay, subj->wneeds_cross_target,
+	rc = bgraph_resolve_wneed(hay, allhay, virt, subj->wneeds_cross_target,
 			subj->cross_needs, subj->needs_me, subj);
 	if (rc == ERR_CODE_BADDEP)
 		goto badwant;
 
-	rc = bgraph_resolve_wneed(hosthay, allhay, subj->wneeds_native_host,
+	rc = bgraph_resolve_wneed(hosthay, allhay, virt, subj->wneeds_native_host,
 			subj->needs, subj->needs_me, subj);
 	if (rc == ERR_CODE_BADDEP)
 		goto badwant;
 
-	rc = bgraph_resolve_wneed(hay, allhay, subj->wneeds_native_target,
+	rc = bgraph_resolve_wneed(hay, allhay, virt, subj->wneeds_native_target,
 			subj->needs, subj->needs_me, subj);
 	if (rc == ERR_CODE_BADDEP)
 		goto badwant;
@@ -293,11 +322,12 @@ bgraph_attempt_resolution(bgraph grph)
 	// Food for thought.
 	// Vaelatern, 2017-07-10
 	bgraph_pitchfork(grph, pkg_archs_str[ARCH_NOARCH], NULL, &allhay, &hosthay);
+	zhash_t *virt = bgraph_get_vpkgs(grph);
 	for (enum pkg_archs arch = ARCH_NOARCH; arch < ARCH_HOST; arch++) {
 		bgraph_pitchfork(grph, pkg_archs_str[arch], &hay, NULL, NULL);
 		for (struct pkg *needle = zhash_first(hay); needle != NULL;
 						needle = zhash_next(hay)) {
-			rc = bgraph_resolve_pkg(hay, allhay, hosthay, needle);
+			rc = bgraph_resolve_pkg(hay, allhay, hosthay, virt, needle);
 			retVal = retVal == ERR_CODE_OK ? rc : retVal;
 		}
 	}

@@ -280,6 +280,8 @@ bdb_write_tree(zhash_t *pkgs, struct bdb_bound_params *params)
 	    retVal = ERR_CODE_OK;
 
 	for (curpkgs = zhash_first(pkgs); curpkgs != NULL; curpkgs = zhash_next(pkgs)) {
+		if (bpkg_enum_lookup(zhash_cursor(pkgs)) == ARCH_NUM_MAX)
+			continue;
 		rc = write_pkgs_to_db(curpkgs, params);
 		if (rc != ERR_CODE_OK)
 			retVal = ERR_CODE_BAD;

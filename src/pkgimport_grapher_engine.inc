@@ -41,17 +41,18 @@ typedef enum {
     confirm_hash_event = 10,
     expired_event = 11,
     worker_available_event = 12,
-    stable_event = 13,
-    invalid_event = 14,
-    kthnksbye_event = 15,
-    pkginfo_event = 16,
-    pkgdel_event = 17,
-    worker_gone_event = 18,
-    pkg_now_completed_event = 19,
-    pkg_not_here_event = 20,
-    pkg_here_event = 21,
-    pkg_failed_to_build_event = 22,
-    worker_not_appropiate_event = 23
+    herevirtualpkgs_event = 13,
+    stable_event = 14,
+    invalid_event = 15,
+    kthnksbye_event = 16,
+    pkginfo_event = 17,
+    pkgdel_event = 18,
+    worker_gone_event = 19,
+    pkg_now_completed_event = 20,
+    pkg_not_here_event = 21,
+    pkg_here_event = 22,
+    pkg_failed_to_build_event = 23,
+    worker_not_appropiate_event = 24
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -82,6 +83,7 @@ s_event_name [] = {
     "confirm_hash",
     "expired",
     "worker_available",
+    "HEREVIRTUALPKGS",
     "STABLE",
     "INVALID",
     "KTHNKSBYE",
@@ -176,6 +178,8 @@ static void
     decide_next_action_from_hash (client_t *self);
 static void
     add_worker_to_list (client_t *self);
+static void
+    record_virtualpkgs (client_t *self);
 static void
     store_hash (client_t *self);
 static void
@@ -445,6 +449,9 @@ s_protocol_event (s_client_t *self, pkgimport_msg_t *message)
             break;
         case PKGIMPORT_MSG_UNSTABLE:
             return unstable_event;
+            break;
+        case PKGIMPORT_MSG_HEREVIRTUALPKGS:
+            return herevirtualpkgs_event;
             break;
         default:
             zsys_error ("%s: unknown command %s, halting",
@@ -851,6 +858,15 @@ s_client_execute (s_client_t *self, event_t event)
                         if (self->verbose)
                             zsys_debug ("%s:         $ add worker to list", self->log_prefix);
                         add_worker_to_list (&self->client);
+                    }
+                }
+                else
+                if (self->event == herevirtualpkgs_event) {
+                    if (!self->exception) {
+                        //  record virtualpkgs
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ record virtualpkgs", self->log_prefix);
+                        record_virtualpkgs (&self->client);
                     }
                 }
                 else

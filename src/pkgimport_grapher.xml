@@ -65,6 +65,9 @@
 		<event name = "worker available">
 			<action name = "add worker to list" />
 		</event>
+		<event name = "HEREVIRTUALPKGS">
+			<action name = "record virtualpkgs" />
+		</event>
 		<event name = "STABLE" next = "stable">
 			<action name = "store hash">
 				So the listening poller knows what's what.

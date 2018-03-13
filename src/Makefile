@@ -76,6 +76,7 @@ OBJECTS = \
 	brepowatch.o \
 	bstring.o \
 	btranslate.o \
+	bvirtpkg.o \
 	bwords.o \
 	bworker.o \
 	bxbps.o \
@@ -84,8 +85,8 @@ OBJECTS = \
 	dxpb-builder.o \
 	dxpb-certs-remote.o \
 	dxpb-certs-server.o \
-	dxpb-common.o \
 	dxpb-client.o \
+	dxpb-common.o \
 	dxpb-frontend.o \
 	dxpb-graph-to-dot.o \
 	dxpb-grapher.o \
@@ -228,13 +229,13 @@ dxpb-pkgimport-agent: LDLIBS += -lbsd
 dxpb-pkgimport-agent: dxpb-pkgimport-agent.o dxpb-client.o bxpkg.o bpkg.o bwords.o bxsrc.o pkgimport_client.o pkgimport_msg.o
 
 dxpb-pkgimport-master: LDLIBS += -lbsd -lgit2 -lcapnp_c
-dxpb-pkgimport-master: dxpb-pkgimport-master.o bxpkg.o bwords.o bxsrc.o bgit.o pkgimport_server.o pkgimport_msg.o $(BLOG_SET)
+dxpb-pkgimport-master: dxpb-pkgimport-master.o bxpkg.o bwords.o bxsrc.o bgit.o pkgimport_server.o bvirtpkg.o pkgimport_msg.o $(BLOG_SET)
 
 dxpb-builder: LDLIBS += -lgit2
 dxpb-builder: dxpb-builder.o dxpb-client.o bgit.o bbuilder.o bwords.o bxpkg.o bxsrc.o pkggraph_worker.o pkggraph_msg.o
 
 dxpb-grapher: LDLIBS += -lbsd -lsqlite3 -larchive -lxbps -lcapnp_c
-dxpb-grapher: dxpb-grapher.o dxpb-client.o bwords.o bxsrc.o bxpkg.o bpkg.o bxbps.o bgraph.o bdb.o pkgimport_msg.o pkgimport_grapher.o pkggraph_msg.o pkggraph_grapher.o pkgfiles_msg.o pkgfiler_grapher.o bworker.o btranslate.o $(BLOG_SET)
+dxpb-grapher: dxpb-grapher.o dxpb-client.o bwords.o bxsrc.o bxpkg.o bpkg.o bxbps.o bgraph.o bdb.o pkgimport_msg.o pkgimport_grapher.o pkggraph_msg.o pkggraph_grapher.o pkgfiles_msg.o pkgfiler_grapher.o bworker.o bvirtpkg.o btranslate.o $(BLOG_SET)
 
 dxpb-hostdir-master: LDLIBS += -larchive -lxbps -lpthread -lcapnp_c
 dxpb-hostdir-master: dxpb-hostdir-master.o brepowatch.o bxbps.o pkggraph_msg.o pkggraph_filer.o pkgfiles_msg.o pkgfiler.o dxpb-client.o $(BLOG_SET)

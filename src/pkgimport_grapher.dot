@@ -111,6 +111,9 @@ digraph "pkgimport_grapher" {
  "unstable worker available" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">worker available</font></td></tr><tr><td align="left" port="r3">add worker to list</td></tr></table>>];
  "unstable" -> "unstable worker available";
  "unstable worker available" -> "unstable";
+ "unstable herevirtualpkgs" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">herevirtualpkgs</font></td></tr><tr><td align="left" port="r3">record virtualpkgs</td></tr></table>>];
+ "unstable" -> "unstable herevirtualpkgs";
+ "unstable herevirtualpkgs" -> "unstable";
  "unstable stable" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">stable</font></td></tr><tr><td align="left" port="r3">store hash</td></tr></table>>];
  "unstable" -> "unstable stable";
  "unstable stable" -> "stable";

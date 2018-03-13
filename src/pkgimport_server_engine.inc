@@ -186,6 +186,8 @@ static void
 static void
     respond_specifying_stability (client_t *self);
 static void
+    attempt_to_read_virtualpkgs_in (client_t *self);
+static void
     set_commithash (client_t *self);
 static void
     ensure_git_consistency (client_t *self);
@@ -1273,6 +1275,23 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == send_stable_event) {
+                    if (!self->exception) {
+                        //  attempt to read virtualpkgs in
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ attempt to read virtualpkgs in", self->log_prefix);
+                        attempt_to_read_virtualpkgs_in (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send HEREVIRTUALPKGS
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send HEREVIRTUALPKGS",
+                                self->log_prefix);
+                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_HEREVIRTUALPKGS);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgimport_msg_print (self->server->message);
+                        pkgimport_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgimport_msg_send (self->server->message, self->server->router);
+                    }
                     if (!self->exception) {
                         //  set commithash
                         if (self->server->verbose)

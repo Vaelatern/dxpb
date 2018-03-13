@@ -47,6 +47,7 @@ struct _pkgimport_msg_t {
     byte bootstrap;                     //  bootstrap
     byte restricted;                    //  restricted
     char commithash [256];              //  Hash corresponding to git HEAD
+    char *virtualpkgs;                  //  virtualpkgs
 };
 
 //  --------------------------------------------------------------------------
@@ -226,6 +227,7 @@ pkgimport_msg_destroy (pkgimport_msg_t **self_p)
         free (self->nativetargetneeds);
         free (self->crosshostneeds);
         free (self->crosstargetneeds);
+        free (self->virtualpkgs);
 
         //  Free object itself
         free (self);
@@ -280,6 +282,12 @@ pkgimport_msg_dup (pkgimport_msg_t *other)
     pkgimport_msg_set_bootstrap (copy, pkgimport_msg_bootstrap (other));
     pkgimport_msg_set_restricted (copy, pkgimport_msg_restricted (other));
     pkgimport_msg_set_commithash (copy, pkgimport_msg_commithash (other));
+    {
+        const char *str = pkgimport_msg_virtualpkgs(other);
+        if (str) {
+            pkgimport_msg_set_virtualpkgs(copy, str);
+        }
+    }
 
     return copy;
 }
@@ -626,6 +634,19 @@ pkgimport_msg_recv (pkgimport_msg_t *self, zsock_t *input)
             GET_STRING (self->commithash);
             break;
 
+        case PKGIMPORT_MSG_HEREVIRTUALPKGS:
+            {
+                char proto_version [256];
+                GET_STRING (proto_version);
+                if (strneq (proto_version, "READ00")) {
+                    zsys_warning ("pkgimport_msg: proto_version is invalid");
+                    rc = -2;    //  Malformed
+                    goto malformed;
+                }
+            }
+            GET_LONGSTR (self->virtualpkgs);
+            break;
+
         default:
             zsys_warning ("pkgimport_msg: bad message ID");
             rc = -2;            //  Malformed
@@ -748,6 +769,12 @@ pkgimport_msg_send (pkgimport_msg_t *self, zsock_t *output)
         case PKGIMPORT_MSG_WESEEHASH:
             frame_size += 1 + strlen ("READ00");
             frame_size += 1 + strlen (self->commithash);
+            break;
+        case PKGIMPORT_MSG_HEREVIRTUALPKGS:
+            frame_size += 1 + strlen ("READ00");
+            frame_size += 4;
+            if (self->virtualpkgs)
+                frame_size += strlen (self->virtualpkgs);
             break;
     }
     //  Now serialize message into the frame
@@ -879,6 +906,15 @@ pkgimport_msg_send (pkgimport_msg_t *self, zsock_t *output)
         case PKGIMPORT_MSG_WESEEHASH:
             PUT_STRING ("READ00");
             PUT_STRING (self->commithash);
+            break;
+
+        case PKGIMPORT_MSG_HEREVIRTUALPKGS:
+            PUT_STRING ("READ00");
+            if (self->virtualpkgs) {
+                PUT_LONGSTR (self->virtualpkgs);
+            }
+            else
+                PUT_NUMBER4 (0);    //  Empty string
             break;
 
     }
@@ -1037,6 +1073,15 @@ pkgimport_msg_print (pkgimport_msg_t *self)
             zsys_debug ("    commithash='%s'", self->commithash);
             break;
 
+        case PKGIMPORT_MSG_HEREVIRTUALPKGS:
+            zsys_debug ("PKGIMPORT_MSG_HEREVIRTUALPKGS:");
+            zsys_debug ("    proto_version=read00");
+            if (self->virtualpkgs)
+                zsys_debug ("    virtualpkgs='%s'", self->virtualpkgs);
+            else
+                zsys_debug ("    virtualpkgs=");
+            break;
+
     }
 }
 
@@ -1149,6 +1194,9 @@ pkgimport_msg_command (pkgimport_msg_t *self)
             break;
         case PKGIMPORT_MSG_WESEEHASH:
             return ("WESEEHASH");
+            break;
+        case PKGIMPORT_MSG_HEREVIRTUALPKGS:
+            return ("HEREVIRTUALPKGS");
             break;
     }
     return "?";
@@ -1391,6 +1439,26 @@ pkgimport_msg_set_commithash (pkgimport_msg_t *self, const char *value)
         return;
     strncpy (self->commithash, value, 255);
     self->commithash [255] = 0;
+}
+
+
+//  --------------------------------------------------------------------------
+//  Get/set the virtualpkgs field
+
+const char *
+pkgimport_msg_virtualpkgs (pkgimport_msg_t *self)
+{
+    assert (self);
+    return self->virtualpkgs;
+}
+
+void
+pkgimport_msg_set_virtualpkgs (pkgimport_msg_t *self, const char *value)
+{
+    assert (self);
+    assert (value);
+    free (self->virtualpkgs);
+    self->virtualpkgs = strdup (value);
 }
 
 
@@ -1678,6 +1746,18 @@ pkgimport_msg_test (bool verbose)
         pkgimport_msg_recv (self, input);
         assert (pkgimport_msg_routing_id (self));
         assert (streq (pkgimport_msg_commithash (self), "Life is short but Now lasts for ever"));
+    }
+    pkgimport_msg_set_id (self, PKGIMPORT_MSG_HEREVIRTUALPKGS);
+
+    pkgimport_msg_set_virtualpkgs (self, "Life is short but Now lasts for ever");
+    //  Send twice
+    pkgimport_msg_send (self, output);
+    pkgimport_msg_send (self, output);
+
+    for (instance = 0; instance < 2; instance++) {
+        pkgimport_msg_recv (self, input);
+        assert (pkgimport_msg_routing_id (self));
+        assert (streq (pkgimport_msg_virtualpkgs (self), "Life is short but Now lasts for ever"));
     }
 
     pkgimport_msg_destroy (&self);

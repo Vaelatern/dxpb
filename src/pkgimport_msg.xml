@@ -60,4 +60,7 @@
 	<message name = "WESEEHASH"      id = "22" >
 		<field name = "commithash" type = "string">Hash of git HEAD as seen by persistent storage</field>
 	</message>
+	<message name = "HEREVIRTUALPKGS" id = "23" >
+		<field name = "virtualpkgs" type = "longstr" />
+	</message>
 </class>

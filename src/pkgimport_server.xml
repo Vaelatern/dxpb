@@ -98,6 +98,8 @@
 			</action>
 		</event>
 		<event name = "send stable">
+			<action name = "attempt to read virtualpkgs in" />
+			<action name = "send" message = "HEREVIRTUALPKGS" />
 			<action name = "set commithash" />
 			<action name = "send" message = "STABLE" />
 		</event>

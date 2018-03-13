@@ -174,6 +174,8 @@ bdot_toplevel_from_graph(bgraph grph)
 
 	/* First pass. Need all the nodes before I can make edges */
 	for (arch = zhash_first(grph); arch; arch = zhash_next(grph)) {
+		if (bpkg_enum_lookup(zhash_cursor(grph)) == ARCH_NUM_MAX)
+			continue;
 		archname = strdup(zhash_cursor(grph));
 		perarch = agsubg(rV, archname, 1);
 		free(archname);

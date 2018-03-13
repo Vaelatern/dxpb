@@ -137,7 +137,7 @@ digraph "pkgimport_server" {
  "grapher stablestatusplz" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">stablestatusplz</font></td></tr><tr><td align="left" port="r3">respond specifying stability</td></tr></table>>];
  "grapher" -> "grapher stablestatusplz";
  "grapher stablestatusplz" -> "grapher";
- "grapher send stable" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">send stable</font></td></tr><tr><td align="left" port="r3">set commithash</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "grapher send stable" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">send stable</font></td></tr><tr><td align="left" port="r3">attempt to read virtualpkgs in</td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">set commithash</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "grapher" -> "grapher send stable";
  "grapher send stable" -> "grapher";
  "grapher send unstable" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">send unstable</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
