@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.12.5 - 2018-03-05 - The Next One
+## 0.0.13 - 2018-03-13 - The one where build logs don't cause faults
 ### Overview
 - A late-joining grapher now gets told about worker state. Does not yet get
   a dump of present worker state.
@@ -8,6 +8,8 @@
   correctness of certain templates.
 - The package deletion case no longer causes the pkgimport-master to crash.
 - The bworker library supports knowledge of subgroup addresses.
+- Log routing to the logging agent is now possible without crashing. Logs are
+  placed in $pkgname/$version/$arch format.
 
 ## 0.0.12 - 2018-03-03 - The one which probably works now
 ### Overview
