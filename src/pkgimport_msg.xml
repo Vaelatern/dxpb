@@ -11,30 +11,30 @@
 		<field name = "proto_version" type = "string" value = "READ00">Package Import Management Protocol Version 00</field>
 	</header>
 
-	<message name = "HELLO" />
-	<message name = "ROGER" />
-	<message name = "IFORGOTU" />
-	<message name = "RUREADY" />
-	<message name = "READY" />
-	<message name = "RESET" />
-	<message name = "INVALID" />
-	<message name = "RDY2WRK" />
-	<message name = "PING" />
-	<message name = "PLZREADALL" />
-	<message name = "IAMTHEGRAPHER" />
-	<message name = "KTHNKSBYE" />
-	<message name = "STABLESTATUSPLZ" />
-	<message name = "STOP" />
-	<message name = "TURNONTHENEWS">
+	<message name = "HELLO"          id = "1" />
+	<message name = "ROGER"          id = "2" />
+	<message name = "IFORGOTU"       id = "3" />
+	<message name = "RUREADY"        id = "4" />
+	<message name = "READY"          id = "5" />
+	<message name = "RESET"          id = "6" />
+	<message name = "INVALID"        id = "7" />
+	<message name = "RDY2WRK"        id = "8" />
+	<message name = "PING"           id = "9" />
+	<message name = "PLZREADALL"     id = "10" />
+	<message name = "IAMTHEGRAPHER"  id = "11" />
+	<message name = "KTHNKSBYE"      id = "12" />
+	<message name = "STABLESTATUSPLZ"id = "13" />
+	<message name = "STOP"           id = "14" />
+	<message name = "TURNONTHENEWS"  id = "15" >
 		Used to trigger a git fast forward and reading of new packages.
 	</message>
-	<message name = "PLZREAD">
+	<message name = "PLZREAD"         id = "16" >
 		<field name = "pkgname" type = "string" />
 	</message>
-	<message name = "DIDREAD">
+	<message name = "DIDREAD"         id = "17" >
 		<field name = "pkgname" type = "string" />
 	</message>
-	<message name = "PKGINFO">
+	<message name = "PKGINFO"         id = "18" >
 		<field name = "info_revision" type = "string" value = "00">Pkginfo Revision Within Protocol Version</field>
 		<field name = "pkgname" type = "string" />
 		<field name = "version" type = "string" />
@@ -48,16 +48,16 @@
 		<field name = "bootstrap" type = "number" size = "1"/>
 		<field name = "restricted" type = "number" size = "1"/>
 	</message>
-	<message name = "PKGDEL">
+	<message name = "PKGDEL"         id = "19" >
 		<field name = "pkgname" type = "string" />
 	</message>
-	<message name = "STABLE">
+	<message name = "STABLE"         id = "20" >
 		<field name = "commithash" type = "string">Hash corresponding to git HEAD</field>
 	</message>
-	<message name = "UNSTABLE">
+	<message name = "UNSTABLE"       id = "21" >
 		<field name = "commithash" type = "string" value = "">Empty field to mean "No"</field>
 	</message>
-	<message name = "WESEEHASH">
+	<message name = "WESEEHASH"      id = "22" >
 		<field name = "commithash" type = "string">Hash of git HEAD as seen by persistent storage</field>
 	</message>
 </class>

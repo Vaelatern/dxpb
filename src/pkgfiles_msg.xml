@@ -11,37 +11,37 @@
 		<field name = "proto_version" type = "string" value = "DPKG00">DXPB PKG Management Protocol Version 00</field>
 	</header>
 
-	<message name = "HELLO" />
-	<message name = "ROGER" />
-	<message name = "IFORGOTU" />
-	<message name = "PING" />
-	<message name = "INVALID" />
-	<message name = "PKGDEL">
+	<message name = "HELLO" id = "1" />
+	<message name = "ROGER" id = "2" />
+	<message name = "IFORGOTU" id = "3" />
+	<message name = "PING" id = "4" />
+	<message name = "INVALID" id = "5" />
+	<message name = "PKGDEL" id = "6">
 		<field name = "pkgname" type = "string" />
 	</message>
-	<message name = "PKGISDEL">
+	<message name = "PKGISDEL" id = "7">
 		<field name = "pkgname" type = "string" />
 	</message>
-	<message name = "WANNASHARE?">
+	<message name = "WANNASHARE?" id = "8">
 		<field name = "pkgname" type = "string" />
 		<field name = "version" type = "string" />
 		<field name = "arch" type = "string" />
 	</message>
-	<message name = "IWANNASHARE">
+	<message name = "IWANNASHARE" id = "9">
 		<field name = "pkgname" type = "string" />
 		<field name = "version" type = "string" />
 		<field name = "arch" type = "string" />
 		<field name = "checksum" type = "string" />
 	</message>
-	<message name = "IDONTWANNASHARE">
+	<message name = "IDONTWANNASHARE" id = "10">
 		<field name = "pkgname" type = "string" />
 		<field name = "version" type = "string" />
 		<field name = "arch" type = "string" />
 	</message>
-	<message name = "GIMMEGIMMEGIMME">
+	<message name = "GIMMEGIMMEGIMME" id = "11">
 		<!-- A man after midnight -->
 	</message>
-	<message name = "CHUNK">
+	<message name = "CHUNK" id = "12">
 		<field name = "validchunk" type = "number" size = "1" />
 		<field name = "pkgname" type = "string" />
 		<field name = "version" type = "string" />
@@ -53,17 +53,17 @@
 		<field name = "eof" type = "number" size = "1" />
 		<field name = "data" type = "chunk" />
 	</message>
-	<message name = "PKGNOTHERE">
+	<message name = "PKGNOTHERE" id = "13">
 		<field name = "pkgname" type = "string" />
 		<field name = "version" type = "string" />
 		<field name = "arch" type = "string" />
 	</message>
-	<message name = "PKGHERE">
+	<message name = "PKGHERE" id = "14">
 		<field name = "pkgname" type = "string" />
 		<field name = "version" type = "string" />
 		<field name = "arch" type = "string" />
 	</message>
-	<message name = "ISPKGHERE">
+	<message name = "ISPKGHERE" id = "15">
 		<field name = "pkgname" type = "string" />
 		<field name = "version" type = "string" />
 		<field name = "arch" type = "string" />
