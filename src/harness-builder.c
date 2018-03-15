@@ -111,7 +111,7 @@ run(const char *endpoint, const char *hostdir, const char *masterdir,
 	SETMSG(pkgname, msg, pkgname);
 	SETMSG(version, msg, version);
 	SETMSG(arch, msg, arch);
-	SEND(NEEDPKG, msg, graph);
+	SEND(WORKERCANHELP, msg, graph);
 
 	do {
 		SEND(ROGER, msg, graph);
@@ -138,7 +138,7 @@ run(const char *endpoint, const char *hostdir, const char *masterdir,
 	SETMSG(pkgname, msg, pkgname2);
 	SETMSG(version, msg, version2);
 	SETMSG(arch, msg, arch);
-	SEND(NEEDPKG, msg, graph);
+	SEND(WORKERCANHELP, msg, graph);
 
 	do {
 		SEND(ROGER, msg, graph);

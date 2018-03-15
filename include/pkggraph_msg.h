@@ -42,12 +42,6 @@
         proto_version       string      Package Graph Protocol Version 00
         pkgname             string
 
-    NEEDPKG -
-        proto_version       string      Package Graph Protocol Version 00
-        pkgname             string
-        version             string
-        arch                string
-
     ICANHELP -
         proto_version       string      Package Graph Protocol Version 00
         hostarch            string
@@ -119,7 +113,6 @@
 #define PKGGRAPH_MSG_PING                   5
 #define PKGGRAPH_MSG_STOP                   6
 #define PKGGRAPH_MSG_PKGDEL                 7
-#define PKGGRAPH_MSG_NEEDPKG                8
 #define PKGGRAPH_MSG_ICANHELP               9
 #define PKGGRAPH_MSG_WORKERCANHELP          10
 #define PKGGRAPH_MSG_FORGET_ABOUT_ME        11
@@ -193,18 +186,6 @@ const char *
 void
     pkggraph_msg_set_pkgname (pkggraph_msg_t *self, const char *value);
 
-//  Get/set the version field
-const char *
-    pkggraph_msg_version (pkggraph_msg_t *self);
-void
-    pkggraph_msg_set_version (pkggraph_msg_t *self, const char *value);
-
-//  Get/set the arch field
-const char *
-    pkggraph_msg_arch (pkggraph_msg_t *self);
-void
-    pkggraph_msg_set_arch (pkggraph_msg_t *self, const char *value);
-
 //  Get/set the hostarch field
 const char *
     pkggraph_msg_hostarch (pkggraph_msg_t *self);
@@ -240,6 +221,18 @@ uint32_t
     pkggraph_msg_check (pkggraph_msg_t *self);
 void
     pkggraph_msg_set_check (pkggraph_msg_t *self, uint32_t check);
+
+//  Get/set the version field
+const char *
+    pkggraph_msg_version (pkggraph_msg_t *self);
+void
+    pkggraph_msg_set_version (pkggraph_msg_t *self, const char *value);
+
+//  Get/set the arch field
+const char *
+    pkggraph_msg_arch (pkggraph_msg_t *self);
+void
+    pkggraph_msg_set_arch (pkggraph_msg_t *self, const char *value);
 
 //  Get a copy of the logs field
 zchunk_t *

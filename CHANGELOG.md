@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.13.1 - 2018-03-15 - The Next One
+### Overview
+- Builders no longer expect an obsoleted message instead of the correct
+  message. Also code was improved so this would no longer be a breaking change.
+
 ## 0.0.13 - 2018-03-13 - The one where build logs don't cause faults
 ### Overview
 - A late-joining grapher now gets told about worker state. Does not yet get

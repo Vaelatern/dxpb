@@ -133,9 +133,9 @@ digraph "pkggraph_worker" {
  "ready update bootstrap" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">update bootstrap</font></td></tr><tr><td align="left" port="r3">do bootstrap update</td></tr></table>>];
  "ready" -> "ready update bootstrap";
  "ready update bootstrap" -> "bootstrap regular";
- "ready needpkg" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">needpkg</font></td></tr></table>>];
- "ready" -> "ready needpkg";
- "ready needpkg" -> "working";
+ "ready workercanhelp" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">workercanhelp</font></td></tr></table>>];
+ "ready" -> "ready workercanhelp";
+ "ready workercanhelp" -> "working";
 
  "bootstrap regular" [shape = "doublecircle"];
  "bootstrap regular iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
@@ -159,9 +159,9 @@ digraph "pkggraph_worker" {
  "bootstrap regular set repopath" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">set repopath</font></td></tr><tr><td align="left" port="r3">set repopath to provided</td></tr></table>>];
  "bootstrap regular" -> "bootstrap regular set repopath";
  "bootstrap regular set repopath" -> "bootstrap regular";
- "bootstrap regular needpkg" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">needpkg</font></td></tr></table>>];
- "bootstrap regular" -> "bootstrap regular needpkg";
- "bootstrap regular needpkg" -> "bootstrap build wanted";
+ "bootstrap regular workercanhelp" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">workercanhelp</font></td></tr></table>>];
+ "bootstrap regular" -> "bootstrap regular workercanhelp";
+ "bootstrap regular workercanhelp" -> "bootstrap build wanted";
  "bootstrap regular bootstrap done" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">bootstrap done</font></td></tr></table>>];
  "bootstrap regular" -> "bootstrap regular bootstrap done";
  "bootstrap regular bootstrap done" -> "ready";

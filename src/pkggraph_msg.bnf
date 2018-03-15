@@ -1,6 +1,6 @@
 The following ABNF grammar defines the Package Graph Potocol:
 
-    pkggraph_msg    = *( HELLO | ROGER | IFORGOTU | INVALID | PING | STOP | PKGDEL | NEEDPKG | ICANHELP | WORKERCANHELP | FORGET-ABOUT-ME | RESETLOG | LOGHERE | UPDATE-BOOTSTRAP | JOB-ENDED | IMTHEGRAPHER | IAMSTORAGE | IMAWORKER | GRAPHREADY | GRAPHNOTREADY )
+    pkggraph_msg    = *( HELLO | ROGER | IFORGOTU | INVALID | PING | STOP | PKGDEL | ICANHELP | WORKERCANHELP | FORGET-ABOUT-ME | RESETLOG | LOGHERE | UPDATE-BOOTSTRAP | JOB-ENDED | IMTHEGRAPHER | IAMSTORAGE | IMAWORKER | GRAPHREADY | GRAPHNOTREADY )
 
     ;  No description
 
@@ -38,14 +38,6 @@ The following ABNF grammar defines the Package Graph Potocol:
     PKGDEL          = signature %d7 proto_version pkgname
     proto_version   = string                ; Package Graph Protocol Version 00
     pkgname         = string                ;
-
-    ;  No description
-
-    NEEDPKG         = signature %d8 proto_version pkgname version arch
-    proto_version   = string                ; Package Graph Protocol Version 00
-    pkgname         = string                ;
-    version         = string                ;
-    arch            = string                ;
 
     ;  No description
 

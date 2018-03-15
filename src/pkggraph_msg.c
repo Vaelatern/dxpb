@@ -36,14 +36,14 @@ struct _pkggraph_msg_t {
     byte *needle;                       //  Read/write pointer for serialization
     byte *ceiling;                      //  Valid upper limit for read pointer
     char pkgname [256];                 //  pkgname
-    char version [256];                 //  version
-    char arch [256];                    //  arch
     char hostarch [256];                //  hostarch
     char targetarch [256];              //  targetarch
     byte iscross;                       //  Strict servers might double check this.
     uint16_t cost;                      //  This should be 0 unless the builder is expensive or slow enough to warrant a lower priority when handing out work. If it's just really fast, then more builders are the answer, not a negative cost.
     uint16_t addr;                      //  addr
     uint32_t check;                     //  check
+    char version [256];                 //  version
+    char arch [256];                    //  arch
     zchunk_t *logs;                     //  Arbitrary text field to append to appropiate log file.
     byte cause;                         //  These are enumerated in bworker_end_status.h
 };
@@ -245,14 +245,14 @@ pkggraph_msg_dup (pkggraph_msg_t *other)
 
     // Copy the rest of the fields
     pkggraph_msg_set_pkgname (copy, pkggraph_msg_pkgname (other));
-    pkggraph_msg_set_version (copy, pkggraph_msg_version (other));
-    pkggraph_msg_set_arch (copy, pkggraph_msg_arch (other));
     pkggraph_msg_set_hostarch (copy, pkggraph_msg_hostarch (other));
     pkggraph_msg_set_targetarch (copy, pkggraph_msg_targetarch (other));
     pkggraph_msg_set_iscross (copy, pkggraph_msg_iscross (other));
     pkggraph_msg_set_cost (copy, pkggraph_msg_cost (other));
     pkggraph_msg_set_addr (copy, pkggraph_msg_addr (other));
     pkggraph_msg_set_check (copy, pkggraph_msg_check (other));
+    pkggraph_msg_set_version (copy, pkggraph_msg_version (other));
+    pkggraph_msg_set_arch (copy, pkggraph_msg_arch (other));
     {
         zchunk_t *dup_chunk = zchunk_dup (pkggraph_msg_logs (other));
         pkggraph_msg_set_logs (copy, &dup_chunk);
@@ -389,21 +389,6 @@ pkggraph_msg_recv (pkggraph_msg_t *self, zsock_t *input)
                 }
             }
             GET_STRING (self->pkgname);
-            break;
-
-        case PKGGRAPH_MSG_NEEDPKG:
-            {
-                char proto_version [256];
-                GET_STRING (proto_version);
-                if (strneq (proto_version, "GRPH00")) {
-                    zsys_warning ("pkggraph_msg: proto_version is invalid");
-                    rc = -2;    //  Malformed
-                    goto malformed;
-                }
-            }
-            GET_STRING (self->pkgname);
-            GET_STRING (self->version);
-            GET_STRING (self->arch);
             break;
 
         case PKGGRAPH_MSG_ICANHELP:
@@ -640,12 +625,6 @@ pkggraph_msg_send (pkggraph_msg_t *self, zsock_t *output)
             frame_size += 1 + strlen ("GRPH00");
             frame_size += 1 + strlen (self->pkgname);
             break;
-        case PKGGRAPH_MSG_NEEDPKG:
-            frame_size += 1 + strlen ("GRPH00");
-            frame_size += 1 + strlen (self->pkgname);
-            frame_size += 1 + strlen (self->version);
-            frame_size += 1 + strlen (self->arch);
-            break;
         case PKGGRAPH_MSG_ICANHELP:
             frame_size += 1 + strlen ("GRPH00");
             frame_size += 1 + strlen (self->hostarch);
@@ -747,13 +726,6 @@ pkggraph_msg_send (pkggraph_msg_t *self, zsock_t *output)
         case PKGGRAPH_MSG_PKGDEL:
             PUT_STRING ("GRPH00");
             PUT_STRING (self->pkgname);
-            break;
-
-        case PKGGRAPH_MSG_NEEDPKG:
-            PUT_STRING ("GRPH00");
-            PUT_STRING (self->pkgname);
-            PUT_STRING (self->version);
-            PUT_STRING (self->arch);
             break;
 
         case PKGGRAPH_MSG_ICANHELP:
@@ -888,14 +860,6 @@ pkggraph_msg_print (pkggraph_msg_t *self)
             zsys_debug ("PKGGRAPH_MSG_PKGDEL:");
             zsys_debug ("    proto_version=grph00");
             zsys_debug ("    pkgname='%s'", self->pkgname);
-            break;
-
-        case PKGGRAPH_MSG_NEEDPKG:
-            zsys_debug ("PKGGRAPH_MSG_NEEDPKG:");
-            zsys_debug ("    proto_version=grph00");
-            zsys_debug ("    pkgname='%s'", self->pkgname);
-            zsys_debug ("    version='%s'", self->version);
-            zsys_debug ("    arch='%s'", self->arch);
             break;
 
         case PKGGRAPH_MSG_ICANHELP:
@@ -1052,9 +1016,6 @@ pkggraph_msg_command (pkggraph_msg_t *self)
         case PKGGRAPH_MSG_PKGDEL:
             return ("PKGDEL");
             break;
-        case PKGGRAPH_MSG_NEEDPKG:
-            return ("NEEDPKG");
-            break;
         case PKGGRAPH_MSG_ICANHELP:
             return ("ICANHELP");
             break;
@@ -1114,50 +1075,6 @@ pkggraph_msg_set_pkgname (pkggraph_msg_t *self, const char *value)
         return;
     strncpy (self->pkgname, value, 255);
     self->pkgname [255] = 0;
-}
-
-
-//  --------------------------------------------------------------------------
-//  Get/set the version field
-
-const char *
-pkggraph_msg_version (pkggraph_msg_t *self)
-{
-    assert (self);
-    return self->version;
-}
-
-void
-pkggraph_msg_set_version (pkggraph_msg_t *self, const char *value)
-{
-    assert (self);
-    assert (value);
-    if (value == self->version)
-        return;
-    strncpy (self->version, value, 255);
-    self->version [255] = 0;
-}
-
-
-//  --------------------------------------------------------------------------
-//  Get/set the arch field
-
-const char *
-pkggraph_msg_arch (pkggraph_msg_t *self)
-{
-    assert (self);
-    return self->arch;
-}
-
-void
-pkggraph_msg_set_arch (pkggraph_msg_t *self, const char *value)
-{
-    assert (self);
-    assert (value);
-    if (value == self->arch)
-        return;
-    strncpy (self->arch, value, 255);
-    self->arch [255] = 0;
 }
 
 
@@ -1274,6 +1191,50 @@ pkggraph_msg_set_check (pkggraph_msg_t *self, uint32_t check)
 {
     assert (self);
     self->check = check;
+}
+
+
+//  --------------------------------------------------------------------------
+//  Get/set the version field
+
+const char *
+pkggraph_msg_version (pkggraph_msg_t *self)
+{
+    assert (self);
+    return self->version;
+}
+
+void
+pkggraph_msg_set_version (pkggraph_msg_t *self, const char *value)
+{
+    assert (self);
+    assert (value);
+    if (value == self->version)
+        return;
+    strncpy (self->version, value, 255);
+    self->version [255] = 0;
+}
+
+
+//  --------------------------------------------------------------------------
+//  Get/set the arch field
+
+const char *
+pkggraph_msg_arch (pkggraph_msg_t *self)
+{
+    assert (self);
+    return self->arch;
+}
+
+void
+pkggraph_msg_set_arch (pkggraph_msg_t *self, const char *value)
+{
+    assert (self);
+    assert (value);
+    if (value == self->arch)
+        return;
+    strncpy (self->arch, value, 255);
+    self->arch [255] = 0;
 }
 
 
@@ -1432,22 +1393,6 @@ pkggraph_msg_test (bool verbose)
         pkggraph_msg_recv (self, input);
         assert (pkggraph_msg_routing_id (self));
         assert (streq (pkggraph_msg_pkgname (self), "Life is short but Now lasts for ever"));
-    }
-    pkggraph_msg_set_id (self, PKGGRAPH_MSG_NEEDPKG);
-
-    pkggraph_msg_set_pkgname (self, "Life is short but Now lasts for ever");
-    pkggraph_msg_set_version (self, "Life is short but Now lasts for ever");
-    pkggraph_msg_set_arch (self, "Life is short but Now lasts for ever");
-    //  Send twice
-    pkggraph_msg_send (self, output);
-    pkggraph_msg_send (self, output);
-
-    for (instance = 0; instance < 2; instance++) {
-        pkggraph_msg_recv (self, input);
-        assert (pkggraph_msg_routing_id (self));
-        assert (streq (pkggraph_msg_pkgname (self), "Life is short but Now lasts for ever"));
-        assert (streq (pkggraph_msg_version (self), "Life is short but Now lasts for ever"));
-        assert (streq (pkggraph_msg_arch (self), "Life is short but Now lasts for ever"));
     }
     pkggraph_msg_set_id (self, PKGGRAPH_MSG_ICANHELP);
 

@@ -55,13 +55,13 @@
 		<event name = "UPDATE BOOTSTRAP" next = "bootstrap regular">
 			<action name = "do bootstrap update" />
 		</event>
-		<event name = "NEEDPKG" next = "working">
+		<event name = "WORKERCANHELP" next = "working">
 			no-op
 		</event>
 	</state>
 
 	<state name = "bootstrap regular" inherit = "defaults">
-		<event name = "NEEDPKG" next = "bootstrap build wanted" />
+		<event name = "WORKERCANHELP" next = "bootstrap build wanted" />
 		<event name = "bootstrap done" next = "ready" />
 	</state>
 

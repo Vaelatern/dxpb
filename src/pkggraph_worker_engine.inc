@@ -39,7 +39,7 @@ typedef enum {
     roger_event = 5,
     bootstrap_done_event = 6,
     update_bootstrap_event = 7,
-    needpkg_event = 8,
+    workercanhelp_event = 8,
     expired_event = 9,
     job_ended_event = 10,
     iforgotu_event = 11,
@@ -74,7 +74,7 @@ s_event_name [] = {
     "ROGER",
     "bootstrap_done",
     "UPDATE_BOOTSTRAP",
-    "NEEDPKG",
+    "WORKERCANHELP",
     "expired",
     "JOB_ENDED",
     "IFORGOTU",
@@ -387,8 +387,8 @@ s_protocol_event (s_client_t *self, pkggraph_msg_t *message)
         case PKGGRAPH_MSG_INVALID:
             return invalid_event;
             break;
-        case PKGGRAPH_MSG_NEEDPKG:
-            return needpkg_event;
+        case PKGGRAPH_MSG_WORKERCANHELP:
+            return workercanhelp_event;
             break;
         case PKGGRAPH_MSG_UPDATE_BOOTSTRAP:
             return update_bootstrap_event;
@@ -951,7 +951,7 @@ s_client_execute (s_client_t *self, event_t event)
                         self->state = bootstrap_regular_state;
                 }
                 else
-                if (self->event == needpkg_event) {
+                if (self->event == workercanhelp_event) {
                     if (!self->exception)
                         self->state = working_state;
                     if (!self->exception) {
@@ -1065,7 +1065,7 @@ s_client_execute (s_client_t *self, event_t event)
                 break;
 
             case bootstrap_regular_state:
-                if (self->event == needpkg_event) {
+                if (self->event == workercanhelp_event) {
                     if (!self->exception)
                         self->state = bootstrap_build_wanted_state;
                 }

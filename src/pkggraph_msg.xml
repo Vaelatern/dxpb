@@ -13,23 +13,17 @@
 		</field>
 	</header>
 
-	<message name = "HELLO" />
-	<message name = "ROGER" />
-	<message name = "IFORGOTU" />
-	<message name = "INVALID" />
-	<message name = "PING" />
-	<message name = "STOP" />
-	<message name = "PKGDEL">
+	<message name = "HELLO"    id = "1" />
+	<message name = "ROGER"    id = "2" />
+	<message name = "IFORGOTU" id = "3" />
+	<message name = "INVALID"  id = "4" />
+	<message name = "PING"     id = "5" />
+	<message name = "STOP"     id = "6" />
+	<message name = "PKGDEL"   id = "7" >
 		<field name = "pkgname" type = "string" />
 	</message>
 
-	<message name = "NEEDPKG">
-		<field name = "pkgname" type = "string" />
-		<field name = "version" type = "string" />
-		<field name = "arch" type = "string" />
-	</message>
-
-	<message name = "ICANHELP">
+	<message name = "ICANHELP" id = "9">
 		<field name = "hostarch" type = "string" />
 		<field name = "targetarch" type = "string" />
 		<field name = "iscross" type = "number" size = "1">
@@ -42,7 +36,7 @@
 		<field name = "check" type = "number" size = "4" />
 	</message>
 
-	<message name = "WORKERCANHELP">
+	<message name = "WORKERCANHELP" id = "10">
 		<field name = "addr" type = "number" size = "2" />
 		<field name = "check" type = "number" size = "4" />
 		<field name = "pkgname" type = "string" />
@@ -51,19 +45,19 @@
 	</message>
 
 	<!--- Don't don't don't don't you --->
-	<message name = "FORGET ABOUT ME">
+	<message name = "FORGET ABOUT ME" id = "11">
 		<!--- I'll be alone. Dancing, you know it baby --->
 		<field name = "addr" type = "number" size = "2" />
 		<field name = "check" type = "number" size = "4" />
 	</message>
 
-	<message name = "RESETLOG">
+	<message name = "RESETLOG" id = "12">
 		<field name = "pkgname" type = "string" />
 		<field name = "version" type = "string" />
 		<field name = "arch" type = "string" />
 	</message>
 
-	<message name = "LOGHERE">
+	<message name = "LOGHERE" id = "13">
 		<field name = "pkgname" type = "string" />
 		<field name = "version" type = "string" />
 		<field name = "arch" type = "string" />
@@ -72,11 +66,11 @@
 		</field>
 	</message>
 
-	<message name = "UPDATE BOOTSTRAP">
+	<message name = "UPDATE BOOTSTRAP" id = "14">
 		Useful for when a bootstrap package has been upgraded.
 	</message>
 
-	<message name = "JOB ENDED">
+	<message name = "JOB ENDED" id = "15">
 		For any reason.
 		<field name = "addr" type = "number" size = "2" />
 		<field name = "check" type = "number" size = "4" />
@@ -88,9 +82,9 @@
 		<field name = "arch" type = "string" />
 	</message>
 
-	<message name = "IMTHEGRAPHER" />
-	<message name = "IAMSTORAGE" />
-	<message name = "IMAWORKER" />
-	<message name = "GRAPHREADY" />
-	<message name = "GRAPHNOTREADY" />
+	<message name = "IMTHEGRAPHER" id = "16"/ >
+	<message name = "IAMSTORAGE" id = "17"/ >
+	<message name = "IMAWORKER" id = "18"/ >
+	<message name = "GRAPHREADY" id = "19"/ >
+	<message name = "GRAPHNOTREADY" id = "20" />
 </class>
