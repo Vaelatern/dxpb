@@ -14,6 +14,7 @@
 #include "pkggraph_msg.h"
 #include "bwords.h"
 #include "bxpkg.h"
+#include <bsd/stdlib.h>
 
 #include "dxpb-common.h"
 
@@ -53,6 +54,8 @@ run(const char *endpoint, const char *pubpoint, const char *ssldir)
 	assert(grphr);
 	assert(wrkr[0]);
 	assert(wrkr[1]);
+
+	zchunk_t *chunk;
 
 	rc = zsock_attach(storage, endpoint, false);
 	assert(rc == 0);
@@ -197,6 +200,16 @@ run(const char *endpoint, const char *pubpoint, const char *ssldir)
 		ASSERTMSGSTR(pkgname, msg, "foo");
 		ASSERTMSGSTR(version, msg, "0.0.1");
 		ASSERTMSGSTR(arch, msg, pkg_archs_str[ARCH_X86_64 + i]);
+		while (arc4random() % 100 != 0) {
+			uint32_t chunkdata = arc4random();
+			chunk = zchunk_new(&chunkdata, sizeof(chunkdata));
+			zchunk_t *tmpchunk = zchunk_dup(chunk);
+			SETMSG(logs, msg, &tmpchunk);
+			SEND(TOMSG(LOGHERE), wrkr[i]);
+			GET(msg, storage);
+			assert(*(zchunk_data(pkggraph_msg_logs(msg))) ==
+					*(zchunk_data(chunk)));
+		}
 	}
 
 	/* Work over, let's clean up. */

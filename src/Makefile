@@ -243,6 +243,7 @@ harness-builder: harness-builder.o pkggraph_msg.o
 
 harness-builder2: harness-builder2.o pkggraph_msg.o
 
+harness-frontend: LDLIBS += -lbsd
 harness-frontend: harness-frontend.o pkggraph_msg.o bxpkg.o
 
 $(HARNESSES): dxpb-common.o bfs.o bstring.o dxpb-client.o
