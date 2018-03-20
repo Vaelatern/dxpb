@@ -627,17 +627,6 @@ remove_worker (client_t *self)
 			pkggraph_msg_addr(self->message),
 			pkggraph_msg_check(self->message));
 
-	/* Handling for a possibly absent grapher */
-	struct memo *memo = malloc(sizeof(struct memo));
-	if (!memo) {
-		perror("Can't even write a memo");
-		exit(ERR_CODE_NOMEM);
-	}
-	memo->msgid = PKGGRAPH_MSG_FORGET_ABOUT_ME;
-	memo->addr = wrkr->myaddr;
-	memo->check = wrkr->mycheck;
-	zlist_append(self->server->memos_to_grapher, memo);
-
 	bworker_group_remove(wrkr);
 	if (self->server->pub) {
 		zstr_sendm(self->server->pub, "TRACE");
@@ -743,4 +732,28 @@ assert_is_storage (client_t *self)
 {
 	if (self->server->storage != self)
 		engine_set_exception(self, killmenow_event);
+}
+
+
+//  ---------------------------------------------------------------------------
+//  tell_grapher_to_forget_worker
+//
+
+static void
+tell_grapher_to_forget_worker (client_t *self)
+{
+	struct bworker *wrkr = bworker_from_remote_addr(self->server->workers,
+			pkggraph_msg_addr(self->message),
+			pkggraph_msg_check(self->message));
+
+	/* Handling for a possibly absent grapher */
+	struct memo *memo = malloc(sizeof(struct memo));
+	if (!memo) {
+		perror("Can't even write a memo");
+		exit(ERR_CODE_NOMEM);
+	}
+	memo->msgid = PKGGRAPH_MSG_FORGET_ABOUT_ME;
+	memo->addr = wrkr->addr;
+	memo->check = wrkr->mycheck;
+	zlist_append(self->server->memos_to_grapher, memo);
 }

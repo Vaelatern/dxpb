@@ -200,6 +200,10 @@ static void
 static void
     register_worker_as_ready_to_help (client_t *self);
 static void
+    notify_grapher_if_he_s_around (client_t *self);
+static void
+    tell_grapher_to_forget_worker (client_t *self);
+static void
     remove_worker (client_t *self);
 static void
     transform_worker_job_for_assignment (client_t *self);
@@ -1016,6 +1020,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == forget_about_me_event) {
+                    if (!self->exception) {
+                        //  tell grapher to forget worker
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ tell grapher to forget worker", self->log_prefix);
+                        tell_grapher_to_forget_worker (&self->client);
+                    }
                     if (!self->exception) {
                         //  remove worker
                         if (self->server->verbose)
