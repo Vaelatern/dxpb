@@ -367,9 +367,12 @@ act_on_job_return (client_t *self)
 		perror("Can't even write a memo");
 		exit(ERR_CODE_NOMEM);
 	}
+	struct bworker *wrkr = bworker_from_remote_addr(self->server->workers,
+			pkggraph_msg_addr(self->message),
+			pkggraph_msg_check(self->message));
 	memo->msgid = PKGGRAPH_MSG_JOB_ENDED;
-	memo->addr = pkggraph_msg_addr(self->message);
-	memo->check = pkggraph_msg_check(self->message);
+	memo->addr = wrkr->myaddr;
+	memo->check = wrkr->mycheck;
 	memo->cause = pkggraph_msg_cause(self->message);
 	memo->pkgname= strdup(pkggraph_msg_pkgname(self->message));
 	memo->version= strdup(pkggraph_msg_version(self->message));
@@ -753,7 +756,7 @@ tell_grapher_to_forget_worker (client_t *self)
 		exit(ERR_CODE_NOMEM);
 	}
 	memo->msgid = PKGGRAPH_MSG_FORGET_ABOUT_ME;
-	memo->addr = wrkr->addr;
+	memo->addr = wrkr->myaddr;
 	memo->check = wrkr->mycheck;
 	zlist_append(self->server->memos_to_grapher, memo);
 }
