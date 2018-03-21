@@ -1,9 +1,9 @@
 # Changelog
 
-## 0.0.13.1 - 2018-03-15 - The Next One
+## 0.0.13.2 - 2018-03-21 - The Next One
 ### Overview
-- Builders no longer expect an obsoleted message instead of the correct
-  message.
+- Builders now expect what the frontend will tell them.
+- The frontend now properly propegates addresses to and from the grapher.
 
 ## 0.0.13 - 2018-03-13 - The one where build logs don't cause faults
 ### Overview
