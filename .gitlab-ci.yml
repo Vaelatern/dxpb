@@ -1,13 +1,9 @@
-image: voidlinux/voidlinux
+image: dxpb/dev
 stages:
   - build
   - test
 
 before_script:
-  - xbps-install -Sy xz
-  - xbps-uhelper fetch https://repo.voidlinux.eu/static/xbps-static-latest.x86_64-musl.tar.xz
-  - tar -xf xbps-static-latest.x86_64-musl.tar.xz
-  - export PATH="$(pwd)/usr/bin:$PATH"
   - xbps-install -Sy
   - xbps-install -yu
   - xbps-install -yu
