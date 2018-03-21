@@ -141,8 +141,6 @@ run(const char *endpoint, const char *pubpoint, const char *ssldir)
 	SETMSG(addr, msg, 0);
 	SETMSG(check, msg, 0);
 	SEND(TOMSG(ICANHELP), wrkr[0]);
-	SETMSG(targetarch, msg, pkg_archs_str[ARCH_X86_64_MUSL]);
-	SEND(TOMSG(ICANHELP), wrkr[1]);
 
 	SEND(TOMSG(HELLO), grphr);
 	GET(msg, grphr);
@@ -152,12 +150,23 @@ run(const char *endpoint, const char *pubpoint, const char *ssldir)
 	GET(msg, grphr);
 	ASSERTMSG(id, msg, TOMSG(ROGER));
 
-	for (i = 0; i < 2; i++) {
-		GET(msg, grphr);
-		ASSERTMSG(id, msg, TOMSG(ICANHELP));
-		ASSERTMSGSTR(targetarch, msg, pkg_archs_str[ARCH_X86_64 + i]);
-		checks[i] = pkggraph_msg_check(msg);
-	}
+	GET(msg, grphr);
+	ASSERTMSG(id, msg, TOMSG(ICANHELP));
+	ASSERTMSGSTR(targetarch, msg, pkg_archs_str[ARCH_X86_64]);
+	checks[0] = pkggraph_msg_check(msg);
+
+	SETMSG(hostarch, msg, pkg_archs_str[ARCH_X86_64]);
+	SETMSG(iscross, msg, 0);
+	SETMSG(cost, msg, 100);
+	SETMSG(addr, msg, 0);
+	SETMSG(check, msg, 0);
+	SETMSG(targetarch, msg, pkg_archs_str[ARCH_X86_64_MUSL]);
+	SEND(TOMSG(ICANHELP), wrkr[1]);
+
+	GET(msg, grphr);
+	ASSERTMSG(id, msg, TOMSG(ICANHELP));
+	ASSERTMSGSTR(targetarch, msg, pkg_archs_str[ARCH_X86_64_MUSL]);
+	checks[1] = pkggraph_msg_check(msg);
 
 	SEND(TOMSG(PING), storage);
 	GET(msg, storage);
