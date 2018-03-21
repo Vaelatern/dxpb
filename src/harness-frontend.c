@@ -159,6 +159,10 @@ run(const char *endpoint, const char *pubpoint, const char *ssldir)
 		checks[i] = pkggraph_msg_check(msg);
 	}
 
+	SEND(TOMSG(PING), storage);
+	GET(msg, storage);
+	ASSERTMSG(id, msg, TOMSG(ROGER));
+
 	SETMSG(pkgname, msg, "foo");
 	SETMSG(version, msg, "0.0.1");
 	SETMSG(arch, msg, pkg_archs_str[ARCH_X86_64_MUSL]);
@@ -209,7 +213,29 @@ run(const char *endpoint, const char *pubpoint, const char *ssldir)
 			GET(msg, storage);
 			assert(*(zchunk_data(pkggraph_msg_logs(msg))) ==
 					*(zchunk_data(chunk)));
+			GET(msg, wrkr[i]);
+			ASSERTMSG(id, msg, TOMSG(ROGER));
 		}
+	}
+
+	for (i = 0; i < 2; i++) {
+		SETMSG(pkgname, msg, "foo");
+		SETMSG(version, msg, "0.0.1");
+		SETMSG(arch, msg, pkg_archs_str[ARCH_X86_64 + i]);
+		SETMSG(check, msg, 0);
+		SETMSG(addr, msg, 0);
+		SETMSG(cause, msg, 0);
+		SEND(TOMSG(JOB_ENDED), wrkr[i]);
+	}
+
+	for (i = 0; i < 2; i++) {
+		GET(msg, grphr);
+		ASSERTMSGSTR(pkgname, msg, "foo");
+		ASSERTMSGSTR(version, msg, "0.0.1");
+		ASSERTMSGSTR(arch, msg, pkg_archs_str[ARCH_X86_64 + i]);
+		ASSERTMSG(check, msg, checks[i]);
+		ASSERTMSG(addr, msg, i);
+		ASSERTMSG(cause, msg, 0);
 	}
 
 	/* Work over, let's clean up. */

@@ -367,7 +367,7 @@ act_on_job_return (client_t *self)
 		perror("Can't even write a memo");
 		exit(ERR_CODE_NOMEM);
 	}
-	struct bworker *wrkr = bworker_from_remote_addr(self->server->workers,
+	struct bworker *wrkr = bworker_from_sub_remote_addr(self->subgroup,
 			pkggraph_msg_addr(self->message),
 			pkggraph_msg_check(self->message));
 	memo->msgid = PKGGRAPH_MSG_JOB_ENDED;
@@ -381,8 +381,9 @@ act_on_job_return (client_t *self)
 	assert(memo->version);
 	assert(memo->arch);
 	zlist_append(self->server->memos_to_grapher, memo);
-	bworker_job_remove(bworker_from_remote_addr(self->server->workers,
-				memo->addr, memo->check));
+	bworker_job_remove(bworker_from_sub_remote_addr(self->subgroup,
+			pkggraph_msg_addr(self->message),
+			pkggraph_msg_check(self->message)));
 }
 
 //  ---------------------------------------------------------------------------
@@ -745,7 +746,7 @@ assert_is_storage (client_t *self)
 static void
 tell_grapher_to_forget_worker (client_t *self)
 {
-	struct bworker *wrkr = bworker_from_remote_addr(self->server->workers,
+	struct bworker *wrkr = bworker_from_sub_remote_addr(self->subgroup,
 			pkggraph_msg_addr(self->message),
 			pkggraph_msg_check(self->message));
 

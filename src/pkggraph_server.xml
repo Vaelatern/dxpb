@@ -108,8 +108,8 @@
 		</event>
 		<event name = "JOB ENDED">
 			<action name = "act on job return" />
-			<action name = "notify grapher if he's around" />
 			<action name = "remove worker" />
+			<action name = "notify grapher if he's around" />
 		</event>
 		<event name = "LOGHERE">
 			<action name = "route log" />

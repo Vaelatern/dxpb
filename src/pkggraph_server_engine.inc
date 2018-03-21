@@ -200,8 +200,6 @@ static void
 static void
     register_worker_as_ready_to_help (client_t *self);
 static void
-    notify_grapher_if_he_s_around (client_t *self);
-static void
     tell_grapher_to_forget_worker (client_t *self);
 static void
     remove_worker (client_t *self);
@@ -1068,16 +1066,16 @@ s_client_execute (s_client_t *self, event_t event)
                         act_on_job_return (&self->client);
                     }
                     if (!self->exception) {
-                        //  notify grapher if he's around
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ notify grapher if he's around", self->log_prefix);
-                        notify_grapher_if_he_s_around (&self->client);
-                    }
-                    if (!self->exception) {
                         //  remove worker
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ remove worker", self->log_prefix);
                         remove_worker (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  notify grapher if he's around
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ notify grapher if he's around", self->log_prefix);
+                        notify_grapher_if_he_s_around (&self->client);
                     }
                 }
                 else
