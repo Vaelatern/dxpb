@@ -27,7 +27,7 @@ SVDIR = /etc/sv/
 GSL_BIN ?= gsl
 
 LOCAL_CFLAGS = -std=c11 -I../include/
-CFLAGS += -g -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Werror -O3 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -finstrument-functions
+CFLAGS += -g -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Werror -O3 -fstack-protector-strong -D_FORTIFY_SOURCE=2
 LDFLAGS ?= -fPIC -fPIE
 LDLIBS += -lzmq -lczmq
 
@@ -221,7 +221,7 @@ dxpb-frontend: dxpb-frontend.o pkggraph_msg.o bxpkg.o pkggraph_server.o bworker.
 
 dxpb-common.c: license.inc dxpb-version.h
 
-$(BINARIES): dxpb-common.o ptrace.o
+$(BINARIES): dxpb-common.o
 
 $(SUID_BINARIES): dxpb-common.o bstring.o bfs.o
 
