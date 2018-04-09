@@ -335,7 +335,7 @@ bxsrc_run_dumb_bootstrap(const char *xbps_src)
 	fds[0] = -1;
 	fds[1] = -1;
 	fds[2] = -1;
-	char *const args_bootstrap[] = {(char *)xbps_src, NULL};
+	char *const args_bootstrap[] = {(char *)xbps_src, "binary-bootstrap", NULL};
 	char *env[] = {NULL};
 
 	pid_t c_pid = bxsrc_init(xbps_src, fds, args_bootstrap, env, 1);

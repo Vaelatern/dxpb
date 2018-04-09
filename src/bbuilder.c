@@ -111,6 +111,7 @@ bbuilder_handle_build(zsock_t *pipe, struct builder *bd, const char *masterdir,
 
 	retVal = bxsrc_init_build(xbps_src, bd->name, bd->fds, masterdir,
 			hostdir, iscross? bpkg_enum_lookup(bd->arch) : ARCH_NUM_MAX);
+	assert(retVal);
 
 	goto end;
 abort:
