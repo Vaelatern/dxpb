@@ -47,7 +47,10 @@ bdot_from_graph_for_arch(bgraph grph, const char *archstr)
 	Agraph_t *perarch = NULL;
 	Agnode_t *node = NULL;
 
-	Agraph_t *rV = agopen("dxpb-pkgs", Agdirected, NULL);
+	char *graphname = strdup("dxpb-pkgs");
+	assert(graphname);
+	Agraph_t *rV = agopen(graphname, Agdirected, NULL);
+	FREE(graphname);
 
 	/* First pass. Need all the nodes before I can make edges */
 	for (arch = zhash_first(grph); arch; arch = zhash_next(grph)) {
@@ -104,7 +107,10 @@ bdot_from_graph(bgraph grph)
 	Agraph_t *perarch = NULL;
 	Agnode_t *node = NULL;
 
-	Agraph_t *rV = agopen("dxpb-pkgs", Agdirected, NULL);
+	char *graphname = strdup("dxpb-pkgs");
+	assert(graphname);
+	Agraph_t *rV = agopen(graphname, Agdirected, NULL);
+	FREE(graphname);
 
 	/* First pass. Need all the nodes before I can make edges */
 	for (arch = zhash_first(grph); arch; arch = zhash_next(grph)) {

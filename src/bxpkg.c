@@ -10,7 +10,7 @@
 #include "bwords.h"
 #include "bxpkg.h"
 
-char *pkg_archs_str[] = {
+const char *pkg_archs_str[] = {
 	"noarch",
 	"aarch64",
 	"aarch64-musl",

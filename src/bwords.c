@@ -30,7 +30,7 @@ qsort_strcmp(const void *a, const void *b)
 	if (a == b) return 0;
 	if (a == NULL) return 1;
 	if (b == NULL) return -1;
-	return strcmp(*((char **)a), *((char **)b));
+	return strcmp(*((char * const *)a), *((char * const *)b));
 }
 
 /* API */

@@ -26,7 +26,7 @@ enum pkg_archs {
 	ARCH_NUM_MAX
 };
 
-extern char *pkg_archs_str[];
+extern const char *pkg_archs_str[];
 
 struct arch {
 	enum	pkg_archs spec;

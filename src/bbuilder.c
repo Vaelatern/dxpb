@@ -195,7 +195,7 @@ jobstop:		 if (srcinstance != 0) {
 			switch(rc) {
 			case ERR_CODE_DONE:
 				rc = bxsrc_build_end(bd.fds, srcinstance);
-				zframe_t *frame = NULL;
+				frame = NULL;
 				if (rc == 0 && 0 == END_STATUS_OK)
 					action = BBUILDER_BUILT;
 				else

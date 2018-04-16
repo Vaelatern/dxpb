@@ -37,8 +37,8 @@ struct logchunk {
 
 struct memo {
 	int msgid;
-	char *hostarch;
-	char *targetarch;
+	const char *hostarch;
+	const char *targetarch;
 	uint16_t addr;
 	uint16_t cost;
 	uint32_t check;

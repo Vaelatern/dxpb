@@ -289,7 +289,7 @@ bxsrc_init_build(const char *xbps_src, const char *pkg_name, int *fds,
 {
 	assert(pkg_name[0]);
 	char *const args_with_cross[] = {(char *)xbps_src, "-1",
-		"-a", pkg_archs_str[target_arch], "-H", (char *)hostdir,
+		"-a", (char *)pkg_archs_str[target_arch], "-H", (char *)hostdir,
 		"-m", (char *)masterdir, "pkg", (char *)pkg_name, NULL};
 	char *const args_sans_cross[] = {(char *)xbps_src, "-1",
 		"-H", (char *)hostdir, "-m", (char *)masterdir,
@@ -388,10 +388,11 @@ bxsrc_init_read(const char *xbps_src, const char *pkg_name, int *fds,
 		enum pkg_archs host_arch, enum pkg_archs target_arch)
 {
 	assert(pkg_name[0]);
-	char *const args_with_cross[] = {(char *)xbps_src, "-a", pkg_archs_str[target_arch],
-			"-q", "-i", "show-pkg-var", (char *)pkg_name, NULL};
-	char *const args_sans_cross[] = {(char *)xbps_src, "-q", "-i", "show-pkg-var",
-			(char *)pkg_name, NULL};
+	char *const args_with_cross[] = {(char *)xbps_src, "-a",
+				(char *)pkg_archs_str[target_arch], "-q", "-i",
+				"show-pkg-var", (char *)pkg_name, NULL};
+	char *const args_sans_cross[] = {(char *)xbps_src, "-q", "-i",
+				"show-pkg-var", (char *)pkg_name, NULL};
 	char xbps_arch[30];
 	snprintf(xbps_arch, 30, "XBPS_ARCH=%s", pkg_archs_str[host_arch]);
 	char *env[] = {xbps_arch, NULL};
@@ -401,7 +402,7 @@ bxsrc_init_read(const char *xbps_src, const char *pkg_name, int *fds,
 }
 
 void
-bxsrc_ask(int fd, char *query)
+bxsrc_ask(int fd, const char *query)
 {
 	assert(fd && query[0]);
 	size_t query_len = strlen(query);
@@ -470,7 +471,7 @@ bxsrc_build_end(const int fds[], const pid_t c_pid)
 
 /* Returns 1 if it is set */
 char
-bxsrc_q_isset(int *fds, char *query)
+bxsrc_q_isset(int *fds, const char *query)
 {
 	assert(fds[0] && fds[1] && query[0]);
 	bxsrc_ask(fds[1], query);
@@ -488,7 +489,7 @@ bxsrc_q_isset(int *fds, char *query)
 }
 
 struct bwords *
-bxsrc_q_to_words(int *fds, char *query)
+bxsrc_q_to_words(int *fds, const char *query)
 {
 	assert(fds[0] && fds[1] && query[0]);
 	bxsrc_ask(fds[1], query);

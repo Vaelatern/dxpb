@@ -190,7 +190,7 @@ bgraph_new_need(const char *spec, struct pkg *pkg)
 
 /* Sends back haystacks */
 static void
-bgraph_pitchfork(bgraph grph, char *arch, zhash_t **hay, zhash_t **allhay,
+bgraph_pitchfork(bgraph grph, const char *arch, zhash_t **hay, zhash_t **allhay,
 				zhash_t **hosthay)
 {
 	assert(grph);
