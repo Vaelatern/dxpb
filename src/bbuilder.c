@@ -65,6 +65,7 @@ bbuilder_handle_log_request(zsock_t *pipe, struct builder *bd)
 		more = zchunk_size(log) == log_size;
 		assert(!(more && done));
 		total_size += zchunk_size(log);
+		printf("%.*s\n", zchunk_size(log), zchunk_data(log));
 		frame = zframe_new(&action, sizeof(action));
 		zframe_send(&frame, pipe, ZMQ_MORE);
 		rc = zsock_bsend(pipe, bbuilder_actions_picture[action],
@@ -156,6 +157,7 @@ bbuilder_agent(zsock_t *pipe, char *masterdir, char *hostdir, char *xbps_src)
 	while (!quit && (frame = zframe_recv(pipe)) && /* that is the blocking call */
 			zframe_size(frame) == sizeof(enum bbuilder_actions) &&
 			zsock_rcvmore(pipe)) {
+		printf("Going into the loop, srcinstance == %d\n", srcinstance);
 		switch(*(zframe_data(frame))) {
 		case BBUILDER_PING:
 			bbuilder_send(pipe, BBUILDER_ROGER, 0);

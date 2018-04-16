@@ -437,11 +437,13 @@ bxsrc_close(int fds[], pid_t c_pid)
 	/* Read all reading pipes to the end */
 	unset_fd_o_nonblock(fds[0]);
 	unset_fd_o_nonblock(fds[2]);
-	while (read(fds[0], buf, 79)) {
-		;
+	while (read(fds[0], buf, 78)) {
+		buf[79] = 0;
+		puts(buf);
 	}
-	while (read(fds[2], buf, 79)) {
-		;
+	while (read(fds[2], buf, 78)) {
+		buf[79] = 0;
+		puts(buf);
 	}
 	close(fds[0]);
 	close(fds[2]);
