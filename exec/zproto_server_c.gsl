@@ -15,8 +15,8 @@
 #   If proto_class has the 'virtual' flag set, the server will use the
 #   appropriate zmsg_t calls transparently
 
-include "zproto_lib.gsl"
-include "zproto_dot.gsl"
+include "../exec/zproto_lib.gsl"
+include "../exec/zproto_dot.gsl"
 resolve_includes ()
 generate_dot ()
 set_defaults ()

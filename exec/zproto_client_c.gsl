@@ -12,8 +12,8 @@
 #   License, v. 2.0. If a copy of the MPL was not distributed with this
 #   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-include "zproto_lib.gsl"
-include "zproto_dot.gsl"
+include "../exec/zproto_lib.gsl"
+include "../exec/zproto_dot.gsl"
 resolve_includes ()
 generate_dot ()
 set_defaults ()
