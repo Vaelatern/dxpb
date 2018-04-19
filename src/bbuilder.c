@@ -28,9 +28,7 @@ const char *bbuilder_actions_picture[] = {
 	"sss1", // pkg ver arch iscross
 	"1", // 0 until future usage
 	"1", // 0 until future usage
-	"sssc1", // pkg ver arch log more
-	"sss1", // 0 until future usage
-	"sss1", // failure_reason
+	"sssc111", // pkg ver arch log more built? build_ret_code
 	"1", // failure_reason
 	NULL
 };
@@ -46,15 +44,17 @@ struct builder {
 };
 
 #define LOG_SIZE 1024*16
-#define MAX_LOG_SIZE 1024*63
+#define MAX_LOG_SIZE 1024*64
 
-static enum ret_codes
-bbuilder_handle_log_request(zsock_t *pipe, struct builder *bd)
+static int
+bbuilder_handle_log_request(zsock_t *pipe, struct builder *bd, pid_t *srcinstance)
 {
 	zframe_t *frame;
 	int rc;
 	uint8_t more = 0;
 	int done = 0;
+	uint8_t sendDone = 0;
+	uint8_t buildStatus = 0;
 	zchunk_t *log;
 	uint32_t log_size, total_size = 0;
 	enum bbuilder_actions action = BBUILDER_LOG;
@@ -67,16 +67,20 @@ bbuilder_handle_log_request(zsock_t *pipe, struct builder *bd)
 		total_size += zchunk_size(log);
 		frame = zframe_new(&action, sizeof(action));
 		zframe_send(&frame, pipe, ZMQ_MORE);
+		if (done) {
+			sendDone = 1;
+			buildStatus = bxsrc_build_end(bd->fds, *srcinstance);
+			*srcinstance = 0;
+		}
 		rc = zsock_bsend(pipe, bbuilder_actions_picture[action],
-				bd->name, bd->ver, bd->arch, log, more);
+				bd->name, bd->ver, bd->arch, log, more,
+				sendDone, buildStatus);
 		zchunk_destroy(&log);
 		if (rc != 0)
 			return ERR_CODE_SADSOCK;
 	} while (more); // Done is automatically confirmed.
 
-	if (done)
-		return ERR_CODE_DONE;
-	return ERR_CODE_OK;
+	return done ? 1 : 0;
 }
 
 static pid_t
@@ -146,12 +150,10 @@ int
 bbuilder_agent(zsock_t *pipe, char *masterdir, char *hostdir, char *xbps_src)
 {
 	zframe_t *frame;
-	int rc;
 	struct builder bd;
 	pid_t srcinstance = 0;
 	int quit = 0;
 	int iscross = 0; // XXX: Currently unused
-	enum bbuilder_actions action;
 
 	while (!quit && (frame = zframe_recv(pipe)) && /* that is the blocking call */
 			zframe_size(frame) == sizeof(enum bbuilder_actions) &&
@@ -191,29 +193,10 @@ jobstop:		 if (srcinstance != 0) {
 				fprintf(stderr, "*** STATE WARNING *****\nRequest to give log when no build active\n**********\n");
 				break;
 			}
-			rc = bbuilder_handle_log_request(pipe, &bd);
-			switch(rc) {
-			case ERR_CODE_DONE:
-				rc = bxsrc_build_end(bd.fds, srcinstance);
-				frame = NULL;
-				if (rc == 0 && 0 == END_STATUS_OK)
-					action = BBUILDER_BUILT;
-				else
-					action = BBUILDER_BUILD_FAIL;
-				srcinstance = 0;
-				frame = zframe_new(&action, sizeof(action));
-				zframe_send(&frame, pipe, ZMQ_MORE);
-				rc = zsock_bsend(pipe, bbuilder_actions_picture[action],
-						bd.name, bd.ver, bd.arch, rc);
-				assert(rc == 0);
+			if (bbuilder_handle_log_request(pipe, &bd, &srcinstance))
 				goto jobstop;
-			default:
-				break;
-			}
 			break;
 		case BBUILDER_NOT_BUILDING:
-		case BBUILDER_BUILD_FAIL:
-		case BBUILDER_BUILT:
 		case BBUILDER_LOG:
 		case BBUILDER_BUILDING:
 		default:

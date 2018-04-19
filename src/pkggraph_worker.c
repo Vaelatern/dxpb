@@ -223,7 +223,8 @@ get_log_data (client_t *self)
 	zframe_t *frame = zframe_new(&action, sizeof(action));
 	zframe_send(&frame, self->provided_pipe, ZMQ_MORE);
 	zsock_bsend(self->provided_pipe, bbuilder_actions_picture[action], 0);
-	uint8_t more = 0, reason = 0;
+
+	uint8_t more = 0, buildEnd, buildEndCause;
 	zchunk_t *logs, *tmplogs;
 	char *tmppkgname, *tmpversion, *tmparch;
 	tmppkgname = tmpversion = tmparch = NULL;
@@ -234,26 +235,18 @@ get_log_data (client_t *self)
 		assert(zframe_size(frame) == sizeof(enum bbuilder_actions));
 		assert(zsock_rcvmore(self->provided_pipe));
 
-		action = *(zframe_data(frame));
-		switch(*(zframe_data(frame))) {
-		case BBUILDER_LOG:
-			action = BBUILDER_GIVE_LOG;
-			zsock_brecv(self->provided_pipe, "sssc1", &tmppkgname,
-					&tmpversion, &tmparch, &tmplogs, &more);
-			// must not free tmp* as they belong to zsock_brecv()
-			zchunk_extend(logs, zchunk_data(tmplogs), zchunk_size(tmplogs));
-			break;
-		case BBUILDER_BUILD_FAIL:
-			goto fallA;
-		case BBUILDER_BUILT:
-fallA:			zsock_brecv(self->provided_pipe, "sss1", &tmppkgname,
-					&tmpversion, &tmparch, &reason);
-			more = 0;
-			pkggraph_msg_set_cause(self->message, reason);
-			engine_set_next_event(self, job_ended_event);
-			break;
-		default:
+		if (*(zframe_data(frame)) != BBUILDER_LOG)
 			exit(ERR_CODE_BAD);
+		zsock_brecv(self->provided_pipe,
+				bbuilder_actions_picture[BBUILDER_LOG],
+				&tmppkgname, &tmpversion, &tmparch, &tmplogs,
+				&more, &buildEnd, &buildEndCause);
+		// must not free tmp* as they belong to zsock_brecv()
+		zchunk_extend(logs, zchunk_data(tmplogs), zchunk_size(tmplogs));
+		if (buildEnd) {
+			pkggraph_msg_set_cause(self->message, buildEndCause);
+			engine_set_next_event(self, job_ended_event);
+			assert(more == 0);
 		}
 	} while (more);
 
