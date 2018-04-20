@@ -310,7 +310,7 @@ install: install-bin install-doc install-license install-runit-scripts
 #### Maintenance  Targets ###
 #############################
 
-release: ../README.md ../CHANGELOG.md dxpb-version.txt
+gitrelease: ../README.md ../CHANGELOG.md dxpb-version.txt
 	git commit -m "$$(cat dxpb-version.txt)" ../
 	git tag -a $$(cat dxpb-version.txt) -m $$(cat dxpb-version.txt)
 
