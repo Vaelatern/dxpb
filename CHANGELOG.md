@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.15 - 2018-04-20 - The one which hotfixes the last release
+### Overview
+- release target is no longer overloaded with git commands
+
 ## 0.0.14 - 2018-04-20 - The one with improved state handling
 ### Overview
 - Builders now expect what the frontend will tell them.
