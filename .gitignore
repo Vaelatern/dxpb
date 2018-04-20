@@ -9,6 +9,7 @@ src/use*.c
 !dxpb-*.c
 !dxpb-*.h
 dxpb-version.h
+dxpb-version.txt
 !*.txt
 !*.inc
 !harness-*.c

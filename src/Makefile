@@ -105,7 +105,7 @@ OBJECTS = \
 	pkgimport_server.o \
 	ptrace.o
 
-.PHONY: all main test check_%
+.PHONY: all main test check_% release
 
 main: release prod
 
@@ -123,6 +123,8 @@ license.inc: ../COPYING
 
 dxpb-version.h: ../CHANGELOG.md
 	awk '/## [0-9]+\.[0-9]+\.[0-9]+[\.0-9]* -/ { print "#define DXPB_VERSION \"" $$2 "\""; exit }' ../CHANGELOG.md >dxpb-version.h
+dxpb-version.txt: ../CHANGELOG.md
+	awk '/## [0-9]+\.[0-9]+\.[0-9]+[\.0-9]* -/ { print $$2; exit }' ../CHANGELOG.md >dxpb-version.txt
 
 ../README.md: ../doc/dxpb.7
 	mandoc -T markdown ../doc/dxpb.7 >../README.md
@@ -303,6 +305,14 @@ install-runit-scripts: install-bin
 	cp -r ../runsv/* $(DESTDIR)$(SVDIR)
 
 install: install-bin install-doc install-license install-runit-scripts
+
+#############################
+#### Maintenance  Targets ###
+#############################
+
+release: ../README.md ../CHANGELOG.md dxpb-version.txt
+	git commit -m "$$(cat dxpb-version.txt)" ../
+	git tag -a $$(cat dxpb-version.txt) -m $$(cat dxpb-version.txt)
 
 ##################################
 #             EOF                #
