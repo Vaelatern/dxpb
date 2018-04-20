@@ -1,12 +1,12 @@
 # Changelog
 
-## 0.0.13.5 - 2018-03-21 - The Next One
+## 0.0.14 - 2018-04-20 - The one with improved state handling
 ### Overview
 - Builders now expect what the frontend will tell them.
 - The frontend now properly propegates addresses to and from the grapher.
 - Various cleanups of state.
 - Internal changes to simplify the build remote's messaging across a fork().
-  This definitely has increased state correctness.
+  This definitely has increased correctness of the builder.
 
 ## 0.0.13 - 2018-03-13 - The one where build logs don't cause faults
 ### Overview
