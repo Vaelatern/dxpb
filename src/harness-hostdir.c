@@ -205,6 +205,14 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 	SEND(TOMSG(ISPKGHERE), file_msg, file);
 	// test if we send multiple of these messages
 	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
+	SEND(TOMSG(ISPKGHERE), file_msg, file);
 
 	DOPINGRACE(file_msg, file);
 	DOPINGRACE(file_msg, file);
@@ -216,9 +224,9 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 	ASSERTMSGSTR(version, file_msg, DXPB_VERSION);
 	ASSERTMSGSTR(arch, file_msg, "noarch");
 
-	WRITEFILE(pkgpath3, 10000000);
-	WRITEFILE(pkgpath2, 10);
-	WRITEFILE(pkgpath4, LARGEST_SIZE);
+	WRITEFILE(pkgpath3, 1000000);
+	WRITEFILE(pkgpath2, LARGEST_SIZE);
+	WRITEFILE(pkgpath4, 10);
 	SEND(TOMSG(HELLO), file_msg, file);
 	GET(file_msg, file);
 	ASSERTMSG(id, file_msg, TOMSG(ROGER));
@@ -232,12 +240,6 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 	SETMSG(arch, file_msg, "x86_64");
 	SEND(TOMSG(ISPKGHERE), file_msg, file);
 
-	SETMSG(pkgname, file_msg, "");
-	SETMSG(version, file_msg, "");
-	SETMSG(arch, file_msg, "");
-
-	SETMSG(pkgname, file_msg, "bar");
-	SETMSG(version, file_msg, DXPB_VERSION);
 	SETMSG(arch, file_msg, "x86_64-musl");
 	SEND(TOMSG(ISPKGHERE), file_msg, file);
 	SETMSG(pkgname, file_msg, "");
