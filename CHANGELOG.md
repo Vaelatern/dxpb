@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.15.1 - 2018-04-30 - The one which chases the shadows away
+### Overview
+- The requests for file chunks are no longer vertically unbounded.
+
 ## 0.0.15 - 2018-04-20 - The one which hotfixes the last release
 ### Overview
 - release target is no longer overloaded with git commands

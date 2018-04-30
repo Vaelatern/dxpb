@@ -190,14 +190,10 @@ inline static uint32_t
 get_max_inflight(client_t *self)
 {
 	int peers = zhash_size(self->server->peering);
-	int quant = (self->server->max_fetch_slots * self->numfetchs) / peers;
 	if (peers == 0)
 		return 0;
 	else
-		assert(self->server->available_fetch_slots > 0);
-	return quant > self->server->available_fetch_slots ?
-			self->server->available_fetch_slots :
-			quant;
+		return (self->server->max_fetch_slots * self->numfetchs) / peers;
 }
 
 static void
@@ -1012,7 +1008,8 @@ ensure_configuration_is_set (client_t *self)
 static void
 say_we_want_more_if_we_do (client_t *self)
 {
-	if (get_max_inflight(self) > self->fetch_slots_inflight) {
+	if (get_max_inflight(self) > self->fetch_slots_inflight &&
+			self->server->available_fetch_slots > 0) {
 		self->fetch_slots_inflight++;
 		self->server->available_fetch_slots--;
 		engine_set_next_event(self, i_want_more_event);
