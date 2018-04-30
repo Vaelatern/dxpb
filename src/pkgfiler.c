@@ -190,10 +190,14 @@ inline static uint32_t
 get_max_inflight(client_t *self)
 {
 	int peers = zhash_size(self->server->peering);
+	int quant = (self->server->max_fetch_slots * self->numfetchs) / peers;
 	if (peers == 0)
 		return 0;
 	else
-		return (self->server->max_fetch_slots * self->numfetchs) / peers;
+		assert(self->server->available_fetch_slots > 0);
+	return quant > self->server->available_fetch_slots ?
+			self->server->available_fetch_slots :
+			quant;
 }
 
 static void
