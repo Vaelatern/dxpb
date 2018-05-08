@@ -63,10 +63,14 @@ harness-hostdir:
     - cd src
     - ./harness hostdir
 
+harness-hostdir2:
+  stage: test
+  script:
+    - cd src
+    - ./harness hostdir2
+
 harness-pkgimport-master:
   stage: test
   script:
     - cd src
     - ./harness pkgimport-master
-
-
