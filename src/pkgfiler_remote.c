@@ -32,6 +32,9 @@
 typedef struct _client_args_t client_args_t;
 
 struct filefetch {
+	char		*pkgname;
+	char		*version;
+	char		*arch;
 	char		*subpath;
 	uint64_t	 pos;
 	uint64_t	 eofpos;
@@ -83,6 +86,10 @@ client_terminate (client_t *self)
 {
 	for (struct filefetch *fp = zhash_first(self->open_fds); fp;
 			fp = zhash_next(self->open_fds)) {
+		FREE(fp->pkgname);
+		FREE(fp->version);
+		FREE(fp->arch);
+		FREE(fp->subpath);
 		close(fp->fd);
 		fp->fd = -1;
 		free(fp);
@@ -212,19 +219,23 @@ open_file_for_sending (client_t *self)
 				pkgfiles_msg_pkgname(self->message),
 				pkgfiles_msg_version(self->message),
 				pkgfiles_msg_arch(self->message));
+	fd->pkgname = strdup(pkgfiles_msg_pkgname(self->message));
+	fd->version = strdup(pkgfiles_msg_version(self->message));
+	fd->arch = strdup(pkgfiles_msg_arch(self->message));
 	fd->subpath = file_path_in_repo(self, pkgfile);
 	assert(fd->subpath);
 	char *fullpath = bstring_add(bstring_add(strdup(self->hostdir), fd->subpath,
 				NULL, NULL), pkgfile, NULL, NULL);
-	assert(fullpath);
+	if (!fd->arch || !fd->version || !fd->pkgname || !fullpath) {
+		fprintf(stderr, "Can't strdup somewhere\n");
+		exit(ERR_CODE_NOMEM);
+	}
 	fd->fd = open(fullpath, O_RDONLY | O_NONBLOCK);
 	fd->pos = 0;
 	fd->eofpos = bfs_size(fd->fd);
 	zhash_insert(self->open_fds, pkgfile, fd);
-	free(fullpath);
-	fullpath = NULL;
-	free(pkgfile);
-	pkgfile = NULL;
+	FREE(fullpath);
+	FREE(pkgfile);
 }
 
 //  ---------------------------------------------------------------------------
@@ -245,9 +256,9 @@ pick_a_fetch (client_t *self)
 static void
 prepare_chunk (client_t *self)
 {
+	pkgfiles_msg_set_validchunk(self->message, 0);
 	if (!self->curfetch) {
 		zchunk_t *chunk = zchunk_new(NULL, 0);
-		pkgfiles_msg_set_validchunk(self->message, 0);
 		pkgfiles_msg_set_data(self->message, &chunk);
 		pkgfiles_msg_set_eof(self->message, 1);
 		return;
@@ -259,13 +270,16 @@ prepare_chunk (client_t *self)
 	int64_t size = 1024*64; // 64 kilobytes at a time;
 	assert(self->curfetch->fd >= 0 || self->curfetch->pos == self->curfetch->eofpos);
 
-	pkgfiles_msg_set_validchunk(self->message, 1);
-
 	if (self->curfetch->fd >= 0) {
+		pkgfiles_msg_set_validchunk(self->message, 1);
+
 		buf = malloc(sizeof(char)*size);
 		size = read(self->curfetch->fd, buf, size);
 		tosend = zchunk_new(buf, size);
 
+		pkgfiles_msg_set_pkgname(self->message, self->curfetch->pkgname);
+		pkgfiles_msg_set_version(self->message, self->curfetch->version);
+		pkgfiles_msg_set_arch(self->message, self->curfetch->arch);
 		pkgfiles_msg_set_position(self->message, self->curfetch->pos);
 		pkgfiles_msg_set_data(self->message, &tosend);
 		pkgfiles_msg_set_subpath(self->message, self->curfetch->subpath);
@@ -296,6 +310,9 @@ postprocess_chunk (client_t *self)
 				pkgfiles_msg_arch(self->message));
 		close(self->curfetch->fd);
 		self->curfetch->fd = -1;
+		FREE(self->curfetch->pkgname);
+		FREE(self->curfetch->version);
+		FREE(self->curfetch->arch);
 		FREE(self->curfetch->subpath);
 		zhash_delete(self->open_fds, pkgfile);
 		FREE(pkgfile);

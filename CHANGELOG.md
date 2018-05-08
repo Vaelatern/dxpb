@@ -1,8 +1,9 @@
 # Changelog
 
-## 0.0.15.1 - 2018-04-30 - The one which chases the shadows away
+## 0.0.15.2 - 2018-04-30 - The one which chases the shadows away
 ### Overview
 - The requests for file chunks are no longer vertically unbounded.
+- File (.xbps) chunks are now properly labeled with the packages they contain.
 
 ## 0.0.15 - 2018-04-20 - The one which hotfixes the last release
 ### Overview

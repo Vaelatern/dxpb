@@ -47,6 +47,7 @@ SUID_BINARIES = \
 HARNESSES = harness-grapher \
 	harness-hostdir-master \
 	harness-hostdir \
+	harness-hostdir2 \
 	harness-builder \
 	harness-builder2 \
 	harness-frontend \
@@ -54,6 +55,7 @@ HARNESSES = harness-grapher \
 HARNESS_OBJECTS = harness-grapher.o \
 	harness-hostdir-master.o \
 	harness-hostdir.o \
+	harness-hostdir2.o \
 	harness-builder.o \
 	harness-builder2.o \
 	harness-frontend.o \
@@ -240,6 +242,9 @@ harness-hostdir-master: bxbps.o harness-hostdir-master.o pkggraph_msg.o pkgfiles
 
 harness-hostdir: LDLIBS += -larchive -lxbps -lbsd
 harness-hostdir: bxbps.o harness-hostdir.o pkggraph_msg.o pkgfiles_msg.o
+
+harness-hostdir2: LDLIBS += -larchive -lxbps -lbsd -lcrypto
+harness-hostdir2: bxbps.o harness-hostdir2.o pkggraph_msg.o pkgfiles_msg.o
 
 harness-builder: harness-builder.o pkggraph_msg.o
 
