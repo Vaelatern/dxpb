@@ -90,4 +90,7 @@ enum Arch {
 	i686Musl @8;
 	x8664 @9;
 	x8664Musl @10;
+	armv5Tel @11;
+	armv5TelMusl @12;
+	mipselMusl @13;
 }

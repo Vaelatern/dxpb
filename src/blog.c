@@ -32,6 +32,9 @@ const int pkg_archs_translate[] = {
 	[ARCH_I686_MUSL] = Arch_i686Musl,
 	[ARCH_X86_64] = Arch_x8664,
 	[ARCH_X86_64_MUSL] = Arch_x8664Musl,
+	[ARCH_ARMV5TEL] = Arch_armv5Tel,
+	[ARCH_ARMV5TEL_MUSL] = Arch_armv5TelMusl,
+	[ARCH_MIPSEL_MUSL] = Arch_mipselMusl,
 };
 
 char
