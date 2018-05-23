@@ -39,7 +39,7 @@ struct _pkggraph_msg_t {
     char hostarch [256];                //  hostarch
     char targetarch [256];              //  targetarch
     byte iscross;                       //  Strict servers might double check this.
-    uint16_t cost;                      //  This should be 0 unless the builder is expensive or slow enough to warrant a lower priority when handing out work. If it's just really fast, then more builders are the answer, not a negative cost.
+    uint16_t cost;                      //  This should be 100 unless the builder is expensive or slow enough to warrant a lower priority when handing out work. If it's just really fast, then more builders are the answer, not a negative cost.
     uint16_t addr;                      //  addr
     uint32_t check;                     //  check
     char version [256];                 //  version

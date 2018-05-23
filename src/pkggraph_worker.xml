@@ -31,9 +31,15 @@
 		<event name = "ROGER" next = "hesitate">
 			<action name = "send" message = "IMAWORKER" />
 		</event>
+		<event name = "*" next = "start">
+			<action name = "send" message = "HELLO" />
+		</event>
 	</state>
 	<state name = "hesitate" inherit = "defaults">
 		<event name = "ROGER" next = "preparing" />
+		<event name = "*" next = "start">
+			<action name = "send" message = "HELLO" />
+		</event>
 	</state>
 
 	<state name = "preparing" inherit = "defaults">

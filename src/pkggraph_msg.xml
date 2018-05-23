@@ -30,7 +30,7 @@
 			Strict servers might double check this.
 		</field>
 		<field name = "cost" type = "number" size = "2">
-			This should be 0 unless the builder is expensive or slow enough to warrant a lower priority when handing out work. If it's just really fast, then more builders are the answer, not a negative cost.
+			This should be 100 unless the builder is expensive or slow enough to warrant a lower priority when handing out work. If it's just really fast, then more builders are the answer, not a negative cost.
 		</field>
 		<field name = "addr" type = "number" size = "2" />
 		<field name = "check" type = "number" size = "4" />

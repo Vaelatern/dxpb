@@ -43,9 +43,6 @@ digraph "pkggraph_worker" {
  "negotiate invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
  "negotiate" -> "negotiate invalid";
  "negotiate invalid" -> "die";
- "negotiate *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
- "negotiate" -> "negotiate *";
- "negotiate *" -> "negotiate";
  "negotiate kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "negotiate" -> "negotiate kthnksbye";
  "negotiate kthnksbye" -> "die";
@@ -58,6 +55,9 @@ digraph "pkggraph_worker" {
  "negotiate roger" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "negotiate" -> "negotiate roger";
  "negotiate roger" -> "hesitate";
+ "negotiate *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "negotiate" -> "negotiate *";
+ "negotiate *" -> "start";
 
  "hesitate" [shape = "doublecircle"];
  "hesitate iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
@@ -66,9 +66,6 @@ digraph "pkggraph_worker" {
  "hesitate invalid" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">invalid</font></td></tr></table>>];
  "hesitate" -> "hesitate invalid";
  "hesitate invalid" -> "die";
- "hesitate *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
- "hesitate" -> "hesitate *";
- "hesitate *" -> "negotiate";
  "hesitate kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "hesitate" -> "hesitate kthnksbye";
  "hesitate kthnksbye" -> "die";
@@ -81,6 +78,9 @@ digraph "pkggraph_worker" {
  "hesitate roger" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">roger</font></td></tr></table>>];
  "hesitate" -> "hesitate roger";
  "hesitate roger" -> "preparing";
+ "hesitate *" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "hesitate" -> "hesitate *";
+ "hesitate *" -> "start";
 
  "preparing" [shape = "doublecircle"];
  "preparing iforgotu" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">iforgotu</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];

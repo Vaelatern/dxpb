@@ -718,7 +718,7 @@ s_client_execute (s_client_t *self, event_t event)
                         pkggraph_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = negotiate_state;
+                        self->state = start_state;
                 }
                 break;
 
@@ -823,7 +823,7 @@ s_client_execute (s_client_t *self, event_t event)
                         pkggraph_msg_send (self->message, self->dealer);
                     }
                     if (!self->exception)
-                        self->state = negotiate_state;
+                        self->state = start_state;
                 }
                 break;
 

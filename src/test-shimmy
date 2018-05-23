@@ -1,0 +1,10 @@
+#!/bin/sh
+
+make dxpb-builder
+make shim-builder
+./shim-builder x86_64:x86_64:100
+sleep 3
+pkill dxpb
+rm shim-builder
+rm shim-builder.o
+rm -rf /tmp/dxpb-harness-*

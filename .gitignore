@@ -15,6 +15,7 @@ dxpb-version.txt
 !harness-*.c
 .container
 src/gmon.out
+src/shim-builder
 **/conf.yml
 !**/conf.yml.example
 go/ircbot/bin/

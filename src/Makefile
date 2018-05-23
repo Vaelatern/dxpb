@@ -248,6 +248,9 @@ harness-hostdir2: bxbps.o harness-hostdir2.o pkggraph_msg.o pkgfiles_msg.o
 
 harness-builder: harness-builder.o pkggraph_msg.o
 
+shim-builder: LDLIBS += -lpthread
+shim-builder: bstring.o dxpb-common.o bfs.o dxpb-client.o shim-builder.o pkggraph_msg.o
+
 harness-builder2: harness-builder2.o pkggraph_msg.o
 
 harness-frontend: LDLIBS += -lbsd

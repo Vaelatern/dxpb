@@ -46,7 +46,7 @@ The following ABNF grammar defines the Package Graph Potocol:
     hostarch        = string                ;
     targetarch      = string                ;
     iscross         = number-1              ; Strict servers might double check this.
-    cost            = number-2              ; This should be 0 unless the builder is expensive or slow enough to warrant a lower priority when handing out work. If it's just really fast, then more builders are the answer, not a negative cost.
+    cost            = number-2              ; This should be 100 unless the builder is expensive or slow enough to warrant a lower priority when handing out work. If it's just really fast, then more builders are the answer, not a negative cost.
     addr            = number-2              ;
     check           = number-4              ;
 
