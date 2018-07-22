@@ -12,7 +12,7 @@ Arguments:
 
 The following flags have defaults.
   -p: ./
-  -P: https://github.com/voidlinux/void-packages.git
+  -P: https://github.com/void-linux/void-packages.git
   -i: tcp://127.0.0.1:5197
   -I: ipc:///var/run/dxpb/log-pkgimport-master.sock
   -x: ./xbps-src

@@ -23,7 +23,7 @@ The following flags have defaults.
   -k: /etc/dxpb/curve/
   -m: ./masterdir
   -p: ./
-  -P: https://github.com/voidlinux/void-packages.git
+  -P: https://github.com/void-linux/void-packages.git
   -T: /var/run/dxpb/tmpsock-XXXXXX
 
 The following flag is required:

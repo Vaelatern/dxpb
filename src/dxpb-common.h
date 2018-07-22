@@ -25,7 +25,7 @@ void		do_server_ssl_if_possible(void *, const char *, const char *);
 #define DEFAULT_REPODIR    "/var/lib/dxpb/pkgs/"
 
 #define DEFAULT_REPOPATH "./"
-#define DEFAULT_REPOURL "https://github.com/voidlinux/void-packages.git"
+#define DEFAULT_REPOURL "https://github.com/void-linux/void-packages.git"
 
 #define DEFAULT_XBPS_SRC "./xbps-src"
 #define	DEFAULT_MASTERDIR "./masterdir"
