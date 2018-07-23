@@ -131,7 +131,7 @@ run(const char *ssldir, const char *sdir, const char *rdir, const char *ldir,
 
 #define GET(mymsg, sock)        { \
 					zpoller_t *p = zpoller_new(sock, NULL); \
-					(void) zpoller_wait(p, 60*1000); \
+					(void) zpoller_wait(p, 3*60*1000); \
 					assert(!zpoller_expired(p)); \
 					if (zpoller_terminated(p)) \
 					exit(-1); \
