@@ -159,7 +159,7 @@ bbuilder_agent(zsock_t *pipe, char *masterdir, char *hostdir, char *xbps_src)
 	pid_t srcinstance = 0;
 	int quit = 0;
 	int iscross = 0; // XXX: Currently unused
-	enum pkg_archs actualarch = ARCH_NUM_MAX:
+	enum pkg_archs actualarch = ARCH_NUM_MAX;
 
 	while (!quit && (frame = zframe_recv(pipe)) && /* that is the blocking call */
 			zframe_size(frame) == sizeof(enum bbuilder_actions) &&
