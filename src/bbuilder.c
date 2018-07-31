@@ -84,8 +84,8 @@ bbuilder_handle_log_request(zsock_t *pipe, struct builder *bd, pid_t *srcinstanc
 }
 
 static pid_t
-bbuilder_handle_build(zsock_t *pipe, struct builder *bd, const char *masterdir,
-		const char *hostdir, const char *xbps_src)
+bbuilder_handle_build(zsock_t *pipe, struct builder *bd, enum pkg_archs ourarch,
+		const char *masterdir, const char *hostdir, const char *xbps_src)
 {
 	pid_t retVal = 0;
 	char *checkver = NULL;
@@ -97,6 +97,9 @@ bbuilder_handle_build(zsock_t *pipe, struct builder *bd, const char *masterdir,
 	rc = zsock_brecv(pipe, bbuilder_actions_picture[BBUILDER_BUILD],
 			&pkgname, &version, &arch, &iscross);
 	if (rc != 0)
+		goto abort;
+
+	if (ourarch != bpkg_enum_lookup(arch))
 		goto abort;
 
 	bd->name = strdup(pkgname);
@@ -125,7 +128,7 @@ end:
 }
 
 static int
-bbuilder_bootstrap(zsock_t *pipe, const char *masterdir, const char *xbps_src, int iscross)
+bbuilder_bootstrap(zsock_t *pipe, const char *masterdir, const char *xbps_src, enum pkg_archs *actualarch, int iscross)
 {
 	pid_t retVal = 0;
 	char rc;
@@ -142,6 +145,8 @@ bbuilder_bootstrap(zsock_t *pipe, const char *masterdir, const char *xbps_src, i
 		exit(-1);
 	}
 
+	*actualarch = bpkg_enum_lookup(arch);
+
 end:
 	return retVal;
 }
@@ -154,6 +159,7 @@ bbuilder_agent(zsock_t *pipe, char *masterdir, char *hostdir, char *xbps_src)
 	pid_t srcinstance = 0;
 	int quit = 0;
 	int iscross = 0; // XXX: Currently unused
+	enum pkg_archs actualarch = ARCH_NUM_MAX:
 
 	while (!quit && (frame = zframe_recv(pipe)) && /* that is the blocking call */
 			zframe_size(frame) == sizeof(enum bbuilder_actions) &&
@@ -177,12 +183,12 @@ jobstop:		 if (srcinstance != 0) {
 			break;
 		case BBUILDER_BOOTSTRAP:
 			assert(srcinstance == 0);
-			bbuilder_bootstrap(pipe, masterdir, xbps_src, iscross);
+			bbuilder_bootstrap(pipe, masterdir, xbps_src, &actualarch, iscross);
 			bbuilder_send(pipe, BBUILDER_BOOTSTRAP_DONE, 0);
 			break;
 		case BBUILDER_BUILD:
-			srcinstance = bbuilder_handle_build(pipe, &bd, masterdir,
-					hostdir, xbps_src);
+			srcinstance = bbuilder_handle_build(pipe, &bd, actualarch,
+					masterdir, hostdir, xbps_src);
 			if (srcinstance == 0)
 				bbuilder_send(pipe, BBUILDER_NOT_BUILDING, 0);
 			else
