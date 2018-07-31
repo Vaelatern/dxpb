@@ -99,7 +99,7 @@ bbuilder_handle_build(zsock_t *pipe, struct builder *bd, enum pkg_archs ourarch,
 	if (rc != 0)
 		goto abort;
 
-	if (ourarch != bpkg_enum_lookup(arch))
+	if (ourarch != bpkg_enum_lookup(arch) && bpkg_enum_lookup(arch) != ARCH_NOARCH)
 		goto abort;
 
 	bd->name = strdup(pkgname);
