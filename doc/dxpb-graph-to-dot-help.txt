@@ -5,6 +5,7 @@ Arguments:
   -L		Print license information and exit
   -f		Path to sql db.
   -t		Path to target .dot file. If not provided, uses stdout
+  -T		Only get top-level dependers, those packages with no dependants
 
 The following flags have defaults.
   -f: /var/cache/dxpb/pkgs.db

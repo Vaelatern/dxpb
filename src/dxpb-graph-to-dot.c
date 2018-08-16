@@ -21,6 +21,7 @@
 
 #define VERBOSE_FLAG 1
 #define ERR_FLAG 2
+#define TOPLEVEL_ONLY_FLAG 4
 
 void
 help(void)
@@ -61,10 +62,17 @@ run(int flags, const char *from, const char *to, const char *arch)
 	if (verbose)
 		printf("Creating dot graph...\n");
 	Agraph_t *dot = NULL;
-	if (arch == NULL)
-		dot = bdot_from_graph(grph);
-	else
-		dot = bdot_from_graph_for_arch(grph, arch);
+	if (flags & TOPLEVEL_ONLY_FLAG) {
+		if (arch == NULL)
+			dot = bdot_toplevel_from_graph(grph);
+		else
+			dot = bdot_toplevel_from_graph_for_arch(grph, arch);
+	} else {
+		if (arch == NULL)
+			dot = bdot_from_graph(grph);
+		else
+			dot = bdot_from_graph_for_arch(grph, arch);
+	}
 
 	if (to) {
 		if (verbose)
@@ -83,7 +91,7 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "hLva:t:f:";
+	const char *optstring = "hLva:t:Tf:";
 	char *default_dbpath = DEFAULT_DBPATH;
 	char *dbpath = NULL;
 	char *graphpath = NULL;
@@ -108,6 +116,9 @@ main(int argc, char * const *argv)
 			return 0;
 		case 'v':
 			flags |= VERBOSE_FLAG;
+			break;
+		case 'T':
+			flags |= TOPLEVEL_ONLY_FLAG;
 			break;
 		case '?':
 			flags |= ERR_FLAG;
