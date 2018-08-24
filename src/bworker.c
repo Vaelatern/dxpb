@@ -264,10 +264,18 @@ bworker_subgroup_assign_slot(struct bworkgroup *grp, struct bworksubgroup *sub)
 void
 bworker_subgroup_destroy(struct bworksubgroup **sub)
 {
+	bworker_subgroup_destroy_interactive(sub, NULL, NULL);
+}
+
+void
+bworker_subgroup_destroy_interactive(struct bworksubgroup **sub, void (*cb)(struct bworker *, void *), void *arg)
+{
 	struct bworkgroup *grp = (*sub)->grp;
 	struct bworksubgroup *newsub = *sub;
 	uint16_t *index;
 	while ((index = zlist_pop(newsub->addrs))) {
+		if (cb)
+			cb(grp->workers[*index], arg);
 		bworker_clear(grp->workers[*index]);
 		assert(grp->owners[*index] == newsub);
 		grp->owners[*index] = NULL;

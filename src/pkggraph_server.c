@@ -618,25 +618,28 @@ set_event_if_more_memos (client_t *self)
 //  remove_all_workers
 //
 
+void
+remove_all_workers_cb(struct bworker *wrkr, void *self_void)
+{
+	client_t *self = self_void;
+	assert(wrkr);
+
+	struct memo *memo = malloc(sizeof(struct memo));
+	if (!memo) {
+		perror("Can't even write a memo");
+		exit(ERR_CODE_NOMEM);
+	}
+	memo->msgid = PKGGRAPH_MSG_FORGET_ABOUT_ME;
+	memo->addr = wrkr->myaddr;
+	memo->check = wrkr->mycheck;
+	zlist_append(self->server->memos_to_grapher, memo);
+}
+
 static void
 remove_all_workers (client_t *self)
 {
 	assert(self->worker);
-	zlist_t addrs = self->subgroup->addrs;
-	uint16_t *worker_id;
-	for (worker_id = zlist_first(addrs); worker_id; worker_id = zlist_next(addrs)) {
-		/* Handling for a possibly absent grapher */
-		struct memo *memo = malloc(sizeof(struct memo));
-		if (!memo) {
-			perror("Can't even write a memo");
-			exit(ERR_CODE_NOMEM);
-		}
-		memo->msgid = PKGGRAPH_MSG_FORGET_ABOUT_ME;
-		memo->addr = wrkr->myaddr;
-		memo->check = wrkr->mycheck;
-		zlist_append(self->server->memos_to_grapher, memo);
-	}
-	bworker_subgroup_destroy(&self->subgroup);
+	bworker_subgroup_destroy_interactive(&self->subgroup, remove_all_workers_cb, self);
 }
 
 //  ---------------------------------------------------------------------------

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.16.1 - 2018-08-24 - The one which chases the shadows away
+### Overview
+- Workers becoming absent now properly gets to the grapher.
+
 ## 0.0.16 - 2018-08-24 - The one where the builder messaging is more verified
 ### Overview
 - The requests for file chunks are no longer vertically unbounded.
