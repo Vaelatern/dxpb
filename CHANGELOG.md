@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.0.16.1 - 2018-08-24 - The one which chases the shadows away
+## 0.0.17 - 2018-08-24 - The one which hotfixes the last release
 ### Overview
-- Workers becoming absent now properly gets to the grapher.
+- Workers becoming absent now properly get to the grapher.
 
 ## 0.0.16 - 2018-08-24 - The one where the builder messaging is more verified
 ### Overview
