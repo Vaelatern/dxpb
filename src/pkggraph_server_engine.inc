@@ -174,11 +174,7 @@ static void
 static void
     register_worker (client_t *self);
 static void
-    establish_subgroup (client_t *self);
-static void
     register_storage (client_t *self);
-static void
-    assert_is_grapher (client_t *self);
 static void
     all_workers_should_bootstrap_update (client_t *self);
 static void
@@ -194,9 +190,13 @@ static void
 static void
     remove_self_as_grapher (client_t *self);
 static void
+    assert_is_grapher (client_t *self);
+static void
     notify_grapher_if_he_s_around (client_t *self);
 static void
     remove_all_workers (client_t *self);
+static void
+    assert_is_worker (client_t *self);
 static void
     register_worker_as_ready_to_help (client_t *self);
 static void
@@ -626,12 +626,6 @@ s_client_execute (s_client_t *self, event_t event)
                         register_worker (&self->client);
                     }
                     if (!self->exception) {
-                        //  establish subgroup
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ establish subgroup", self->log_prefix);
-                        establish_subgroup (&self->client);
-                    }
-                    if (!self->exception) {
                         //  send ROGER
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ send ROGER",
@@ -738,12 +732,6 @@ s_client_execute (s_client_t *self, event_t event)
             case i_am_the_grapher_state:
                 if (self->event == update_bootstrap_event) {
                     if (!self->exception) {
-                        //  assert is grapher
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
-                        assert_is_grapher (&self->client);
-                    }
-                    if (!self->exception) {
                         //  all workers should bootstrap-update
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ all workers should bootstrap-update", self->log_prefix);
@@ -752,12 +740,6 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == workercanhelp_event) {
-                    if (!self->exception) {
-                        //  assert is grapher
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
-                        assert_is_grapher (&self->client);
-                    }
                     if (!self->exception) {
                         //  confirm worker still valid
                         if (self->server->verbose)
@@ -780,12 +762,6 @@ s_client_execute (s_client_t *self, event_t event)
                 else
                 if (self->event == you_ve_got_a_memo_event) {
                     if (!self->exception) {
-                        //  assert is grapher
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
-                        assert_is_grapher (&self->client);
-                    }
-                    if (!self->exception) {
                         //  parse memo
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ parse memo", self->log_prefix);
@@ -794,12 +770,6 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == tell_grapher_job_ended_event) {
-                    if (!self->exception) {
-                        //  assert is grapher
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
-                        assert_is_grapher (&self->client);
-                    }
                     if (!self->exception) {
                         //  send JOB_ENDED
                         if (self->server->verbose)
@@ -821,12 +791,6 @@ s_client_execute (s_client_t *self, event_t event)
                 else
                 if (self->event == tell_grapher_worker_gone_event) {
                     if (!self->exception) {
-                        //  assert is grapher
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
-                        assert_is_grapher (&self->client);
-                    }
-                    if (!self->exception) {
                         //  send FORGET_ABOUT_ME
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ send FORGET_ABOUT_ME",
@@ -846,12 +810,6 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == tell_grapher_worker_can_help_event) {
-                    if (!self->exception) {
-                        //  assert is grapher
-                        if (self->server->verbose)
-                            zsys_debug ("%s:         $ assert is grapher", self->log_prefix);
-                        assert_is_grapher (&self->client);
-                    }
                     if (!self->exception) {
                         //  send ICANHELP
                         if (self->server->verbose)
@@ -975,6 +933,12 @@ s_client_execute (s_client_t *self, event_t event)
                 else
                 if (self->event == invalid_event) {
                     if (!self->exception) {
+                        //  assert is worker
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is worker", self->log_prefix);
+                        assert_is_worker (&self->client);
+                    }
+                    if (!self->exception) {
                         //  remove all workers
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ remove all workers", self->log_prefix);
@@ -990,6 +954,12 @@ s_client_execute (s_client_t *self, event_t event)
                 else
                 if (self->event == been_ordered_to_update_bootstrap_event) {
                     if (!self->exception) {
+                        //  assert is worker
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is worker", self->log_prefix);
+                        assert_is_worker (&self->client);
+                    }
+                    if (!self->exception) {
                         //  send UPDATE_BOOTSTRAP
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ send UPDATE_BOOTSTRAP",
@@ -1003,6 +973,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == icanhelp_event) {
+                    if (!self->exception) {
+                        //  assert is worker
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is worker", self->log_prefix);
+                        assert_is_worker (&self->client);
+                    }
                     if (!self->exception) {
                         //  register worker as ready to help
                         if (self->server->verbose)
@@ -1018,6 +994,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == forget_about_me_event) {
+                    if (!self->exception) {
+                        //  assert is worker
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is worker", self->log_prefix);
+                        assert_is_worker (&self->client);
+                    }
                     if (!self->exception) {
                         //  tell grapher to forget worker
                         if (self->server->verbose)
@@ -1040,6 +1022,12 @@ s_client_execute (s_client_t *self, event_t event)
                 else
                 if (self->event == you_can_help_with_this_event) {
                     if (!self->exception) {
+                        //  assert is worker
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is worker", self->log_prefix);
+                        assert_is_worker (&self->client);
+                    }
+                    if (!self->exception) {
                         //  transform worker job for assignment
                         if (self->server->verbose)
                             zsys_debug ("%s:         $ transform worker job for assignment", self->log_prefix);
@@ -1059,6 +1047,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == job_ended_event) {
+                    if (!self->exception) {
+                        //  assert is worker
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is worker", self->log_prefix);
+                        assert_is_worker (&self->client);
+                    }
                     if (!self->exception) {
                         //  act on job return
                         if (self->server->verbose)
@@ -1080,6 +1074,12 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == loghere_event) {
+                    if (!self->exception) {
+                        //  assert is worker
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ assert is worker", self->log_prefix);
+                        assert_is_worker (&self->client);
+                    }
                     if (!self->exception) {
                         //  route log
                         if (self->server->verbose)

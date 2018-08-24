@@ -30,7 +30,6 @@
 		</event>
 		<event name = "IMAWORKER" next = "i am a worker">
 			<action name = "register worker" />
-			<action name = "establish subgroup" />
 			<action name = "send" message = "ROGER" />
 		</event>
 		<event name = "IAMSTORAGE" next = "i am storage">
@@ -45,31 +44,25 @@
 			<action name = "notify grapher if he's around" />
 		</before>
 		<event name = "UPDATE BOOTSTRAP">
-			<action name = "assert is grapher" />
 			<action name = "all workers should bootstrap-update" />
 		</event>
 		<event name = "WORKERCANHELP">
-			<action name = "assert is grapher" />
 			<action name = "confirm worker still valid" />
 			<action name = "tell logger to reset log" />
 			<action name = "tell the worker to start work" />
 		</event>
 		<event name = "you've got a memo">
-			<action name = "assert is grapher" />
 			<action name = "parse memo" />
 		</event>
 		<event name = "tell grapher job ended">
-			<action name = "assert is grapher" />
 			<action name = "send" message = "JOB ENDED" />
 			<action name = "set event if more memos" />
 		</event>
 		<event name = "tell grapher worker gone">
-			<action name = "assert is grapher" />
 			<action name = "send" message = "FORGET ABOUT ME" />
 			<action name = "set event if more memos" />
 		</event>
 		<event name = "tell grapher worker can help">
-			<action name = "assert is grapher" />
 			<action name = "send" message = "ICANHELP" />
 			<action name = "set event if more memos" />
 		</event>
@@ -87,31 +80,38 @@
 			<action name = "send" message = "ROGER" />
 		</event>
 		<event name = "INVALID">
+			<action name = "assert is worker" />
 			<action name = "remove all workers" />
 			<action name = "terminate" />
 		</event>
 		<event name = "been ordered to update bootstrap">
+			<action name = "assert is worker" />
 			<action name = "send" message = "UPDATE BOOTSTRAP" />
 		</event>
 		<event name = "ICANHELP">
+			<action name = "assert is worker" />
 			<action name = "register worker as ready to help" />
 			<action name = "notify grapher if he's around" />
 		</event>
 		<event name = "FORGET ABOUT ME">
+			<action name = "assert is worker" />
 			<action name = "tell grapher to forget worker" />
 			<action name = "remove worker" />
 			<action name = "notify grapher if he's around" />
 		</event>
 		<event name = "you can help with this">
+			<action name = "assert is worker" />
 			<action name = "transform worker job for assignment" />
 			<action name = "send" message = "WORKERCANHELP" />
 		</event>
 		<event name = "JOB ENDED">
+			<action name = "assert is worker" />
 			<action name = "act on job return" />
 			<action name = "remove worker" />
 			<action name = "notify grapher if he's around" />
 		</event>
 		<event name = "LOGHERE">
+			<action name = "assert is worker" />
 			<action name = "route log" />
 			<action name = "send" message = "ROGER" />
 		</event>

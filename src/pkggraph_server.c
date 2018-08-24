@@ -86,7 +86,6 @@ struct _client_t {
 	zlist_t *assign_addrs;
 	uint8_t worker;
 	uint8_t num_logs_sent;
-	uint8_t memos_handled;
 };
 
 //  Include the generated server engine
@@ -156,7 +155,6 @@ client_initialize (client_t *self)
 	self->subgroup = NULL;;
 	self->worker = 0;
 	self->assign_addrs = zlist_new();
-	self->memos_handled = 0;
 	return 0;
 }
 
@@ -212,6 +210,8 @@ register_grapher (client_t *self)
 		engine_send_event(self->server->grapher, expired_event);
 
 	self->server->grapher = self;
+	assert(!self->worker);
+	assert(self->server->storage != self);
 	if (self->server->pub) {
 		zstr_sendm(self->server->pub, "TRACE");
 		zstr_sendf(self->server->pub, "Adding grapher");
@@ -226,6 +226,10 @@ static void
 register_worker (client_t *self)
 {
 	self->worker = 1;
+	assert(self->server->grapher != self);
+	assert(self->server->storage != self);
+	self->subgroup = bworker_subgroup_new(self->server->workers);
+	self->subgroup->owner = self;
 	if (self->server->pub) {
 		zstr_sendm(self->server->pub, "TRACE");
 		zstr_sendf(self->server->pub, "Adding worker");
@@ -239,7 +243,11 @@ register_worker (client_t *self)
 static void
 register_storage (client_t *self)
 {
+	if (self->server->storage != NULL)
+		engine_send_event(self->server->storage, expired_event);
 	self->server->storage = self;
+	assert(!self->worker);
+	assert(self->server->grapher != self);
 	if (self->server->pub) {
 		zstr_sendm(self->server->pub, "TRACE");
 		zstr_sendf(self->server->pub, "Adding storage");
@@ -478,11 +486,13 @@ post_process_sending_log_chunk (client_t *self)
 static void
 transform_worker_job_for_assignment (client_t *self)
 {
-	assert(zlist_size(self->assign_addrs) == 1);
+	assert(zlist_size(self->assign_addrs) >= 1);
 	const struct bworker *wrkr = zlist_pop(self->assign_addrs);
 	pkggraph_msg_set_addr(self->message, wrkr->addr);
 	pkggraph_msg_set_check(self->message, wrkr->check);
+	assert(wrkr->job.name);
 	pkggraph_msg_set_pkgname(self->message, wrkr->job.name);
+	assert(wrkr->job.ver);
 	pkggraph_msg_set_version(self->message, wrkr->job.ver);
 	assert(pkg_archs_str[wrkr->job.arch] != NULL);
 	pkggraph_msg_set_arch(self->message, pkg_archs_str[wrkr->job.arch]);
@@ -490,7 +500,7 @@ transform_worker_job_for_assignment (client_t *self)
 		zstr_sendm(self->server->pub, "TRACE");
 		zstr_sendf(self->server->pub, "Telling worker it's assigned");
 	}
-	wrkr = NULL;
+	wrkr = NULL; // not free, just no longer ours
 }
 
 //  ---------------------------------------------------------------------------
@@ -599,15 +609,9 @@ parse_memo (client_t *self)
 static void
 set_event_if_more_memos (client_t *self)
 {
-	if (++self->memos_handled >= 5) {
-		self->memos_handled = 0;
-		return;
-	}
-
-	if (zlist_size(self->server->memos_to_grapher))
+	assert(self->server->grapher == self);
+	if (zlist_size(self->server->memos_to_grapher) > 0)
 		engine_set_next_event(self, you_ve_got_a_memo_event);
-	else
-		self->memos_handled = 0;
 }
 
 //  ---------------------------------------------------------------------------
@@ -617,6 +621,21 @@ set_event_if_more_memos (client_t *self)
 static void
 remove_all_workers (client_t *self)
 {
+	assert(self->worker);
+	zlist_t addrs = self->subgroup->addrs;
+	uint16_t *worker_id;
+	for (worker_id = zlist_first(addrs); worker_id; worker_id = zlist_next(addrs)) {
+		/* Handling for a possibly absent grapher */
+		struct memo *memo = malloc(sizeof(struct memo));
+		if (!memo) {
+			perror("Can't even write a memo");
+			exit(ERR_CODE_NOMEM);
+		}
+		memo->msgid = PKGGRAPH_MSG_FORGET_ABOUT_ME;
+		memo->addr = wrkr->myaddr;
+		memo->check = wrkr->mycheck;
+		zlist_append(self->server->memos_to_grapher, memo);
+	}
 	bworker_subgroup_destroy(&self->subgroup);
 }
 
@@ -661,17 +680,6 @@ tell_logger_to_reset_log (client_t *self)
 		zstr_sendm(self->server->pub, "TRACE");
 		zstr_sendf(self->server->pub, "Telling logger to reset log");
 	}
-}
-
-//  ---------------------------------------------------------------------------
-//  establish_subgroup
-//
-
-static void
-establish_subgroup (client_t *self)
-{
-	self->subgroup = bworker_subgroup_new(self->server->workers);
-	self->subgroup->owner = self;
 }
 
 //  ---------------------------------------------------------------------------
@@ -725,6 +733,8 @@ assert_is_grapher (client_t *self)
 {
 	if (self->server->grapher != self)
 		engine_set_exception(self, killmenow_event);
+	assert(self->server->storage != self);
+	assert(!self->worker);
 }
 
 //  ---------------------------------------------------------------------------
@@ -736,8 +746,21 @@ assert_is_storage (client_t *self)
 {
 	if (self->server->storage != self)
 		engine_set_exception(self, killmenow_event);
+	assert(self->server->grapher != self);
+	assert(!self->worker);
 }
 
+//  ---------------------------------------------------------------------------
+//  assert_is_worker
+//
+
+static void
+assert_is_worker (client_t *self)
+{
+	if (self->worker == 0 || self->server->grapher == self ||
+			self->server->storage == self)
+		engine_set_exception(self, killmenow_event);
+}
 
 //  ---------------------------------------------------------------------------
 //  tell_grapher_to_forget_worker

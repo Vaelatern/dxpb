@@ -40,8 +40,10 @@ struct bworker *
 bworker_from_my_addr(struct bworkgroup *group, uint16_t addr, uint32_t check)
 {
 	if (addr < group->num_workers && group->workers[addr] != NULL &&
-			group->workers[addr]->mycheck == check && group->workers[addr]->addr != UINT16_MAX)
+			group->workers[addr]->mycheck == check && group->workers[addr]->addr != UINT16_MAX) {
+		assert(group->workers[addr]->myaddr == addr);
 		return group->workers[addr];
+	}
 	return NULL;
 }
 
@@ -50,8 +52,10 @@ bworker_from_sub_remote_addr(struct bworksubgroup *group, uint16_t addr, uint32_
 {
 	uint16_t *i;
 	for (i = zlist_first(group->addrs); i; i = zlist_next(group->addrs)) {
-		if (group->grp->workers[*i]->addr == addr && group->grp->workers[*i]->check == check)
+		if (group->grp->workers[*i]->addr == addr && group->grp->workers[*i]->check == check) {
+			assert(group->grp->workers[*i]->myaddr == *i);
 			return group->grp->workers[*i];
+		}
 	}
 	return NULL;
 }
@@ -60,8 +64,10 @@ struct bworker *
 bworker_from_remote_addr(struct bworkgroup *group, uint16_t addr, uint32_t check)
 {
 	for (uint16_t i = 0; i < group->num_workers; i++) {
-		if (group->workers[i]->addr == addr && group->workers[i]->check == check)
+		if (group->workers[i]->addr == addr && group->workers[i]->check == check) {
+			assert(group->workers[i]->myaddr == i);
 			return group->workers[i];
+		}
 	}
 	return NULL;
 }
