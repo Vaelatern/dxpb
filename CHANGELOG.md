@@ -1,9 +1,11 @@
 # Changelog
 
-## 0.0.15.2 - 2018-04-30 - The one which chases the shadows away
+## 0.0.16 - 2018-08-24 - The one where the builder messaging is more verified
 ### Overview
 - The requests for file chunks are no longer vertically unbounded.
 - File (.xbps) chunks are now properly labeled with the packages they contain.
+- Builders now reject builds for the wrong architecture, rather than trying.
+- Memos to the grapher are no longer indefinitely suspended via counters.
 
 ## 0.0.15 - 2018-04-20 - The one which hotfixes the last release
 ### Overview
