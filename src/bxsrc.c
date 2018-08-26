@@ -459,7 +459,6 @@ bxsrc_build_end(const int fds[], const pid_t c_pid)
 	int retVal = 0;
 	if (waitpid(c_pid, &retVal, WNOHANG) == 0)
 		kill(c_pid, SIGTERM);
-	waitpid(c_pid, &retVal, 0);
 	/* Close reading pipe */
 	unset_fd_o_nonblock(fds[0]);
 	while (read(fds[0], buf, 79)) {
