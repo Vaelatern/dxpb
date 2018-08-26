@@ -331,6 +331,28 @@ bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay)
 	return ERR_CODE_YES;
 }
 
+static int
+bgraph_zlist_filter_cb(struct pkg *needle, int only_bootstrap)
+{
+	/* Want to enable restricted packages? Remove part of this condition */
+	if (needle->restricted || (only_bootstrap && !needle->bootstrap))
+		return 0;
+	return 1;
+}
+
+static void
+bgraph_zlist_filter(zlist_t *list, int (*cb)(struct pkg *, int),
+		int found_bootstrap)
+{
+	assert(list);
+	assert(cb);
+	for (struct pkg *needle = zlist_first(list); needle != NULL;
+			needle = zlist_next(list))
+		/* zlist_remove() is safe to use when iterating like this */
+		if (!cb(needle, found_bootstrap))
+			zlist_remove(list, needle);
+}
+
 /* This code will be run a lot.
  * It must be very fast.
  */
@@ -340,19 +362,18 @@ bgraph_what_next_for_arch(bgraph grph, enum pkg_archs arch)
 	struct pkg *needle;
 	bgraph hay;
 	zlist_t *retVal = zlist_new();
+	int found_bootstrap = 0;
 
 	hay = zhash_lookup(grph, pkg_archs_str[arch]);
 	for (needle = zhash_first(hay); needle != NULL;
-			needle = zhash_next(hay)) {
-		if (bgraph_pkg_ready_to_build(needle, hay) == ERR_CODE_YES)
+			needle = zhash_next(hay))
+		if (bgraph_pkg_ready_to_build(needle, hay) == ERR_CODE_YES) {
 			zlist_append(retVal, needle);
-	}
+			if (!found_bootstrap)
+				found_bootstrap = needle->bootstrap;
+		}
 
-	/*
-	 * TODO: clean up retVal to include more of a subset of packages;
-	 * such as if bootstrap packages are wanted, only bootstrap packages,
-	 * or other such optimizations.
-	 */
+	bgraph_zlist_filter(retVal, bgraph_zlist_filter_cb, found_bootstrap);
 
 	return retVal;
 }

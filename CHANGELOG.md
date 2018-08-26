@@ -3,6 +3,8 @@
 ## 0.0.17.1 - 2018-08-26- The one which chases the shadows away
 ### Overview
 - Builds no longer discard xbps-src exit codes.
+- Grapher now discriminates, filters out restricted packages and ensures if the
+  bootstrap set is ready to build that it gets full priority.
 
 ## 0.0.17 - 2018-08-24 - The one which hotfixes the last release
 ### Overview
