@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.17.1 - 2018-08-26- The one which chases the shadows away
+### Overview
+- Builds no longer discard xbps-src exit codes.
+
 ## 0.0.17 - 2018-08-24 - The one which hotfixes the last release
 ### Overview
 - Workers becoming absent now properly get to the grapher.
