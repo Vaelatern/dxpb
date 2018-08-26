@@ -5,6 +5,7 @@
 - Builds no longer discard xbps-src exit codes.
 - Grapher now discriminates, filters out restricted packages and ensures if the
   bootstrap set is ready to build that it gets full priority.
+- When we can't fork xbps-src, we now actually get an error message.
 
 ## 0.0.17 - 2018-08-24 - The one which hotfixes the last release
 ### Overview

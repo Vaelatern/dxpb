@@ -51,6 +51,24 @@ unset_fd_o_nonblock(int fd)
 }
 
 static int
+set_fd_o_cloexec(int fd)
+{
+	assert(fd >= 0);
+	int flags;
+	errno = 0;
+	if ((flags = fcntl(fd, F_GETFL)) < 0) {
+		perror("Can't F_GETFL on this file descriptor");
+		return -1;
+	}
+	flags |= FD_CLOEXEC;
+	if (fcntl(fd, F_SETFL, flags) == -1) {
+		perror("Can't F_SETFL on this file descriptor");
+		return -1;
+	}
+	return 0;
+}
+
+static int
 set_fd_o_nonblock(int fd)
 {
 	assert(fd >= 0);
@@ -213,6 +231,7 @@ bxsrc_init(const char *xbps_src, int *fds, char *const *args, char *env[], int m
 	pid_t child;
 	int fds_read[2], fds_write[2], fds_error[2];
 	int rc, rcc;
+	int confirm_running[2];
 
 	if (pipe(fds_read) == -1) {
 		perror("Could not pipe()");
@@ -226,6 +245,10 @@ bxsrc_init(const char *xbps_src, int *fds, char *const *args, char *env[], int m
 		perror("Could not pipe()");
 		exit(ERR_CODE_NOPIPE);
 	}
+	if (pipe(confirm_running) == -1) {
+		perror("Could not pipe()");
+		exit(ERR_CODE_NOPIPE);
+	}
 
 	switch(child = fork()) {
 	case -1:
@@ -235,6 +258,7 @@ bxsrc_init(const char *xbps_src, int *fds, char *const *args, char *env[], int m
 	case 0: /* You are the child */
 		/* Close all fds except our pipes to fd 0, 1, and 2, then
 		 * clean up and carry on */
+		set_fd_o_cloexec(confirm_running[0]);
 		rcc = dup2(fds_read[1], 1);
 		assert(rcc == 1);
 		close(fds_read[0]);
@@ -250,15 +274,16 @@ bxsrc_init(const char *xbps_src, int *fds, char *const *args, char *env[], int m
 		}
 
 		errno = 0;
-		rcc = write(1, "GO", 2);
+		rcc = write(confirm_running[1], "GO", 2);
 		assert(rcc == 2);
 		rcc = execve(xbps_src, args, env);
-		assert(rcc == -1);
-		perror("Failed to spawn an xbps-src instance");
-		exit(ERR_CODE_OK);
+		rcc = write(confirm_running[1], "BAD", 3);
+		assert(rcc == 3);
+		exit(ERR_CODE_BAD);
 	default: /* What a good grown up */
 		/* Now clean up the toys you won't use */
 		fds[0] = fds_read[0];
+		set_fd_o_nonblock(fds[0]);
 		close(fds_read[1]);
 
 		fds[1] = fds_write[1];
@@ -271,12 +296,20 @@ bxsrc_init(const char *xbps_src, int *fds, char *const *args, char *env[], int m
 			close(fds_error[1]);
 		}
 
-		char buf[2];
-		rc = read(fds[0], buf, 2);
+		char buf[3];
+		rc = read(confirm_running[0], buf, 2);
 		assert(rc == 2);
 		assert(buf[0] == 'G' && buf[1] == 'O');
 
-		set_fd_o_nonblock(fds[0]);
+		rc = read(confirm_running[0], buf, 3);
+		if (rc == 3) {
+			assert(buf[0] == 'B' && buf[1] == 'A' && buf[2] == 'D');
+			fprintf(stderr, "Can't fork xbps-src for some reason!\n");
+			fprintf(stderr, "Please confirm it exists at: %s\n", xbps_src);
+			exit(ERR_CODE_NOFORK);
+		} else
+			assert(rc == 0);
+		close(confirm_running[0]);
 		sched_yield(); /* It takes time for the child to mature */
 		return child;
 	}
