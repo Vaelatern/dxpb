@@ -25,6 +25,7 @@ DOCDIR = $(PREFIX)/share/doc/dxpb/
 SVDIR = /etc/sv/
 
 GSL_BIN ?= gsl
+CAPNP_BIN ?= capnp
 
 LOCAL_CFLAGS = -std=c11 -I../include/
 CFLAGS += -g -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Werror -O3 -fstack-protector-strong -D_FORTIFY_SOURCE=2
@@ -60,7 +61,7 @@ HARNESS_OBJECTS = harness-grapher.o \
 	harness-builder2.o \
 	harness-frontend.o \
 	harness-pkgimport-master.o
-TEST_BINARIES = check_bworker check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps check_brepowatch usebfs usebgit
+TEST_BINARIES = check_bworker check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps check_brepowatch usebfs usebgit useblog
 TEST_OBJECTS = check_bworker.o check_bgraph.o check_bwords.o check_bstring.o check_btranslate.o check_bpkg.o check_bxbps.o check_brepowatch.o
 OBJECTS = \
 	bbuilder.o \
@@ -91,6 +92,7 @@ OBJECTS = \
 	dxpb-pkgimport-agent.o \
 	dxpb-pkgimport-master.o \
 	dxpb-poke.o \
+	capnp/log.capnp.o \
 	pkgfiler.o \
 	pkgfiler_grapher.o \
 	pkgfiler_remote.o \
@@ -192,6 +194,17 @@ testdb: pkgimport_msg.o bxsrc.o bxbps.o bstring.o bwords.o bgraph.o bxpkg.o bdb.
 %_engine.inc: %.xml
 
 ##################################
+### Rules for capnproto things ###
+##################################
+
+capnp/log.capnp.o: capnp/log.capnp.c
+
+capnp/log.capnp.c: log.capnp
+	$(CAPNP_BIN) compile log.capnp -oc:capnp
+
+blog.c: capnp/log.capnp.c
+
+##################################
 #### Binaries and their needs ####
 ##################################
 
@@ -268,6 +281,9 @@ usebfs: bstring.o bfs.o
 
 usebgit: LDLIBS += -lgit2
 usebgit: bgit.o bwords.o bstring.o bxsrc.o bxpkg.o
+
+useblog: LDLIBS += -lcapnp_c
+useblog: useblog.o blog.o bstring.o bxpkg.o capnp/log.capnp.o
 
 ########################
 #### Generic Targets ###

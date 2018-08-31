@@ -30,3 +30,5 @@ void		do_server_ssl_if_possible(void *, const char *, const char *);
 #define DEFAULT_XBPS_SRC "./xbps-src"
 #define	DEFAULT_MASTERDIR "./masterdir"
 #define	DEFAULT_HOSTDIR   "./hostdir"
+
+#define DEFAULT_LOGFILE "/var/log/dxpb/capnp.pack"
