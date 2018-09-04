@@ -1,10 +1,11 @@
 # Changelog
 
-## 0.0.17.1 - 2018-08-26- The one which chases the shadows away
+## 0.0.17.2 - 2018-09-04 - The one which chases the shadows away
 ### Overview
 - Builds no longer discard xbps-src exit codes.
-- Grapher now discriminates, filters out restricted packages and ensures if the
-  bootstrap set is ready to build that it gets full priority.
+- Grapher now discriminates: filters out restricted packages and ensures the
+  bootstrap packages get priority.
+- There is now logging in place of actions which might merit user knowledge.
 
 ## 0.0.17 - 2018-08-24 - The one which hotfixes the last release
 ### Overview

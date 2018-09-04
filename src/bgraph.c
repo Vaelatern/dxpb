@@ -8,7 +8,8 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <assert.h>
-#include <czmq.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include "dxpb.h"
 #include "bwords.h"
 #include "bxpkg.h"

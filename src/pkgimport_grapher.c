@@ -29,6 +29,7 @@
 #include "bfs.h"
 #include "bworker.h"
 #include "btranslate.h"
+#include "blog.h"
 
 //  Forward reference to method arguments structure
 typedef struct _client_args_t client_args_t;
@@ -153,13 +154,9 @@ create_pkg_from_info (client_t *self)
 	int rc;
 	rc = bgraph_insert_pkg(self->pkggraph, bpkg_read(self->message));
 	assert(rc == 0); // only != 0 if top level graph is very broken.
-	if (self->pub) {
-		zstr_sendm(self->pub, "TRACE");
-		zstr_sendf(self->pub, "added package to graph: %s/%s/%s",
-				pkgimport_msg_pkgname(self->message),
+	blog_pkgAddedToGraph(pkgimport_msg_pkgname(self->message),
 				pkgimport_msg_version(self->message),
-				pkgimport_msg_arch(self->message));
-	}
+				bpkg_enum_lookup(pkgimport_msg_arch(self->message)));
 }
 
 //  ---------------------------------------------------------------------------
@@ -224,10 +221,10 @@ add_worker_to_list (client_t *self)
 			zstr_sendf(self->pub, "Failed to add worker to grapher");
 		}
 	} else // Success adding workers
-		if (self->pub) {
-			zstr_sendm(self->pub, "DEBUG");
-			zstr_sendf(self->pub, "Added worker to grapher");
-		}
+		blog_workerAddedToGraphGroup(
+				bworker_from_remote_addr(self->workers,
+					self->args->addr,
+					self->args->check));
 }
 
 //  ---------------------------------------------------------------------------
@@ -256,24 +253,16 @@ pkgimport_grapher_ask_worker_to_help(client_t *self, struct bworker *wrkr, struc
 	rc = pkggraph_msg_send(msg, self->msgpipe);
 	if (rc != 0)
 		rc = ERR_CODE_SADSOCK;
-	if (rc == ERR_CODE_OK)
+	if (rc == ERR_CODE_OK) {
 		(void)bworker_job_assign(wrkr, pkg->name, pkg->ver, pkg->arch);
-	if (rc == ERR_CODE_OK && self->pub) {
-		zstr_sendm(self->pub, "NORMAL");
-		zstr_sendf(self->pub, "Asked worker to build %s/%s/%s",
+		pkg->status = PKG_STATUS_BUILDING;
+		blog_workerAssigning(wrkr,
 				pkggraph_msg_pkgname(msg),
 				pkggraph_msg_version(msg),
-				pkggraph_msg_arch(msg));
-	} else 	if (rc != ERR_CODE_OK && self->pub) {
-		zstr_sendm(self->pub, "ERROR");
-		zstr_sendf(self->pub, "Failed to ask worker to build %s/%s/%s",
-				pkggraph_msg_pkgname(msg),
-				pkggraph_msg_version(msg),
-				pkggraph_msg_arch(msg));
+				bpkg_enum_lookup(pkggraph_msg_arch(msg)));
 	}
-	pkg->status = PKG_STATUS_BUILDING;
-
 	pkggraph_msg_destroy(&msg);
+
 	return rc;
 }
 
@@ -359,16 +348,8 @@ write_graph_to_db (client_t *self)
 		perror("rc != ERR_CODE_OK for writing packages to database");
 		/* TODO: XXX: MUST HAVE a provision to work around this!
 		     2017-05-02*/
-		if (self->pub) {
-			zstr_sendm(self->pub, "DEBUG");
-			zstr_sendf(self->pub, "Failed to write packages to db");
-		}
-	} else {
-		if (self->pub) {
-			zstr_sendm(self->pub, "DEBUG");
-			zstr_sendf(self->pub, "Finished writing all packages to db");
-		}
-	}
+	} else
+		blog_graphSaved(self->hash);
 }
 
 //  ---------------------------------------------------------------------------
@@ -406,6 +387,7 @@ get_packages (client_t *self)
 		if (self->nextup[i] != NULL)
 			zlist_destroy(&(self->nextup[i]));
 		self->nextup[i] = bgraph_what_next_for_arch(self->pkggraph, i);
+		blog_queueSelected(self->nextup[i]);
 	}
 	if (self->pub) {
 		zstr_sendm(self->pub, "TRACE");
@@ -464,10 +446,8 @@ read_all_from_db (client_t *self)
 		}
 	}
 	bdb_params_destroy(&params);
-	if (self->pub) {
-		zstr_sendm(self->pub, "TRACE");
-		zstr_sendf(self->pub, "Finished reading packages from db");
-	}
+
+	blog_graphRead(self->hash);
 }
 
 //  ---------------------------------------------------------------------------

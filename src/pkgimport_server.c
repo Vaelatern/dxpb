@@ -22,6 +22,7 @@
 #include "bwords.h"
 #include "bxpkg.h"
 #include "bxsrc.h"
+#include "blog.h"
 
 //  ---------------------------------------------------------------------------
 //  Forward declarations for the two main classes we use here
@@ -314,17 +315,8 @@ route_pkginfo (client_t *self)
 	zlist_append(self->server->tmppkgs, tmp);
 	if (self->server->knowngrapher)
 		engine_send_event(self->server->knowngrapher, process_pkgs_event);
-	if (self->server->pub) {
-		zstr_sendm(self->server->pub, "DEBUG");
-		zstr_sendf(self->server->pub, "Read pkg as follows: "
-				"%s-%s-%s, cross: %d, broken: %d, "
-				"bootstrap: %d, restricted: %d, native_host: %s,"
-				"native_trgt: %s, cross_host: %s, cross_trgt: %s",
-				tmp->name, tmp->version, tmp->arch, tmp->can_cross,
-				tmp->broken, tmp->bootstrap, tmp->restricted,
-				tmp->native_host, tmp->native_trgt, tmp->cross_host,
-				tmp->cross_trgt);
-	}
+
+	blog_pkgImported(tmp->name, tmp->version, bpkg_enum_lookup(tmp->arch));
 }
 
 //  ---------------------------------------------------------------------------
@@ -348,11 +340,8 @@ request_pkg_deletion (client_t *self)
 	zlist_append(self->server->tmppkgs, tmp);
 	if (self->server->knowngrapher)
 		engine_send_event(self->server->knowngrapher, process_pkgs_event);
-	if (self->server->pub) {
-		zstr_sendm(self->server->pub, "DEBUG");
-		zstr_sendf(self->server->pub, "Want pkg deleted: %s",
-				tmp->name);
-	}
+
+	blog_pkgImportedForDeletion(tmp->name);
 }
 
 //  ---------------------------------------------------------------------------

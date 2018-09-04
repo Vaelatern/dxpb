@@ -19,7 +19,8 @@ dxpb(7) - Miscellaneous Information Manual
 \[**-T**&nbsp;*mkdtemp-template*]
 **-W**&nbsp;*hostarch:targetarch:cost\[:iscross]*  
 **dxpb-frontend**
-\[**-hL**]
+\[**-hLY**]
+\[**-o**&nbsp;*log-file-path*]
 \[**-g**&nbsp;*graph-endpoint*]
 \[**-G**&nbsp;*publish-socket*]
 \[**-k**&nbsp;*ssl-dir*]  
@@ -33,7 +34,8 @@ See:
 ## IMPORT BINARIES
 
 **dxpb-grapher**
-\[**-hL**]
+\[**-hLY**]
+\[**-o**&nbsp;*log-file-path*]
 \[**-i**&nbsp;*import-endpoint*]
 \[**-g**&nbsp;*graph-endpoint*]
 \[**-f**&nbsp;*file-endpoint*]
@@ -45,7 +47,8 @@ See:
 \[**-i**&nbsp;*import-endpoint*]
 \[**-x**&nbsp;*path-to-xbps-src*]  
 **dxpb-pkgimport-master**
-\[**-hL**]
+\[**-hLY**]
+\[**-o**&nbsp;*log-file-path*]
 \[**-i**&nbsp;*import-endpoint*]
 \[**-I**&nbsp;*publish-socket*]
 \[**-p**&nbsp;*packages-git-repo*]
@@ -58,7 +61,8 @@ See:
 ## FILE BINARIES
 
 **dxpb-hostdir-master**
-\[**-hL**]
+\[**-hLY**]
+\[**-o**&nbsp;*log-file-path*]
 \[**-r**&nbsp;*package-directory*]
 \[**-l**&nbsp;*log-directory*]
 \[**-s**&nbsp;*staging-directory*]
@@ -124,6 +128,12 @@ among all daemons (though not necessarily for utilities).
 **-L**
 
 > Print out the license and quit.
+
+**-Y**
+
+> Turn on logging (default: off)
+> **-o** *path*
+> Set non-default path to the logfile.
 
 **-i**
 
@@ -338,4 +348,4 @@ might be fixed.
 zmq\_tcp(7)
 zmq\_curve(7)
 
-Void Linux - March 20, 2018
+Void Linux - September 4, 2018

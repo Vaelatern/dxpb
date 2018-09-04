@@ -14,6 +14,8 @@ Arguments:
   -G <endpoint>	ZeroMQ endpoint for publishing logging-agent logs (such as for the IRC bot)
   -f <endpoint>	ZeroMQ endpoint for binding the hostdir agent
   -F <endpoint>	ZeroMQ endpoint to publish hostdir agent logs (such as for the IRC bot)
+  -Y            Turn on logging.
+  -o <path>     Log to a specific file.
   -k <dir>	Directory with owner-only read/write for storing curve keys
                 If not specified, no encryption will be performed, warnings
 		will be printed, and the entire setup will be unfit for
@@ -28,3 +30,4 @@ The following flags have defaults.
   -G: ipc:///var/run/dxpb/log-dxpb-hostdir-master-graph.sock
   -f: tcp://127.0.0.1:5196
   -F: ipc:///var/run/dxpb/log-dxpb-hostdir-master-files.sock
+  -o: /var/log/dxpb/capnp.pack

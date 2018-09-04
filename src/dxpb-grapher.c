@@ -17,6 +17,7 @@
 #include "pkgfiler_grapher.h"
 #include "bworker_end_status.h"
 #include "btranslate.h"
+#include "blog.h"
 
 #include "dxpb-common.h"
 #include "dxpb-client.h"
@@ -331,7 +332,7 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "vhLd:f:g:i:I:k:";
+	const char *optstring = "vhLd:f:g:i:I:k:Yo:";
  	char *default_dbpath = DEFAULT_DBPATH;
  	char *default_import_endpoint = DEFAULT_IMPORT_ENDPOINT;
  	char *default_file_endpoint = DEFAULT_FILE_ENDPOINT;
@@ -347,6 +348,12 @@ main(int argc, char * const *argv)
 
 	while ((c = getopt(argc, argv, optstring)) != -1) {
 		switch(c) {
+		case 'Y':
+			blog_logging_on(1);
+			break;
+		case 'o':
+			blog_logfile(optarg);
+			break;
 		case 'd':
 			dbpath = optarg;
 			break;

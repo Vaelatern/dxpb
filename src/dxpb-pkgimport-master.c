@@ -10,6 +10,7 @@
 #include <czmq.h>
 #include "dxpb.h"
 #include "pkgimport_server.h"
+#include "blog.h"
 
 #include "dxpb-common.h"
 
@@ -62,7 +63,7 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "vhLp:P:i:I:x:";
+	const char *optstring = "vhLp:P:i:I:x:Yo:";
 	char *default_endpoint = DEFAULT_IMPORT_ENDPOINT;
 	char *default_pubpoint = DEFAULT_DXPB_PKGIMPORT_MASTER_PUBPOINT;
 	char *default_repopath = DEFAULT_REPOPATH;
@@ -77,6 +78,12 @@ main(int argc, char * const *argv)
 
 	while ((c = getopt(argc, argv, optstring)) != -1) {
 		switch(c) {
+		case 'Y':
+			blog_logging_on(1);
+			break;
+		case 'o':
+			blog_logfile(optarg);
+			break;
 		case 'L':
 			print_license();
 			return 0;

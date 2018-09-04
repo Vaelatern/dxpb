@@ -32,6 +32,7 @@ CFLAGS += -g -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Werror -O
 LDFLAGS ?= -fPIC -fPIE
 LDLIBS += -lzmq -lczmq
 
+BLOG_SET = blog.o bxpkg.o capnp/log.capnp.o
 BINARIES = \
 	dxpb-builder \
 	dxpb-frontend \
@@ -218,23 +219,23 @@ dxpb-graph-to-dot: dxpb-graph-to-dot.o bdb.o bwords.o bgraph.o bxpkg.o bpkg.o bx
 dxpb-pkgimport-agent: LDLIBS += -lbsd
 dxpb-pkgimport-agent: dxpb-pkgimport-agent.o dxpb-client.o bxpkg.o bpkg.o bwords.o bxsrc.o pkgimport_client.o pkgimport_msg.o
 
-dxpb-pkgimport-master: LDLIBS += -lbsd -lgit2
-dxpb-pkgimport-master: dxpb-pkgimport-master.o bxpkg.o bwords.o bxsrc.o bgit.o pkgimport_server.o pkgimport_msg.o
+dxpb-pkgimport-master: LDLIBS += -lbsd -lgit2 -lcapnp_c
+dxpb-pkgimport-master: dxpb-pkgimport-master.o bxpkg.o bwords.o bxsrc.o bgit.o pkgimport_server.o pkgimport_msg.o $(BLOG_SET)
 
 dxpb-builder: LDLIBS += -lgit2
 dxpb-builder: dxpb-builder.o dxpb-client.o bgit.o bbuilder.o bwords.o bxpkg.o bxsrc.o pkggraph_worker.o pkggraph_msg.o
 
-dxpb-grapher: LDLIBS += -lbsd -lsqlite3 -larchive -lxbps
-dxpb-grapher: dxpb-grapher.o dxpb-client.o bwords.o bxsrc.o bxpkg.o bpkg.o bxbps.o bgraph.o bdb.o pkgimport_msg.o pkgimport_grapher.o pkggraph_msg.o pkggraph_grapher.o pkgfiles_msg.o pkgfiler_grapher.o bworker.o btranslate.o
+dxpb-grapher: LDLIBS += -lbsd -lsqlite3 -larchive -lxbps -lcapnp_c
+dxpb-grapher: dxpb-grapher.o dxpb-client.o bwords.o bxsrc.o bxpkg.o bpkg.o bxbps.o bgraph.o bdb.o pkgimport_msg.o pkgimport_grapher.o pkggraph_msg.o pkggraph_grapher.o pkgfiles_msg.o pkgfiler_grapher.o bworker.o btranslate.o $(BLOG_SET)
 
-dxpb-hostdir-master: LDLIBS += -larchive -lxbps -lpthread
-dxpb-hostdir-master: dxpb-hostdir-master.o brepowatch.o bxbps.o pkggraph_msg.o pkggraph_filer.o pkgfiles_msg.o pkgfiler.o dxpb-client.o
+dxpb-hostdir-master: LDLIBS += -larchive -lxbps -lpthread -lcapnp_c
+dxpb-hostdir-master: dxpb-hostdir-master.o brepowatch.o bxbps.o pkggraph_msg.o pkggraph_filer.o pkgfiles_msg.o pkgfiler.o dxpb-client.o $(BLOG_SET)
 
 dxpb-hostdir-remote: LDLIBS += -larchive -lxbps -lpthread
 dxpb-hostdir-remote: dxpb-hostdir-remote.o dxpb-client.o bxbps.o pkgfiles_msg.o pkgfiler_remote.o brepowatch.o
 
-dxpb-frontend: LDLIBS += -lbsd
-dxpb-frontend: dxpb-frontend.o pkggraph_msg.o bxpkg.o pkggraph_server.o bworker.o
+dxpb-frontend: LDLIBS += -lbsd -lcapnp_c
+dxpb-frontend: dxpb-frontend.o pkggraph_msg.o bxpkg.o pkggraph_server.o bworker.o $(BLOG_SET)
 
 dxpb-common.c: license.inc dxpb-version.h
 

@@ -30,6 +30,7 @@
 #include "bstring.h"
 #include "bdebug.h"
 #include "brepowatch.h"
+#include "blog.h"
 
 //  ---------------------------------------------------------------------------
 //  Forward declarations for the two main classes we use here
@@ -223,7 +224,6 @@ destroy_hunt(struct hunt **todie)
 	*todie = NULL;
 }
 
-
 //  Include the generated server engine
 #include "pkgfiler_engine.inc"
 
@@ -279,7 +279,6 @@ generate_memos(server_t *self)
 		zlist_append(self->followups, memo);
 	}
 }
-
 
 //
 // A step to parse already existing memos
@@ -457,7 +456,6 @@ pkgfiler_test (bool verbose)
     printf ("OK\n");
 }
 
-
 //  ---------------------------------------------------------------------------
 //  check_for_pkg_locally
 //
@@ -489,7 +487,6 @@ check_for_pkg_locally (client_t *self)
 	printnote("Ended checking for pkg");
 }
 
-
 //  ---------------------------------------------------------------------------
 //  broadcast_pkg_locate_request
 //
@@ -511,7 +508,6 @@ broadcast_pkg_locate_request (client_t *self)
 end:
 	FREE(key);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  delete_package
@@ -547,8 +543,6 @@ delete_package (client_t *self)
 	}
 }
 
-
-
 //  ---------------------------------------------------------------------------
 //  verify_this_remote_is_the_right_peer
 //
@@ -573,7 +567,6 @@ verify_this_remote_is_the_right_peer (client_t *self)
 	free(key);
 	key = NULL;
 }
-
 
 //  ---------------------------------------------------------------------------
 //  write_file_chunk
@@ -624,7 +617,6 @@ write_file_chunk (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  obsolete_peer_agreement
 //
@@ -653,7 +645,6 @@ obsolete_peer_agreement (client_t *self)
 	key = NULL;
 }
 
-
 //  ---------------------------------------------------------------------------
 //  tell_asker_pkg_not_here
 //
@@ -663,7 +654,6 @@ tell_asker_pkg_not_here (client_t *self)
 {
 	engine_send_event(self->server->curhunt->asker, pkg_not_here_event);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  mark_pkg_at_remote_location
@@ -690,8 +680,11 @@ mark_pkg_at_remote_location (client_t *self)
 	zlist_append(hunt->responded, togo);
 	zlist_remove(hunt->resp_pending, togo);
 	togo = NULL;
-}
 
+	blog_pkgFetchStarting(pkgfiles_msg_pkgname(self->message),
+			pkgfiles_msg_version(self->message),
+			bpkg_enum_lookup(pkgfiles_msg_arch(self->message)));
+}
 
 //  ---------------------------------------------------------------------------
 //  establish_peer_agreement
@@ -729,7 +722,6 @@ end:
 	FREE(key);
 }
 
-
 //  ---------------------------------------------------------------------------
 //  act_if_all_remotes_returned_or_expired
 //
@@ -740,7 +732,6 @@ act_if_all_remotes_returned_or_expired (client_t *self)
 	printnote("Acting on all remotes returned or expired");
 	generate_memos(self->server);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  mark_pkg_not_at_remote_location
@@ -772,7 +763,6 @@ end:
 	free(key);
 	key = NULL;
 }
-
 
 //  ---------------------------------------------------------------------------
 //  mark_all_pkgs_not_at_this_remote_location
@@ -811,7 +801,6 @@ mark_all_pkgs_not_at_this_remote_location (client_t *self)
 	}
 }
 
-
 //  ---------------------------------------------------------------------------
 //  curhunt_to_my_own_message
 //
@@ -827,7 +816,6 @@ curhunt_to_my_own_message (client_t *self)
 	pkgfiles_msg_set_arch(self->message, self->server->curhunt->arch);
 }
 
-
 //  ---------------------------------------------------------------------------
 //  set_myself_response_pending
 //
@@ -841,7 +829,6 @@ set_myself_response_pending (client_t *self)
 	zlist_append(self->refs, self->server->curhunt);
 	zlist_append(self->server->curhunt->resp_pending, atom);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  end_hunt
@@ -861,7 +848,6 @@ end_hunt (client_t *self)
 	free(key);
 	key = NULL;
 }
-
 
 //  ---------------------------------------------------------------------------
 //  postprocess_chunk
@@ -933,6 +919,10 @@ sendmemo:	FREE(checksum); // located here because C wants a statement here.
 		zlist_append(self->server->followups, memo);
 		memo = NULL; // not free!
 
+		blog_pkgFetchComplete(fetch->pkgname,
+				fetch->version,
+				bpkg_enum_lookup(fetch->arch));
+
 		FREE(fetch->filepath);
 		FREE(fetch->subpath);
 		FREE(fetch->pkgname);
@@ -957,7 +947,6 @@ ask_for_more (client_t *self)
 	say_we_want_more_if_we_do(self);
 }
 
-
 //  ---------------------------------------------------------------------------
 //  parse_memos
 //
@@ -967,7 +956,6 @@ parse_memos (client_t *self)
 {
 	server_parse_memos(self->server);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  ensure_configuration_is_set

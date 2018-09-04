@@ -10,6 +10,7 @@
 #include <czmq.h>
 #include "dxpb.h"
 #include "pkggraph_server.h"
+#include "blog.h"
 
 #include "dxpb-common.h"
 
@@ -59,7 +60,7 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "vhLg:G:k:";
+	const char *optstring = "vhLg:G:k:Yo:";
 	char *default_endpoint = DEFAULT_GRAPH_ENDPOINT;
 	char *default_ssldir = DEFAULT_SSLDIR;
 	char *default_pubpoint = DEFAULT_DXPB_FRONTEND_PUBPOINT;
@@ -69,6 +70,12 @@ main(int argc, char * const *argv)
 
 	while ((c = getopt(argc, argv, optstring)) != -1) {
 		switch(c) {
+		case 'Y':
+			blog_logging_on(1);
+			break;
+		case 'o':
+			blog_logfile(optarg);
+			break;
 		case 'L':
 			print_license();
 			return 0;

@@ -28,6 +28,7 @@ enum pkg_archs {
 
 extern const char *pkg_archs_str[];
 
+#ifdef DXPB_BWORDS_H
 struct arch {
 	enum	pkg_archs spec;
 	struct	pkg *pkgs;
@@ -64,5 +65,6 @@ struct pkg_need {
 	const char 	*spec;
 	struct	pkg	*pkg;
 };
+#endif
 
 enum pkg_archs	 bpkg_enum_lookup(const char *);

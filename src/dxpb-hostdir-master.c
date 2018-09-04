@@ -12,6 +12,7 @@
 #include "dxpb.h"
 #include "pkgfiler.h"
 #include "pkggraph_filer.h"
+#include "blog.h"
 
 #define VERBOSE_FLAG 1
 #define ERR_FLAG 2
@@ -69,7 +70,6 @@ run(int flags, const char *ssldir, const char *sdir, const char *rdir,
 		retVal = ERR_CODE_OK;
 	zsock_flush(log_actor);
 
-
 	zactor_t *sock_to_clear;
 	while (retVal == ERR_CODE_OK && (sock_to_clear = zpoller_wait(polling, -1)) != NULL) {
 		// We don't have any communication specified.
@@ -90,7 +90,7 @@ main(int argc, char * const *argv)
 {
 	int c;
 	int flags = 0;
-	const char *optstring = "Lhvk:s:r:l:f:F:g:G:";
+	const char *optstring = "Lhvk:s:r:l:f:F:g:G:Yo:";
 	char *default_stagingdir = DEFAULT_STAGINGDIR;
 	char *default_repodir = DEFAULT_REPODIR;
 	char *default_logdir = DEFAULT_LOGDIR;
@@ -106,6 +106,12 @@ main(int argc, char * const *argv)
 
 	while ((c = getopt(argc, argv, optstring)) != -1) {
 		switch(c) {
+		case 'Y':
+			blog_logging_on(1);
+			break;
+		case 'o':
+			blog_logfile(optarg);
+			break;
 		case 'L':
 			print_license();
 			return 0;

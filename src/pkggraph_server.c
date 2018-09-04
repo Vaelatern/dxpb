@@ -24,6 +24,7 @@
 #include "bxpkg.h"
 #include "bworker.h"
 #include "bworker_end_status.h"
+#include "blog.h"
 
 //  ---------------------------------------------------------------------------
 //  Forward declarations for the two main classes we use here
@@ -288,6 +289,8 @@ register_worker_as_ready_to_help (client_t *self)
 			pkggraph_msg_check(self->message));
 	assert(wrkr);
 
+	blog_workerMadeAvailable(wrkr);
+
 	/* Handling for a possibly absent grapher */
 	struct memo *memo = malloc(sizeof(struct memo));
 	if (!memo) {
@@ -389,9 +392,11 @@ act_on_job_return (client_t *self)
 	assert(memo->version);
 	assert(memo->arch);
 	zlist_append(self->server->memos_to_grapher, memo);
-	bworker_job_remove(bworker_from_sub_remote_addr(self->subgroup,
-			pkggraph_msg_addr(self->message),
-			pkggraph_msg_check(self->message)));
+	bworker_job_remove(wrkr);
+
+	blog_workerAssignmentDone(wrkr, memo->pkgname, memo->version,
+			bpkg_enum_lookup(memo->arch),
+			pkggraph_msg_cause(self->message));
 }
 
 //  ---------------------------------------------------------------------------
@@ -413,13 +418,8 @@ route_log (client_t *self)
 		engine_send_event(self->server->storage, send_the_log_event);
 		self->server->storage->num_logs_sent = 0;
 	}
-	if (self->server->pub) {
-		zstr_sendm(self->server->pub, "TRACE");
-		zstr_sendf(self->server->pub, "%s/%s/%s: routing log",
-				pkggraph_msg_pkgname(self->message),
-				pkggraph_msg_version(self->message),
-				pkggraph_msg_arch(self->message));
-	}
+
+	blog_logReceived(NULL, tmp->name, tmp->ver, bpkg_enum_lookup(tmp->arch));
 }
 
 //  ---------------------------------------------------------------------------
@@ -496,10 +496,9 @@ transform_worker_job_for_assignment (client_t *self)
 	pkggraph_msg_set_version(self->message, wrkr->job.ver);
 	assert(pkg_archs_str[wrkr->job.arch] != NULL);
 	pkggraph_msg_set_arch(self->message, pkg_archs_str[wrkr->job.arch]);
-	if (self->server->pub) {
-		zstr_sendm(self->server->pub, "TRACE");
-		zstr_sendf(self->server->pub, "Telling worker it's assigned");
-	}
+
+	blog_workerAssigned(wrkr, wrkr->job.name, wrkr->job.ver, wrkr->job.arch);
+
 	wrkr = NULL; // not free, just no longer ours
 }
 
@@ -649,7 +648,7 @@ remove_all_workers (client_t *self)
 static void
 remove_worker (client_t *self)
 {
-	struct bworker *wrkr = bworker_from_remote_addr(self->server->workers,
+	struct bworker *wrkr = bworker_from_sub_remote_addr(self->subgroup,
 			pkggraph_msg_addr(self->message),
 			pkggraph_msg_check(self->message));
 

@@ -9,6 +9,8 @@ Arguments:
   -i <endpoint>	ZeroMQ endpoint to bind the import master
   -I <endpoint>	ZeroMQ endpoint for publishing logs (like for the IRC bot)
   -x <path>	Path to the xbps-src executable
+  -Y            Turn on logging.
+  -o <path>     Log to a specific file.
 
 The following flags have defaults.
   -p: ./
@@ -16,3 +18,4 @@ The following flags have defaults.
   -i: tcp://127.0.0.1:5197
   -I: ipc:///var/run/dxpb/log-pkgimport-master.sock
   -x: ./xbps-src
+  -o: /var/log/dxpb/capnp.pack

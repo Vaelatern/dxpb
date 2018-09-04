@@ -20,6 +20,8 @@
 #include "./pkggraph_filer.h"
 #include "dxpb.h"
 #include "bfs.h"
+#include "bxpkg.h"
+#include "blog.h"
 
 //  Forward reference to method arguments structure
 typedef struct _client_args_t client_args_t;
@@ -168,13 +170,6 @@ write_log_to_file (client_t *self)
 		fprintf(stderr, "Obviously the author did not anticipate log chunks larger than SSIZE_MAX\n");
 		dprintf(destfd, "dxpb=> If you see this, please fix write_log_to_file.\n");
 		dprintf(destfd, "dxpb=> Obviously the author did not anticipate log chunks larger than SSIZE_MAX\n");
-		if (self->pub) {
-			zstr_sendm(self->pub, "DEBUG");
-			zstr_sendf(self->pub, "Log chunk exceeded SSIZE_MAX: %s/%s/%s",
-					pkggraph_msg_pkgname(self->message),
-					pkggraph_msg_version(self->message),
-					pkggraph_msg_arch(self->message));
-		}
 		goto close;
 	}
 
@@ -194,13 +189,9 @@ write_log_to_file (client_t *self)
 		}
 	}
 
-	if (self->pub) {
-		zstr_sendm(self->pub, "TRACE");
-		zstr_sendf(self->pub, "Wrote log chunk for %s/%s/%s",
-				pkggraph_msg_pkgname(self->message),
-				pkggraph_msg_version(self->message),
-				pkggraph_msg_arch(self->message));
-	}
+	blog_logFiled(pkggraph_msg_pkgname(self->message),
+		pkggraph_msg_version(self->message),
+		bpkg_enum_lookup(pkggraph_msg_arch(self->message)));
 
 close:
 	close(destfd);

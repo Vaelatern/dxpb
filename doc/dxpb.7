@@ -17,7 +17,8 @@
 .Op Fl T Ar mkdtemp-template
 .Fl W Ar hostarch:targetarch:cost[:iscross]
 .Nm dxpb-frontend
-.Op Fl hL
+.Op Fl hLY
+.Op Fl o Ar log-file-path
 .Op Fl g Ar graph-endpoint
 .Op Fl G Ar publish-socket
 .Op Fl k Ar ssl-dir
@@ -29,7 +30,8 @@ See:
 .Sx FILE BINARIES
 .Ss IMPORT BINARIES
 .Nm dxpb-grapher
-.Op Fl hL
+.Op Fl hLY
+.Op Fl o Ar log-file-path
 .Op Fl i Ar import-endpoint
 .Op Fl g Ar graph-endpoint
 .Op Fl f Ar file-endpoint
@@ -41,7 +43,8 @@ See:
 .Op Fl i Ar import-endpoint
 .Op Fl x Ar path-to-xbps-src
 .Nm dxpb-pkgimport-master
-.Op Fl hL
+.Op Fl hLY
+.Op Fl o Ar log-file-path
 .Op Fl i Ar import-endpoint
 .Op Fl I Ar publish-socket
 .Op Fl p Ar packages-git-repo
@@ -52,7 +55,8 @@ See:
 .Op Fl i Ar import-endpoint
 .Ss FILE BINARIES
 .Nm dxpb-hostdir-master
-.Op Fl hL
+.Op Fl hLY
+.Op Fl o Ar log-file-path
 .Op Fl r Ar package-directory
 .Op Fl l Ar log-directory
 .Op Fl s Ar staging-directory
@@ -106,6 +110,10 @@ Specific arch in a format xbps-src will accept
 Print out help text for the specific binary and quit.
 .It Fl L
 Print out the license and quit.
+.It Fl Y
+Turn on logging (default: off)
+.Fl o Ar path
+Set non-default path to the logfile.
 .It Fl i
 Endpoint in the form tcp://host:port for the import chain. Host can be * but
 only on dxpb-pkgimport-master.
