@@ -1,4 +1,4 @@
-for dir in /var/run/dxpb /var/lib/dxpb/staging /var/lib/dxpb/logs /var/lib/dxpb/pkgs /var/cache/dxpb; do
+for dir in /var/run/dxpb /var/lib/dxpb/staging /var/lib/dxpb/logs /var/lib/dxpb/pkgs /var/cache/dxpb /var/log/dxpb; do
 	mkdir -p $dir
 done
 
@@ -10,3 +10,9 @@ chmod 755 /var/lib/dxpb
 
 chown _dxpb_grapher:_dxpb_import /var/cache/dxpb/
 chmod 775 /var/cache/dxpb
+
+chown root:_dxpb /var/log/dxpb
+chmod 770 /var/log/dxpb
+touch /var/log/dxpb/capnp.pack
+chmod 664 /var/log/dxpb/capnp.pack
+chown root:_dxpb /var/log/dxpb/capnp.pack
