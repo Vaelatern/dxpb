@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.17.2 - 2018-09-04 - The one which chases the shadows away
+## 0.0.18 - 2018-09-04 - The one with improved insight into the system
 ### Overview
 - Builds no longer discard xbps-src exit codes.
 - Grapher now discriminates: filters out restricted packages and ensures the
