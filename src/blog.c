@@ -34,6 +34,16 @@ const int pkg_archs_translate[] = {
 	[ARCH_X86_64_MUSL] = Arch_x8664Musl,
 };
 
+char
+blog_logging_on(const char in)
+{
+	static char on = 0;
+	if (in < 0)
+		return on;
+	on = in;
+	return -1;
+}
+
 char *
 blog_logfile(const char *path)
 {
@@ -137,6 +147,8 @@ blog_pkgspec_set(struct capn_segment *cs, PkgSpec_ptr *ptr, char *name, char *ve
 void
 blog_pkgImported(char *name, char *ver, enum pkg_archs arch)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);
@@ -157,6 +169,8 @@ blog_pkgImported(char *name, char *ver, enum pkg_archs arch)
 void
 blog_pkgAddedToGraph(char *name, char *ver, enum pkg_archs arch)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);
@@ -177,6 +191,8 @@ blog_pkgAddedToGraph(char *name, char *ver, enum pkg_archs arch)
 void
 blog_pkgFetchStarting(char *name, char *ver, enum pkg_archs arch)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);
@@ -197,6 +213,8 @@ blog_pkgFetchStarting(char *name, char *ver, enum pkg_archs arch)
 void
 blog_pkgFetchComplete(char *name, char *ver, enum pkg_archs arch)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);
@@ -217,6 +235,8 @@ blog_pkgFetchComplete(char *name, char *ver, enum pkg_archs arch)
 void
 blog_graphSaved(char *commitID)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);
@@ -237,6 +257,8 @@ blog_graphSaved(char *commitID)
 void
 blog_graphRead(char *commitID)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);
@@ -257,6 +279,8 @@ blog_graphRead(char *commitID)
 void
 blog_pkgImportedForDeletion(char *pkgname)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);
@@ -277,6 +301,8 @@ blog_pkgImportedForDeletion(char *pkgname)
 void
 blog_logFiled(char *name, char *ver, enum pkg_archs arch)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);
@@ -297,6 +323,8 @@ blog_logFiled(char *name, char *ver, enum pkg_archs arch)
 void
 blog_workerAddedToGraphGroup(struct bworker *wrkr)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);
@@ -320,6 +348,8 @@ blog_workerAddedToGraphGroup(struct bworker *wrkr)
 void
 blog_workerMadeAvailable(struct bworker *wrkr)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);
@@ -343,6 +373,8 @@ blog_workerMadeAvailable(struct bworker *wrkr)
 void
 blog_workerAssigned(struct bworker *wrkr, char *name, char *ver, enum pkg_archs arch)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);
@@ -367,6 +399,8 @@ blog_workerAssigned(struct bworker *wrkr, char *name, char *ver, enum pkg_archs 
 void
 blog_workerAssigning(struct bworker *wrkr, char *name, char *ver, enum pkg_archs arch)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);
@@ -391,6 +425,8 @@ blog_workerAssigning(struct bworker *wrkr, char *name, char *ver, enum pkg_archs
 void
 blog_logReceived(struct bworker *wrkr, char *name, char *ver, enum pkg_archs arch)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);
@@ -416,6 +452,8 @@ void
 blog_workerAssignmentDone(struct bworker *wrkr, char *name, char *ver,
 		enum pkg_archs arch, uint8_t cause)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);
@@ -441,6 +479,8 @@ blog_workerAssignmentDone(struct bworker *wrkr, char *name, char *ver,
 void
 blog_queueSelected(zlist_t *next_for_arch)
 {
+	if (!blog_logging_on(-1))
+		return;
 	struct capn c;
 	capn_init_malloc(&c);
 	capn_ptr cr = capn_root(&c);

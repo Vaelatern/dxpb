@@ -9,6 +9,7 @@
 #endif
 #define DXPB_BLOG_H
 
+char	 blog_logging_on(const char);
 char	*blog_logfile(const char *);
 void	 blog_pkgImported(char *, char *, enum pkg_archs);
 void	 blog_pkgAddedToGraph(char *, char *, enum pkg_archs);
