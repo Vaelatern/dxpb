@@ -1,7 +1,7 @@
 #!/bin/sh
 
 unset ETCDIR USER GROUP SSLDIR REPODIR LOGFILE STAGINGDIR FRONTEND_ENDPOINT
-unset FILES_ENDPOINT FRONTPUB_PUBPOINT FILES_PUBPOINT
+unset FILES_ENDPOINT FRONTPUB_PUBPOINT FILES_PUBPOINT ARGS
 
 [ -f ./conf ] && . ./conf
 
@@ -12,7 +12,6 @@ unset FILES_ENDPOINT FRONTPUB_PUBPOINT FILES_PUBPOINT
 
 : ${USER:=_dxpb_filer}
 : ${GROUP:=_dxpb:_dxpb_filer:_dxpb_graph:_dxpb_ssl}
-
 
 args=""
 [ -n "$SSLDIR" ] && args="$args -k $SSLDIR"
@@ -26,4 +25,4 @@ args=""
 [ -n "$FRONTPUB_PUBPOINT" ] && args="$args -G $FRONTPUB_PUBPOINT"
 [ -n "$FILES_PUBPOINT" ] && args="$args -F $FILES_PUBPOINT"
 
-exec chpst -u $USER:$GROUP dxpb-hostdir-master $args >$LOGFILE 2>&1
+exec chpst -u $USER:$GROUP dxpb-hostdir-master $args $ARGS >$LOGFILE 2>&1

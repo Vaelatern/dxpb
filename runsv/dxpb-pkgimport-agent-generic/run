@@ -1,6 +1,6 @@
 #!/bin/sh
 
-unset USER GROUP WRKDIR ETCDIR XBPSSRC ENDPOINT LOGFILE
+unset USER GROUP WRKDIR ETCDIR XBPSSRC ENDPOINT LOGFILE ARGS
 
 getconf=
 [ -f ./conf ] && . ./conf && getconf=no
@@ -22,4 +22,4 @@ args=""
 
 [ -n "$WRKDIR" ] && cd "$WRKDIR"
 
-exec chpst -u $USER:$GROUP dxpb-pkgimport-agent $args >$LOGFILE 2>&1
+exec chpst -u $USER:$GROUP dxpb-pkgimport-agent $args $ARGS >$LOGFILE 2>&1

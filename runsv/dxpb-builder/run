@@ -1,7 +1,7 @@
 #!/bin/sh
 
 unset USER GROUP HOSTDIR WRKDIR WRKSPEC SSLDIR HOSTDIR MASTERDIR REPODIR
-unset ENDPOINT ARGV0 LOGFILE
+unset ENDPOINT ARGV0 LOGFILE ARGS
 
 [ -f ./conf ] && . ./conf
 
@@ -28,4 +28,4 @@ args=""
 
 [ -n "$ARGV0" ] && ARGV0="-b $ARGV0"
 
-exec chpst $ARGV0 -u $USER:$GROUP dxpb-builder $args >$LOGFILE 2>&1
+exec chpst $ARGV0 -u $USER:$GROUP dxpb-builder $args $ARGS >$LOGFILE 2>&1

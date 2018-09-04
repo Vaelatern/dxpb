@@ -1,6 +1,6 @@
 #!/bin/sh
 
-unset USER GROUP WRKDIR HOSTDIR SSLDIR ENDPOINT LOGFILE
+unset USER GROUP WRKDIR HOSTDIR SSLDIR ENDPOINT LOGFILE ARGS
 
 [ -f ./conf ] && . ./conf
 
@@ -18,4 +18,4 @@ args=""
 
 [ -n "$WRKDIR" ] && cd "$WRKDIR"
 
-exec chpst -u $USER:$GROUP dxpb-hostdir-remote $args >$LOGFILE 2>&1
+exec chpst -u $USER:$GROUP dxpb-hostdir-remote $args $ARGS >$LOGFILE 2>&1
