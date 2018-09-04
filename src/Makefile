@@ -131,8 +131,10 @@ dxpb-version.h: ../CHANGELOG.md
 dxpb-version.txt: ../CHANGELOG.md
 	awk '/## [0-9]+\.[0-9]+\.[0-9]+[\.0-9]* -/ { print $$2; exit }' ../CHANGELOG.md >dxpb-version.txt
 
-../README.md: ../doc/dxpb.7
+../README.md: ../doc/dxpb.7 ../FAQ.md
 	echo "![Production ready-ish](https://img.shields.io/badge/%F0%9F%A4%B7-Production%20Ready%E2%80%90ish-691d78.svg)" >../README.md
+	cat ../FAQ.md >> ../README.md
+	printf "\n\n# Manual\n\n" >> ../README.md
 	mandoc -T markdown ../doc/dxpb.7 >>../README.md
 
 #############################
