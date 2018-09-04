@@ -5,6 +5,7 @@ stages:
 
 before_script:
   - xbps-install -Sy
+  - xbps-install -y c-capnproto-devel
   - xbps-install -yu
   - xbps-install -yu
   - xbps-install -yu
