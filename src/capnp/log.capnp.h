@@ -47,7 +47,8 @@ enum Arch {
 	Arch_x8664Musl = 10,
 	Arch_armv5Tel = 11,
 	Arch_armv5TelMusl = 12,
-	Arch_mipselMusl = 13
+	Arch_mipselMusl = 13,
+	Arch_virtual = 14
 };
 enum LogEntry_l_which {
 	LogEntry_l_pkgImported = 0,

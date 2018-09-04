@@ -20,22 +20,27 @@
 #include "capnp/log.capnp.h"
 #include "blog.h"
 
-const int pkg_archs_translate[] = {
-	[ARCH_NOARCH] = Arch_noarch,
-	[ARCH_AARCH64] = Arch_aarch64,
-	[ARCH_AARCH64_MUSL] = Arch_aarch64Musl,
-	[ARCH_ARMV6L] = Arch_armv6l,
-	[ARCH_ARMV6L_MUSL] = Arch_armv6lMusl,
-	[ARCH_ARMV7L] = Arch_armv7l,
-	[ARCH_ARMV7L_MUSL] = Arch_armv7lMusl,
-	[ARCH_I686] = Arch_i686,
-	[ARCH_I686_MUSL] = Arch_i686Musl,
-	[ARCH_X86_64] = Arch_x8664,
-	[ARCH_X86_64_MUSL] = Arch_x8664Musl,
-	[ARCH_ARMV5TEL] = Arch_armv5Tel,
-	[ARCH_ARMV5TEL_MUSL] = Arch_armv5TelMusl,
-	[ARCH_MIPSEL_MUSL] = Arch_mipselMusl,
-};
+inline static enum Arch
+pkg_archs_translate(const enum pkg_archs in)
+{
+	switch (in) {
+	case ARCH_NOARCH: return Arch_noarch;
+	case ARCH_AARCH64: return Arch_aarch64;
+	case ARCH_AARCH64_MUSL: return Arch_aarch64Musl;
+	case ARCH_ARMV5TEL: return Arch_armv5Tel;
+	case ARCH_ARMV5TEL_MUSL: return Arch_armv5TelMusl;
+	case ARCH_ARMV6L: return Arch_armv6l;
+	case ARCH_ARMV6L_MUSL: return Arch_armv6lMusl;
+	case ARCH_ARMV7L: return Arch_armv7l;
+	case ARCH_ARMV7L_MUSL: return Arch_armv7lMusl;
+	case ARCH_I686: return Arch_i686;
+	case ARCH_I686_MUSL: return Arch_i686Musl;
+	case ARCH_MIPSEL_MUSL: return Arch_mipselMusl;
+	case ARCH_X86_64: return Arch_x8664;
+	case ARCH_X86_64_MUSL: return Arch_x8664Musl;
+	default: return Arch_virtual;
+	}
+}
 
 char
 blog_logging_on(const char in)
@@ -109,8 +114,8 @@ blog_worker_set(struct capn_segment *cs, Worker_ptr *ptr, const uint16_t addr,
 	struct Worker lamb = {
 		.addr = addr,
 		.check = check,
-		.hostarch = pkg_archs_translate[hostarch],
-		.trgtarch = pkg_archs_translate[trgtarch],
+		.hostarch = pkg_archs_translate(hostarch),
+		.trgtarch = pkg_archs_translate(trgtarch),
 		.iscross = iscross,
 		.cost = cost};
 
@@ -131,7 +136,7 @@ blog_pkgspec_set_all(struct capn_segment *cs, PkgSpec_list *list,
 	for (in = zlist_first(pkgs), i = 0; in; in = zlist_next(pkgs), i++) {
 		blog_text_from_chars(&spec.name, in->name);
 		blog_text_from_chars(&spec.ver, in->ver);
-		spec.arch = pkg_archs_translate[in->arch];
+		spec.arch = pkg_archs_translate(in->arch);
 		set_PkgSpec(&spec, *list, i);
 	}
 
@@ -140,7 +145,8 @@ blog_pkgspec_set_all(struct capn_segment *cs, PkgSpec_list *list,
 static void
 blog_pkgspec_set(struct capn_segment *cs, PkgSpec_ptr *ptr, const char *name, const char *ver, const enum pkg_archs arch)
 {
-	struct PkgSpec lamb = {.arch = pkg_archs_translate[arch]};
+	struct PkgSpec lamb = {0};
+	lamb.arch = pkg_archs_translate(arch);
 
 	blog_text_from_chars(&lamb.name, name);
 	blog_text_from_chars(&lamb.ver, ver);
@@ -339,9 +345,8 @@ blog_workerAddedToGraphGroup(const struct bworker *wrkr)
 
 	blog_init_logentry(&relptr, LogEntry_l_workerAddedToGraphGroup);
 	blog_worker_set(cs, &relptr.l.workerAddedToGraphGroup.worker, wrkr->myaddr,
-			wrkr->mycheck, pkg_archs_translate[wrkr->hostarch],
-			pkg_archs_translate[wrkr->arch], wrkr->iscross,
-			wrkr->cost);
+			wrkr->mycheck, wrkr->hostarch, wrkr->arch,
+			wrkr->iscross, wrkr->cost);
 
 	write_LogEntry(&relptr, ptr);
 	int rc = capn_setp(capn_root(&c), 0, ptr.p);
@@ -364,9 +369,8 @@ blog_workerMadeAvailable(const struct bworker *wrkr)
 
 	blog_init_logentry(&relptr, LogEntry_l_workerMadeAvailable);
 	blog_worker_set(cs, &relptr.l.workerMadeAvailable.worker, wrkr->myaddr,
-			wrkr->mycheck, pkg_archs_translate[wrkr->hostarch],
-			pkg_archs_translate[wrkr->arch], wrkr->iscross,
-			wrkr->cost);
+			wrkr->mycheck, wrkr->hostarch, wrkr->arch,
+			wrkr->iscross, wrkr->cost);
 
 	write_LogEntry(&relptr, ptr);
 	int rc = capn_setp(capn_root(&c), 0, ptr.p);
@@ -390,9 +394,8 @@ blog_workerAssigned(const struct bworker *wrkr, const char *name, const char *ve
 	blog_init_logentry(&relptr, LogEntry_l_workerAssigned);
 	blog_pkgspec_set(cs, &relptr.l.workerAssigned.pkg, name, ver, arch);
 	blog_worker_set(cs, &relptr.l.workerAssigned.worker, wrkr->myaddr,
-			wrkr->mycheck, pkg_archs_translate[wrkr->hostarch],
-			pkg_archs_translate[wrkr->arch], wrkr->iscross,
-			wrkr->cost);
+			wrkr->mycheck, wrkr->hostarch, wrkr->arch,
+			wrkr->iscross, wrkr->cost);
 
 	write_LogEntry(&relptr, ptr);
 	int rc = capn_setp(capn_root(&c), 0, ptr.p);
@@ -416,9 +419,8 @@ blog_workerAssigning(const struct bworker *wrkr, const char *name, const char *v
 	blog_init_logentry(&relptr, LogEntry_l_workerAssigning);
 	blog_pkgspec_set(cs, &relptr.l.workerAssigning.pkg, name, ver, arch);
 	blog_worker_set(cs, &relptr.l.workerAssigning.worker, wrkr->myaddr,
-			wrkr->mycheck, pkg_archs_translate[wrkr->hostarch],
-			pkg_archs_translate[wrkr->arch], wrkr->iscross,
-			wrkr->cost);
+			wrkr->mycheck, wrkr->hostarch, wrkr->arch,
+			wrkr->iscross, wrkr->cost);
 
 	write_LogEntry(&relptr, ptr);
 	int rc = capn_setp(capn_root(&c), 0, ptr.p);
@@ -443,9 +445,8 @@ blog_logReceived(const struct bworker *wrkr, const char *name, const char *ver, 
 	blog_pkgspec_set(cs, &relptr.l.logReceived.pkg, name, ver, arch);
 	if (wrkr)
 		blog_worker_set(cs, &relptr.l.logReceived.worker, wrkr->myaddr,
-				wrkr->mycheck, pkg_archs_translate[wrkr->hostarch],
-				pkg_archs_translate[wrkr->arch], wrkr->iscross,
-				wrkr->cost);
+				wrkr->mycheck, wrkr->hostarch, wrkr->arch,
+				wrkr->iscross, wrkr->cost);
 
 	write_LogEntry(&relptr, ptr);
 	int rc = capn_setp(capn_root(&c), 0, ptr.p);
@@ -470,9 +471,8 @@ blog_workerAssignmentDone(const struct bworker *wrkr, const char *name,
 	blog_init_logentry(&relptr, LogEntry_l_workerAssignmentDone);
 	blog_pkgspec_set(cs, &relptr.l.workerAssignmentDone.pkg, name, ver, arch);
 	blog_worker_set(cs, &relptr.l.workerAssignmentDone.worker, wrkr->myaddr,
-			wrkr->mycheck, pkg_archs_translate[wrkr->hostarch],
-			pkg_archs_translate[wrkr->arch], wrkr->iscross,
-			wrkr->cost);
+			wrkr->mycheck, wrkr->hostarch, wrkr->arch,
+			wrkr->iscross, wrkr->cost);
 	relptr.l.workerAssignmentDone.cause = cause;
 
 	write_LogEntry(&relptr, ptr);

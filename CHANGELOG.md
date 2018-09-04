@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.18.1 - 2018-09-04 - The one which chases the shadows away
+### Overview
+- Logged architectures are no longer mangled.
+
 ## 0.0.18 - 2018-09-04 - The one with improved insight into the system
 ### Overview
 - Builds no longer discard xbps-src exit codes.

@@ -93,4 +93,5 @@ enum Arch {
 	armv5Tel @11;
 	armv5TelMusl @12;
 	mipselMusl @13;
+	virtual @14;
 }

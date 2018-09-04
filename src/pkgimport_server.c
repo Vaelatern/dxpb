@@ -312,11 +312,12 @@ route_pkginfo (client_t *self)
 		perror("Had memory issues while creating temporary pkgs");
 		exit(ERR_CODE_NOMEM);
 	}
+
+	blog_pkgImported(tmp->name, tmp->version, bpkg_enum_lookup(tmp->arch));
+
 	zlist_append(self->server->tmppkgs, tmp);
 	if (self->server->knowngrapher)
 		engine_send_event(self->server->knowngrapher, process_pkgs_event);
-
-	blog_pkgImported(tmp->name, tmp->version, bpkg_enum_lookup(tmp->arch));
 }
 
 //  ---------------------------------------------------------------------------
