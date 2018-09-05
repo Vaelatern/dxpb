@@ -69,10 +69,11 @@ OBJECTS = \
 	bdb.o \
 	bdot.o \
 	bfs.o \
-	brepowatch.o \
 	bgit.o \
 	bgraph.o \
+	blog.o \
 	bpkg.o \
+	brepowatch.o \
 	bstring.o \
 	btranslate.o \
 	bwords.o \
@@ -287,7 +288,7 @@ usebgit: LDLIBS += -lgit2
 usebgit: bgit.o bwords.o bstring.o bxsrc.o bxpkg.o
 
 useblog: LDLIBS += -lcapnp_c
-useblog: useblog.o bstring.o bxpkg.o capnp/log.capnp.o
+useblog: bstring.o bxpkg.o capnp/log.capnp.o
 
 ########################
 #### Generic Targets ###
