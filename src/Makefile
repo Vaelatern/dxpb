@@ -288,7 +288,7 @@ usebgit: LDLIBS += -lgit2
 usebgit: bgit.o bwords.o bstring.o bxsrc.o bxpkg.o
 
 useblog: LDLIBS += -lcapnp_c
-useblog: bstring.o bxpkg.o capnp/log.capnp.o
+useblog: useblog.o bstring.o bxpkg.o capnp/log.capnp.o
 
 ########################
 #### Generic Targets ###
