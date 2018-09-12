@@ -50,6 +50,7 @@ int main(void)
 	blog_workerAssigned(&wrkr, "Faa", "Baa", ARCH_ARMV6L);
 	blog_workerAssigning(&wrkr, "Faa", "Baa", ARCH_ARMV6L_MUSL);
 	blog_logReceived(&wrkr, "Faa", "Baa", ARCH_ARMV6L);
+	blog_logReceived(NULL, "Faa", "Baa", ARCH_ARMV7L);
 	blog_workerAssignmentDone(&wrkr, "Faa", "Baa", ARCH_ARMV6L_MUSL, 2);
 
 	blog_queueSelected(needs);
