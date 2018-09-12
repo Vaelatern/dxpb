@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.18.3 - 2018-09-12 - The one which chases the shadows away
+## 0.0.19 - 2018-09-12 - The one which has realistic expectations
 ### Overview
 - Logged architectures are no longer mangled.
 - IRC bots are removed - they have not built since 0.0.5 or so.
