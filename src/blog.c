@@ -38,7 +38,9 @@ pkg_archs_translate(const enum pkg_archs in)
 	case ARCH_MIPSEL_MUSL: return Arch_mipselMusl;
 	case ARCH_X86_64: return Arch_x8664;
 	case ARCH_X86_64_MUSL: return Arch_x8664Musl;
-	default: return Arch_virtual;
+	case ARCH_TARGET: return Arch_virtual;
+	case ARCH_HOST: return Arch_virtual;
+	case ARCH_NUM_MAX: exit(ERR_CODE_BAD);
 	}
 }
 
