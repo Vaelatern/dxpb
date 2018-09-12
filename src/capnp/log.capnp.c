@@ -243,6 +243,7 @@ void read_Worker(struct Worker *s capnp_unused, Worker_ptr p) {
 	s->trgtarch = (enum Arch)(int) capn_read16(p.p, 8);
 	s->iscross = (capn_read8(p.p, 10) & 1) != 0;
 	s->cost = capn_read16(p.p, 12);
+	s->isvalid = (capn_read8(p.p, 10) & 2) != 0;
 }
 void write_Worker(const struct Worker *s capnp_unused, Worker_ptr p) {
 	capn_resolve(&p.p);
@@ -253,6 +254,7 @@ void write_Worker(const struct Worker *s capnp_unused, Worker_ptr p) {
 	capn_write16(p.p, 8, (uint16_t) (s->trgtarch));
 	capn_write1(p.p, 80, s->iscross != 0);
 	capn_write16(p.p, 12, s->cost);
+	capn_write1(p.p, 81, s->isvalid != 0);
 }
 void get_Worker(struct Worker *s, Worker_list l, int i) {
 	Worker_ptr p;
@@ -307,6 +309,13 @@ uint16_t Worker_get_cost(Worker_ptr p)
 	return cost;
 }
 
+unsigned Worker_get_isvalid(Worker_ptr p)
+{
+	unsigned isvalid;
+	isvalid = (capn_read8(p.p, 10) & 2) != 0;
+	return isvalid;
+}
+
 void Worker_set_addr(Worker_ptr p, uint16_t addr)
 {
 	capn_write16(p.p, 0, addr);
@@ -335,4 +344,9 @@ void Worker_set_iscross(Worker_ptr p, unsigned iscross)
 void Worker_set_cost(Worker_ptr p, uint16_t cost)
 {
 	capn_write16(p.p, 12, cost);
+}
+
+void Worker_set_isvalid(Worker_ptr p, unsigned isvalid)
+{
+	capn_write1(p.p, 81, isvalid != 0);
 }

@@ -108,6 +108,22 @@ blog_text_from_chars(capn_text *txt, const char *in)
 }
 
 static void
+blog_worker_set_null(struct capn_segment *cs, Worker_ptr *ptr)
+{
+	struct Worker lamb = {
+		.addr = 0,
+		.check = 0,
+		.hostarch = 0,
+		.trgtarch = 0,
+		.iscross = 0,
+		.cost = 0,
+		.isvalid = 0};
+
+	*ptr = new_Worker(cs);
+	write_Worker(&lamb, *ptr);
+}
+
+static void
 blog_worker_set(struct capn_segment *cs, Worker_ptr *ptr, const uint16_t addr,
 		const uint32_t check, const enum pkg_archs hostarch,
 		const enum pkg_archs trgtarch, const char iscross,
@@ -119,7 +135,8 @@ blog_worker_set(struct capn_segment *cs, Worker_ptr *ptr, const uint16_t addr,
 		.hostarch = pkg_archs_translate(hostarch),
 		.trgtarch = pkg_archs_translate(trgtarch),
 		.iscross = iscross,
-		.cost = cost};
+		.cost = cost,
+		.isvalid = 1};
 
 	*ptr = new_Worker(cs);
 	write_Worker(&lamb, *ptr);
@@ -449,6 +466,8 @@ blog_logReceived(const struct bworker *wrkr, const char *name, const char *ver, 
 		blog_worker_set(cs, &relptr.l.logReceived.worker, wrkr->myaddr,
 				wrkr->mycheck, wrkr->hostarch, wrkr->arch,
 				wrkr->iscross, wrkr->cost);
+	else
+		blog_worker_set_null(cs, &relptr.l.logReceived.worker);
 
 	write_LogEntry(&relptr, ptr);
 	int rc = capn_setp(capn_root(&c), 0, ptr.p);

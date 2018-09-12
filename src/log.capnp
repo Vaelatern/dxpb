@@ -76,6 +76,7 @@ struct Worker {
 	trgtarch @3 :Arch;
 	iscross @4 :Bool;
 	cost @5 :UInt16;
+	isvalid @6 :Bool;
 }
 
 enum Arch {

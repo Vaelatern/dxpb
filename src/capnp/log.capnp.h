@@ -165,6 +165,7 @@ struct Worker {
 	enum Arch trgtarch;
 	unsigned iscross : 1;
 	uint16_t cost;
+	unsigned isvalid : 1;
 };
 
 static const size_t Worker_word_count = 2;
@@ -185,6 +186,8 @@ unsigned Worker_get_iscross(Worker_ptr p);
 
 uint16_t Worker_get_cost(Worker_ptr p);
 
+unsigned Worker_get_isvalid(Worker_ptr p);
+
 void Worker_set_addr(Worker_ptr p, uint16_t addr);
 
 void Worker_set_check(Worker_ptr p, uint32_t check);
@@ -196,6 +199,8 @@ void Worker_set_trgtarch(Worker_ptr p, enum Arch trgtarch);
 void Worker_set_iscross(Worker_ptr p, unsigned iscross);
 
 void Worker_set_cost(Worker_ptr p, uint16_t cost);
+
+void Worker_set_isvalid(Worker_ptr p, unsigned isvalid);
 
 LogEntry_ptr new_LogEntry(struct capn_segment*);
 PkgSpec_ptr new_PkgSpec(struct capn_segment*);
