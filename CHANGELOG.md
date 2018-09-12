@@ -1,10 +1,12 @@
 # Changelog
 
-## 0.0.18.2 - 2018-09-04 - The one which chases the shadows away
+## 0.0.18.3 - 2018-09-12 - The one which chases the shadows away
 ### Overview
 - Logged architectures are no longer mangled.
 - IRC bots are removed - they have not built since 0.0.5 or so.
 - ARGS are now useful from all runit conf files.
+- Won't need to build all bootstrap packages for every arch, only those that
+  are not broken.
 
 ## 0.0.18 - 2018-09-04 - The one with improved insight into the system
 ### Overview

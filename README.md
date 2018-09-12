@@ -389,4 +389,4 @@ might be fixed.
 zmq\_tcp(7)
 zmq\_curve(7)
 
-Void Linux - September 4, 2018
+Void Linux - September 12, 2018

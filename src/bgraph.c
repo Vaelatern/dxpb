@@ -366,12 +366,11 @@ bgraph_what_next_for_arch(bgraph grph, enum pkg_archs arch)
 	int found_bootstrap = 0;
 
 	hay = zhash_lookup(grph, pkg_archs_str[arch]);
-	for (needle = zhash_first(hay); needle != NULL;
-			needle = zhash_next(hay))
+	for (needle = zhash_first(hay); needle != NULL; needle = zhash_next(hay))
 		if (bgraph_pkg_ready_to_build(needle, hay) == ERR_CODE_YES) {
 			zlist_append(retVal, needle);
 			if (!found_bootstrap)
-				found_bootstrap = needle->bootstrap;
+				found_bootstrap = needle->bootstrap && (!needle->broken);
 		}
 
 	bgraph_zlist_filter(retVal, bgraph_zlist_filter_cb, found_bootstrap);
