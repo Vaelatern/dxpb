@@ -131,6 +131,10 @@ dxpb-version.h: ../CHANGELOG.md
 	awk '/## [0-9]+\.[0-9]+\.[0-9]+[\.0-9]* -/ { print "#define DXPB_VERSION \"" $$2 "\""; exit }' ../CHANGELOG.md >dxpb-version.h
 dxpb-version.txt: ../CHANGELOG.md
 	awk '/## [0-9]+\.[0-9]+\.[0-9]+[\.0-9]* -/ { print $$2; exit }' ../CHANGELOG.md >dxpb-version.txt
+dxpb-tagline.txt: ../CHANGELOG.md
+	awk '/## [0-9]+\.[0-9]+\.[0-9]+[\.0-9]* -/ { print $$0; exit }' ../CHANGELOG.md | cut -d\  -f6- >dxpb-tagline.txt
+dxpb-tagline.h: dxpb-tagline.txt
+	printf "#define DXPB_TAGLINE \"%s\"\n" "$$(cat dxpb-tagline.txt)" >dxpb-tagline.h
 
 ../README.md: ../doc/dxpb.7 ../FAQ.md
 	echo "![Production ready-ish](https://img.shields.io/badge/%F0%9F%A4%B7-Production%20Ready%E2%80%90ish-691d78.svg)" >../README.md
@@ -241,7 +245,7 @@ dxpb-hostdir-remote: dxpb-hostdir-remote.o dxpb-client.o bxbps.o pkgfiles_msg.o 
 dxpb-frontend: LDLIBS += -lbsd -lcapnp_c
 dxpb-frontend: dxpb-frontend.o pkggraph_msg.o bxpkg.o pkggraph_server.o bworker.o $(BLOG_SET)
 
-dxpb-common.c: license.inc dxpb-version.h
+dxpb-common.c: license.inc dxpb-version.h dxpb-tagline.h
 
 $(BINARIES): dxpb-common.o
 
@@ -301,7 +305,7 @@ test: $(TEST_BINARIES) $(HARNESSES)
 check: test
 
 mostlyclean:
-	rm -f dxpb-version.h
+	rm -f dxpb-version.h dxpb-version.txt dxpb-tagline.h dxpb-tagline.txt
 	rm -f $(OBJECTS)
 	rm -f $(TEST_OBJECTS)
 	rm -f $(TEST_BINARIES)
@@ -339,9 +343,9 @@ install: install-bin install-doc install-license install-runit-scripts
 #### Maintenance  Targets ###
 #############################
 
-gitrelease: ../README.md ../CHANGELOG.md dxpb-version.txt
+gitrelease: ../README.md ../CHANGELOG.md dxpb-version.txt dxpb-tagline.txt
 	git commit -m "$$(cat dxpb-version.txt)" ../
-	git tag -a $$(cat dxpb-version.txt) -m $$(cat dxpb-version.txt)
+	git tag -a $$(cat dxpb-version.txt) -m "$$(cat dxpb-tagline.txt)"
 
 ##################################
 #             EOF                #

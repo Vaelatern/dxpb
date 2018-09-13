@@ -18,6 +18,7 @@
 #include "bfs.h"
 #include "dxpb-common.h"
 #include "dxpb-version.h"
+#include "dxpb-tagline.h"
 #include "dxpb-client.h"
 
 void
@@ -26,12 +27,13 @@ prologue(const char *argv0)
 	char *arg = strdup(argv0);
 	assert(arg);
 	fprintf(stderr, "DXPB: Distributed XBPS Package Builder\n"
-			"%s %s\n"
+			"%s %s - %s\n"
 			"Copyright 2016-2018, Toyam Cox\n"
 			"This is free software with ABSOLUTELY NO WARRANTY.\n"
 			"For license details, pass the -L flag\n"
 			"Compiled: %s %s\n\n",
-			basename(arg), DXPB_VERSION, __DATE__, __TIME__);
+			basename(arg), DXPB_VERSION, DXPB_TAGLINE, __DATE__,
+			__TIME__);
 	FREE(arg);
 }
 

@@ -8,9 +8,11 @@ src/use*
 !runsv/dxpb*
 !dxpb-*.c
 !dxpb-*.h
+!*.txt
+dxpb-tagline.h
+dxpb-tagline.txt
 dxpb-version.h
 dxpb-version.txt
-!*.txt
 !*.inc
 !harness-*.c
 .container
