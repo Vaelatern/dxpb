@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.19.1 - 2018-09-12 - The one which chases the shadows away
+## 0.0.19.1 - 2018-09-12 - The one which might have working logfiles
 ### Overview
 - Binaries now get the tagline built in.
 - Fix log corruption due to missing capnp pointer.
