@@ -74,6 +74,7 @@ blog_logfile(const char *path)
 static void
 blog_write_to_file(struct capn *c)
 {
+	assert(c);
 	int fd = open(blog_logfile(NULL),
 			O_WRONLY | O_APPEND | O_CREAT | O_SYNC, 0664);
 	assert(fd >= 0);
@@ -85,6 +86,7 @@ blog_write_to_file(struct capn *c)
 static void
 blog_set_time(struct LogEntry *relptr)
 {
+	assert(relptr);
 	struct timespec tp = {0};
 	int rc = clock_gettime(CLOCK_REALTIME, &tp);
 	assert(rc == 0);
@@ -95,6 +97,7 @@ blog_set_time(struct LogEntry *relptr)
 static void
 blog_init_logentry(struct LogEntry *relptr, enum LogEntry_l_which which)
 {
+	assert(relptr);
 	relptr->l_which = which;
 	blog_set_time(relptr);
 }
@@ -102,6 +105,8 @@ blog_init_logentry(struct LogEntry *relptr, enum LogEntry_l_which which)
 static void
 blog_text_from_chars(capn_text *txt, const char *in)
 {
+	assert(txt);
+	assert(in);
 	txt->str = in;
 	txt->len = strlen(in);
 	txt->seg = NULL;
@@ -110,6 +115,8 @@ blog_text_from_chars(capn_text *txt, const char *in)
 static void
 blog_worker_set_null(struct capn_segment *cs, Worker_ptr *ptr)
 {
+	assert(cs);
+	assert(ptr);
 	struct Worker lamb = {
 		.addr = 0,
 		.check = 0,
@@ -129,6 +136,8 @@ blog_worker_set(struct capn_segment *cs, Worker_ptr *ptr, const uint16_t addr,
 		const enum pkg_archs trgtarch, const char iscross,
 		const uint16_t cost)
 {
+	assert(cs);
+	assert(ptr);
 	struct Worker lamb = {
 		.addr = addr,
 		.check = check,
@@ -146,6 +155,9 @@ static void
 blog_pkgspec_set_all(struct capn_segment *cs, PkgSpec_list *list,
 		zlist_t *pkgs)
 {
+	assert(cs);
+	assert(list);
+	assert(pkgs);
 	struct PkgSpec spec;
 	struct pkg *in;
 	int i = 0;
@@ -164,6 +176,10 @@ blog_pkgspec_set_all(struct capn_segment *cs, PkgSpec_list *list,
 static void
 blog_pkgspec_set(struct capn_segment *cs, PkgSpec_ptr *ptr, const char *name, const char *ver, const enum pkg_archs arch)
 {
+	assert(cs);
+	assert(ptr);
+	assert(name);
+	assert(ver);
 	struct PkgSpec lamb = {0};
 	lamb.arch = pkg_archs_translate(arch);
 
@@ -177,6 +193,8 @@ blog_pkgspec_set(struct capn_segment *cs, PkgSpec_ptr *ptr, const char *name, co
 void
 blog_pkgImported(const char *name, const char *ver, const enum pkg_archs arch)
 {
+	assert(name);
+	assert(ver);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
@@ -199,6 +217,8 @@ blog_pkgImported(const char *name, const char *ver, const enum pkg_archs arch)
 void
 blog_pkgAddedToGraph(const char *name, const char *ver, const enum pkg_archs arch)
 {
+	assert(name);
+	assert(ver);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
@@ -221,6 +241,8 @@ blog_pkgAddedToGraph(const char *name, const char *ver, const enum pkg_archs arc
 void
 blog_pkgFetchStarting(const char *name, const char *ver, const enum pkg_archs arch)
 {
+	assert(name);
+	assert(ver);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
@@ -243,6 +265,8 @@ blog_pkgFetchStarting(const char *name, const char *ver, const enum pkg_archs ar
 void
 blog_pkgFetchComplete(const char *name, const char *ver, const enum pkg_archs arch)
 {
+	assert(name);
+	assert(ver);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
@@ -265,6 +289,7 @@ blog_pkgFetchComplete(const char *name, const char *ver, const enum pkg_archs ar
 void
 blog_graphSaved(const char *commitID)
 {
+	assert(commitID);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
@@ -287,6 +312,7 @@ blog_graphSaved(const char *commitID)
 void
 blog_graphRead(const char *commitID)
 {
+	assert(commitID);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
@@ -309,6 +335,7 @@ blog_graphRead(const char *commitID)
 void
 blog_pkgImportedForDeletion(const char *pkgname)
 {
+	assert(pkgname);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
@@ -331,6 +358,8 @@ blog_pkgImportedForDeletion(const char *pkgname)
 void
 blog_logFiled(const char *name, const char *ver, const enum pkg_archs arch)
 {
+	assert(name);
+	assert(ver);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
@@ -353,6 +382,7 @@ blog_logFiled(const char *name, const char *ver, const enum pkg_archs arch)
 void
 blog_workerAddedToGraphGroup(const struct bworker *wrkr)
 {
+	assert(wrkr);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
@@ -377,6 +407,7 @@ blog_workerAddedToGraphGroup(const struct bworker *wrkr)
 void
 blog_workerMadeAvailable(const struct bworker *wrkr)
 {
+	assert(wrkr);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
@@ -401,6 +432,9 @@ blog_workerMadeAvailable(const struct bworker *wrkr)
 void
 blog_workerAssigned(const struct bworker *wrkr, const char *name, const char *ver, const enum pkg_archs arch)
 {
+	assert(wrkr);
+	assert(name);
+	assert(ver);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
@@ -426,6 +460,9 @@ blog_workerAssigned(const struct bworker *wrkr, const char *name, const char *ve
 void
 blog_workerAssigning(const struct bworker *wrkr, const char *name, const char *ver, const enum pkg_archs arch)
 {
+	assert(wrkr);
+	assert(name);
+	assert(ver);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
@@ -451,6 +488,9 @@ blog_workerAssigning(const struct bworker *wrkr, const char *name, const char *v
 void
 blog_logReceived(const struct bworker *wrkr, const char *name, const char *ver, const enum pkg_archs arch)
 {
+	// We handle missing wrkr
+	assert(name);
+	assert(ver);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
@@ -480,6 +520,9 @@ void
 blog_workerAssignmentDone(const struct bworker *wrkr, const char *name,
 		const char *ver, const enum pkg_archs arch, const uint8_t cause)
 {
+	assert(wrkr);
+	assert(name);
+	assert(ver);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
@@ -506,6 +549,7 @@ blog_workerAssignmentDone(const struct bworker *wrkr, const char *name,
 void
 blog_queueSelected(zlist_t *next_for_arch)
 {
+	assert(next_for_arch);
 	if (!blog_logging_on(-1))
 		return;
 	struct capn c;
