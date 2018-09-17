@@ -568,3 +568,25 @@ blog_queueSelected(zlist_t *next_for_arch)
 	blog_write_to_file(&c);
 	capn_free(&c);
 }
+
+void
+blog_pkgMarkedUnbuildable(const char *name, const char *ver, const enum pkg_archs arch)
+{
+	if (!blog_logging_on(-1))
+		return;
+	struct capn c;
+	capn_init_malloc(&c);
+	capn_ptr cr = capn_root(&c);
+	struct capn_segment *cs = cr.seg;
+	LogEntry_ptr ptr = new_LogEntry(cs);
+	struct LogEntry relptr;
+
+	blog_init_logentry(&relptr, LogEntry_l_pkgMarkedUnbuildable);
+	blog_pkgspec_set(cs, &relptr.l.pkgMarkedUnbuildable.pkg, name, ver, arch);
+
+	write_LogEntry(&relptr, ptr);
+	int rc = capn_setp(capn_root(&c), 0, ptr.p);
+	assert(rc == 0);
+	blog_write_to_file(&c);
+	capn_free(&c);
+}

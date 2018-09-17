@@ -65,7 +65,8 @@ enum LogEntry_l_which {
 	LogEntry_l_logFiled = 11,
 	LogEntry_l_workerAssignmentDone = 12,
 	LogEntry_l_pkgFetchStarting = 13,
-	LogEntry_l_pkgFetchComplete = 14
+	LogEntry_l_pkgFetchComplete = 14,
+	LogEntry_l_pkgMarkedUnbuildable = 15
 };
 
 struct LogEntry {
@@ -125,6 +126,9 @@ struct LogEntry {
 		capnp_nowarn struct {
 			PkgSpec_ptr pkg;
 		} pkgFetchComplete;
+		capnp_nowarn struct {
+			PkgSpec_ptr pkg;
+		} pkgMarkedUnbuildable;
 	} l;
 };
 

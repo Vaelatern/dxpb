@@ -60,6 +60,9 @@ struct LogEntry {
 		pkgFetchComplete :group {
 			pkg @21 :PkgSpec;
 		}
+		pkgMarkedUnbuildable :group {
+			pkg @22 :PkgSpec;
+		}
 	}
 }
 

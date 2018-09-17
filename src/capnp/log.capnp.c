@@ -77,6 +77,9 @@ void read_LogEntry(struct LogEntry *s capnp_unused, LogEntry_ptr p) {
 	case LogEntry_l_pkgFetchComplete:
 		s->l.pkgFetchComplete.pkg.p = capn_getp(p.p, 0, 0);
 		break;
+	case LogEntry_l_pkgMarkedUnbuildable:
+		s->l.pkgMarkedUnbuildable.pkg.p = capn_getp(p.p, 0, 0);
+		break;
 	default:
 		break;
 	}
@@ -137,6 +140,9 @@ void write_LogEntry(const struct LogEntry *s capnp_unused, LogEntry_ptr p) {
 		break;
 	case LogEntry_l_pkgFetchComplete:
 		capn_setp(p.p, 0, s->l.pkgFetchComplete.pkg.p);
+		break;
+	case LogEntry_l_pkgMarkedUnbuildable:
+		capn_setp(p.p, 0, s->l.pkgMarkedUnbuildable.pkg.p);
 		break;
 	default:
 		break;

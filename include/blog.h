@@ -26,6 +26,7 @@ void	 blog_pkgAddedToGraph(const char *, const char *, const enum pkg_archs);
 void	 blog_logFiled(const char *, const char *, const enum pkg_archs);
 void	 blog_pkgFetchStarting(const char *, const char *, const enum pkg_archs);
 void	 blog_pkgFetchComplete(const char *, const char *, const enum pkg_archs);
+void	 blog_pkgMarkedUnbuildable(const char *, const char *, const enum pkg_archs);
 
 #ifdef DXPB_BWORKER_H
 void	 blog_workerAddedToGraphGroup(const struct bworker *);
