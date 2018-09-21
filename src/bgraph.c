@@ -309,9 +309,10 @@ bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay)
 {
 	enum ret_codes rc = ERR_CODE_OK;
 	struct pkg *pin;
-	if (needle->status == PKG_STATUS_IN_REPO ||
+	if (needle->status != PKG_STATUS_TOBUILD ||
 			needle->arch == ARCH_TARGET ||
-			needle->arch == ARCH_HOST)
+			needle->arch == ARCH_HOST ||
+			(needle->bad && !needle->bootstrap))
 		return ERR_CODE_NO;
 	for (struct pkg_need *curneed = zlist_first(needle->needs);
 			curneed != NULL; curneed = zlist_next(needle->needs)) {
