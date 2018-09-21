@@ -325,7 +325,7 @@ bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay)
 				// got a worker to task.
 		if (pin->arch == ARCH_TARGET)
 			pin = zhash_lookup(hay, pin->name);
-		assert(pin); // if noarch, pin is correct too.
+		assert(pin); // even if noarch, pin will be not null
 		if (pin->status != PKG_STATUS_IN_REPO)
 			return ERR_CODE_NO;
 	}
@@ -369,8 +369,7 @@ bgraph_what_next_for_arch(bgraph grph, enum pkg_archs arch)
 	for (needle = zhash_first(hay); needle != NULL; needle = zhash_next(hay))
 		if (bgraph_pkg_ready_to_build(needle, hay) == ERR_CODE_YES) {
 			zlist_append(retVal, needle);
-			if (!found_bootstrap)
-				found_bootstrap = needle->bootstrap && (!needle->broken);
+			found_bootstrap = found_bootstrap || (needle->bootstrap && (!needle->broken));
 		}
 
 	bgraph_zlist_filter(retVal, bgraph_zlist_filter_cb, found_bootstrap);
