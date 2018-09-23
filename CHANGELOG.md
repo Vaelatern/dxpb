@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.19.3 - 2018-09-22 - The one which chases the shadows away
+## 0.0.20 - 2018-09-22 - The one which actually is aware of the graph
 ### Overview
 - Virtual packages are now checked.
 - Packages which have bad dependencies now get marked as bad.
