@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.20.1 - 2018-09-23 - The one which chases the shadows away
+### Overview
+- Packages will now be tried 3 times before the build is declared a failure.
+
 ## 0.0.20 - 2018-09-22 - The one which actually is aware of the graph
 ### Overview
 - Virtual packages are now checked.

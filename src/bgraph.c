@@ -21,6 +21,7 @@
 static void bgraph_destroy_need(struct pkg_need **, struct pkg *);
 
 #define BGRAPH_VPKG_STR "virtual?pkg"
+#define BGRAPH_BAD_TRIES 3
 
 bgraph
 bgraph_new()
@@ -302,7 +303,7 @@ bgraph_resolve_pkg(bgraph hay, bgraph allhay, bgraph hosthay, zhash_t *virt, str
 	subj->resolved = 1;
 	return ERR_CODE_OK;
 badwant:
-	subj->bad = 1;
+	subj->bad = BGRAPH_BAD_TRIES;
 	return ERR_CODE_BADDEP;
 }
 
@@ -342,7 +343,7 @@ bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay, bgraph hosthay, int cr
 	if (needle->status != PKG_STATUS_TOBUILD ||
 			needle->arch == ARCH_TARGET ||
 			needle->arch == ARCH_HOST ||
-			(needle->bad && !needle->bootstrap))
+			(needle->bad >= BGRAPH_BAD_TRIES && !needle->bootstrap))
 		return ERR_CODE_NO;
 	zlist_t *needs = needle->needs;
 	if (cross)
@@ -442,6 +443,7 @@ static int
 bgraph_mark_pkg(const bgraph grph, const char *pkgname, const char *version, enum pkg_archs arch,
 		enum bgraph_pkg_mark_type type, int val)
 {
+	int rV = ERR_CODE_OK;
 	struct pkg *pkg = bgraph_get_pkg(grph, pkgname, version, arch);
 
 	if (pkg == NULL)
@@ -456,7 +458,9 @@ bgraph_mark_pkg(const bgraph grph, const char *pkgname, const char *version, enu
 		pkg->status = val ? PKG_STATUS_IN_REPO : PKG_STATUS_TOBUILD;
 		break;
 	case BGRAPH_PKG_MARK_TYPE_BAD:
-		pkg->bad = val;
+		pkg->bad += (pkg->bad < BGRAPH_BAD_TRIES) ? 1 : 0;
+		if (pkg->bad < BGRAPH_BAD_TRIES)
+			rV = ERR_CODE_NO; // No we will NOT mark it bad... yet.
 		break;
 	case BGRAPH_PKG_MARK_TYPE_IN_PROGRESS:
 		// This logic was written before pkg->status existed, and was
@@ -468,7 +472,7 @@ bgraph_mark_pkg(const bgraph grph, const char *pkgname, const char *version, enu
 	default:
 		exit(ERR_CODE_BADDOBBY);
 	}
-	return ERR_CODE_OK;
+	return rV;
 }
 
 int

@@ -49,6 +49,7 @@ struct pkg {
 	bwords	wneeds_native_host;
 	bwords	wneeds_native_target;
 	unsigned	long priority;
+	uint8_t		bad;
 	enum {
 				PKG_STATUS_NONE,
 				PKG_STATUS_ASKING,
@@ -59,7 +60,6 @@ struct pkg {
 	unsigned	int can_cross : 1;
 	unsigned	int broken : 1;
 	unsigned	int resolved : 1;
-	unsigned	int bad : 1;
 	unsigned	int bootstrap : 1;
 	unsigned	int restricted : 1;
 };

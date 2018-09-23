@@ -554,7 +554,8 @@ mark_pkg_bad (client_t *self)
 	if (rc != ERR_CODE_OK && rc != ERR_CODE_NO)
 		return; // TODO: Decide if an action is appropiate.
 
-	blog_pkgMarkedUnbuildable(self->args->pkgname,
+	if (rc != ERR_CODE_NO)
+		blog_pkgMarkedUnbuildable(self->args->pkgname,
 				self->args->version, arch);
 }
 
