@@ -65,13 +65,6 @@ struct bworksubgroup {
 	zlist_t	*addrs;
 };
 
-struct bworkermatch {
-	struct pkg	 *pkg;
-	struct bworker	**workers;
-	uint16_t		  num;
-	uint16_t		  alloced;
-};
-
 struct bworkgroup	*bworker_group_new(void);
 struct bworksubgroup	*bworker_subgroup_new(struct bworkgroup *);
 void			 bworker_group_destroy(struct bworkgroup **);
@@ -83,17 +76,10 @@ int			 bworker_job_assign(struct bworker *, const char *,
 void			 bworker_job_remove(struct bworker *);
 int			 bworker_job_equal(struct bworker *, char *, char *,
 				enum pkg_archs);
-int			 bworker_pkg_match(struct bworker *, struct pkg *);
-void			 bworker_match_destroy(struct bworkermatch **);
-enum ret_codes		 bworker_group_match_pkgs(struct bworkgroup *group, zlist_t **pkgs,
-				enum ret_codes (*)(struct bworker *, struct pkg *, void *),
-				void *);
-struct bworker		*bworker_group_matches_choose(struct bworkermatch *);
 uint16_t		 bworker_subgroup_insert(struct bworksubgroup *, uint16_t, uint32_t, enum pkg_archs, enum pkg_archs, uint8_t, uint16_t);
 void			 bworker_subgroup_destroy(struct bworksubgroup **);
 struct bworker		*bworker_from_my_addr(struct bworkgroup *, uint16_t, uint32_t);
 struct bworker		*bworker_from_remote_addr(struct bworkgroup *, uint16_t, uint32_t);
-struct bworkermatch	*bworker_grp_pkg_matches(struct bworkgroup *, struct pkg *);
 void			 bworker_group_remove(struct bworker *);
 void			*bworker_owner_from_my_addr(struct bworkgroup *, uint16_t, uint32_t);
 struct bworker		*bworker_from_sub_remote_addr(struct bworksubgroup *, uint16_t, uint32_t);

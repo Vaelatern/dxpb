@@ -334,8 +334,8 @@ bgraph_attempt_resolution(bgraph grph)
 	return retVal;
 }
 
-static enum ret_codes
-bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay)
+enum ret_codes
+bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay, bgraph hosthay)
 {
 	enum ret_codes rc = ERR_CODE_OK;
 	struct pkg *pin;
@@ -351,9 +351,12 @@ bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay)
 		rc = bxbps_spec_match(curneed->spec, pin->name, pin->ver);
 		if (rc != ERR_CODE_YES)
 			return rc;
-		if (pin->arch == ARCH_HOST)
-			continue; // We don't deal with host deps until we've
-				// got a worker to task.
+		if (pin->arch == ARCH_HOST) {
+			if (hosthay != NULL)
+				pin = zhash_lookup(hosthay, pin->name);
+			else
+				continue;
+		}
 		if (pin->arch == ARCH_TARGET)
 			pin = zhash_lookup(hay, pin->name);
 		assert(pin); // even if noarch, pin will be not null
@@ -398,7 +401,7 @@ bgraph_what_next_for_arch(bgraph grph, enum pkg_archs arch)
 
 	hay = zhash_lookup(grph, pkg_archs_str[arch]);
 	for (needle = zhash_first(hay); needle != NULL; needle = zhash_next(hay))
-		if (bgraph_pkg_ready_to_build(needle, hay) == ERR_CODE_YES) {
+		if (bgraph_pkg_ready_to_build(needle, hay, NULL) == ERR_CODE_YES) {
 			zlist_append(retVal, needle);
 			found_bootstrap = found_bootstrap || (needle->bootstrap && (!needle->broken));
 		}

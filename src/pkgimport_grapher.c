@@ -29,6 +29,7 @@
 #include "bdb.h"
 #include "bfs.h"
 #include "bworker.h"
+#include "bworkermatch.h"
 #include "btranslate.h"
 #include "blog.h"
 
@@ -605,13 +606,13 @@ match_workers_to_this_pkg (client_t *self)
 
 	assert(pkg->status == PKG_STATUS_TOBUILD);
 
-	if ((matches = bworker_grp_pkg_matches(self->workers, pkg)) == NULL)
+	if ((matches = bworkermatch_grp_pkg(self->workers, self->pkggraph, pkg)) == NULL)
 		return;
-	if ((wrkr = bworker_group_matches_choose(matches)) == NULL) {
+	if ((wrkr = bworkermatch_group_choose(matches)) == NULL) {
 		fprintf(stderr, "Told of possible workers, but it was a lie\n");
 		exit(ERR_CODE_BADDOBBY);
 	}
-	bworker_match_destroy(&matches);
+	bworkermatch_destroy(&matches);
 
 	if (pkgimport_grapher_ask_worker_to_help(self, wrkr, pkg) != ERR_CODE_OK)
 		return; // TODO: Is a reaction appropiate?
@@ -648,11 +649,13 @@ find_package_for_worker (client_t *self)
 	enum pkg_archs arch = wrkr->arch;
 	struct pkg *pkg;
 	int assigned = 0;
+	bgraph pkgarch = NULL, hostarch = zhash_lookup(self->pkggraph, pkg_archs_str[wrkr->hostarch]);
 tryagain:
+	pkgarch = zhash_lookup(self->pkggraph, pkg_archs_str[arch]);
 	for (pkg = zlist_first(self->nextup[arch]);
 			pkg; // zlist_* returns NULL at end of list
 			pkg = zlist_next(self->nextup[arch])) {
-		if (pkg->status == PKG_STATUS_TOBUILD && bworker_pkg_match(wrkr, pkg)) {
+		if (pkg->status == PKG_STATUS_TOBUILD && bworkermatch_pkg(wrkr, pkgarch, hostarch, pkg)) {
 			if (pkgimport_grapher_ask_worker_to_help(self, wrkr, pkg) != ERR_CODE_OK) {
 				fprintf(stderr, "Failed to ask a worker to help!\n");
 				return; // Possible an action should be taken

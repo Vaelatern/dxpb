@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.19.2 - 2018-09-21 - The one which chases the shadows away
+## 0.0.19.3 - 2018-09-22 - The one which chases the shadows away
 ### Overview
 - Virtual packages are now checked.
 - Packages which have bad dependencies now get marked as bad.
@@ -8,6 +8,7 @@
   for build.
 - The graph is pickier about which packages get to be considered for build (not
   packages whose status in the repo is unclear).
+- Worker assignments are now checked to ensure host dependencies are present.
 
 ## 0.0.19.1 - 2018-09-12 - The one which might have working logfiles
 ### Overview
