@@ -335,7 +335,7 @@ bgraph_attempt_resolution(bgraph grph)
 }
 
 enum ret_codes
-bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay, bgraph hosthay)
+bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay, bgraph hosthay, int cross)
 {
 	enum ret_codes rc = ERR_CODE_OK;
 	struct pkg *pin;
@@ -344,8 +344,11 @@ bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay, bgraph hosthay)
 			needle->arch == ARCH_HOST ||
 			(needle->bad && !needle->bootstrap))
 		return ERR_CODE_NO;
-	for (struct pkg_need *curneed = zlist_first(needle->needs);
-			curneed != NULL; curneed = zlist_next(needle->needs)) {
+	zlist_t *needs = needle->needs;
+	if (cross)
+		needs = needle->cross_needs;
+	for (struct pkg_need *curneed = zlist_first(needs);
+			curneed != NULL; curneed = zlist_next(needs)) {
 		pin = curneed->pkg;
 		assert(pin->name);
 		rc = bxbps_spec_match(curneed->spec, pin->name, pin->ver);
@@ -401,7 +404,7 @@ bgraph_what_next_for_arch(bgraph grph, enum pkg_archs arch)
 
 	hay = zhash_lookup(grph, pkg_archs_str[arch]);
 	for (needle = zhash_first(hay); needle != NULL; needle = zhash_next(hay))
-		if (bgraph_pkg_ready_to_build(needle, hay, NULL) == ERR_CODE_YES) {
+		if (bgraph_pkg_ready_to_build(needle, hay, NULL, 0) == ERR_CODE_YES) {
 			zlist_append(retVal, needle);
 			found_bootstrap = found_bootstrap || (needle->bootstrap && (!needle->broken));
 		}

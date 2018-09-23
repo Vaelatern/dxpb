@@ -31,4 +31,4 @@ int		 bgraph_mark_pkg_in_progress(bgraph, char *, char *, enum pkg_archs);
 int		 bgraph_mark_pkg_not_in_progress(bgraph, char *, char *, enum pkg_archs);
 struct pkg 	*bgraph_get_pkg(const bgraph, const char *, const char *, enum pkg_archs);
 void		 bgraph_set_vpkgs(bgraph, zhash_t *);
-enum ret_codes	 bgraph_pkg_ready_to_build(struct pkg *, bgraph, bgraph);
+enum ret_codes	 bgraph_pkg_ready_to_build(struct pkg *, bgraph, bgraph, int);

@@ -9,6 +9,7 @@
 - The graph is pickier about which packages get to be considered for build (not
   packages whose status in the repo is unclear).
 - Worker assignments are now checked to ensure host dependencies are present.
+- Cross needs are checked when the package is to be cross-built.
 
 ## 0.0.19.1 - 2018-09-12 - The one which might have working logfiles
 ### Overview

@@ -24,12 +24,12 @@ bworkermatch_pkg(struct bworker *wrkr, bgraph arch, bgraph hostarch, struct pkg 
 	assert(arch);
 	assert(hostarch);
 
-	if (wrkr->job.name == NULL) // A fast, simple check
-		if (pkg->arch == ARCH_NOARCH ||
-				(wrkr->arch == pkg->arch &&
-				 (pkg->can_cross || !wrkr->iscross)))
-			if (bgraph_pkg_ready_to_build(pkg, arch, hostarch) == ERR_CODE_YES)
-				return 1;
+	if (wrkr->job.name == NULL &&  // A fast, simple check
+			(pkg->arch == ARCH_NOARCH || // Nest this OR
+			 (wrkr->arch == pkg->arch &&
+			  (pkg->can_cross || !wrkr->iscross))))
+		if (bgraph_pkg_ready_to_build(pkg, arch, hostarch, wrkr->iscross) == ERR_CODE_YES)
+			return 1;
 	return 0;
 }
 
