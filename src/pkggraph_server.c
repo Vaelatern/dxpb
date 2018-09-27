@@ -207,7 +207,7 @@ pkggraph_server_test (bool verbose)
 static void
 register_grapher (client_t *self)
 {
-	if (self->server->grapher != NULL)
+	if (self->server->grapher != NULL && self->server->grapher != self)
 		engine_send_event(self->server->grapher, expired_event);
 
 	self->server->grapher = self;

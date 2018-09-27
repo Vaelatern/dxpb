@@ -1,8 +1,9 @@
 # Changelog
 
-## 0.0.20.1 - 2018-09-23 - The one which chases the shadows away
+## 0.0.20.2 - 2018-09-27 - The one which chases the shadows away
 ### Overview
 - Packages will now be tried 3 times before the build is declared a failure.
+- Graphers that restart connections to the frontend no longer endlessly loop.
 
 ## 0.0.20 - 2018-09-22 - The one which actually is aware of the graph
 ### Overview
