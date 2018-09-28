@@ -445,7 +445,7 @@ set_commithash (client_t *self)
 static void
 set_grapher_bit (client_t *self)
 {
-	if (self->server->knowngrapher)
+	if (self->server->knowngrapher != NULL && self->server->knowngrapher != self)
 		engine_send_event(self->server->knowngrapher, terminate_event);
 	self->imthegrapher = 1;
 	self->server->knowngrapher = self;
