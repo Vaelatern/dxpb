@@ -1,18 +1,20 @@
 Vaelatern's short list (v0.1.0):
-	- Run tests (https://toyamcox.net/repo in the future)
-	- Add pinger on expiry for all graphers
+	- Debug dxpb as a whole.
 
 Todo (v0.1.1):
-	- Improve xbps-src's `show-pkg-var` to not have a read-write loop. This requires modifications to dxpb.
+	- Improve xbps-src's `show-pkg-var` to not have a read-write loop.
+	  This requires significant modifications to dxpb.
 	- Shim to unmark package as bad (similar to dxpb-poke)
-	- Add libevhtp-based web servers to every long-running daemon (not dxpb-poke)
-	  that listens on port 13249 (base64 valud of "DPB" since DXPB was too
-	  big to be a port) and respondes like node_exporter from Prometheus.
+	- Request 32bit packages. Not sure how to arrange this, need to learn
+	  more about how Void does 32bit packages.
+	  E_INADEQUATE_KNOWLEDGE
 	- Fix -dbg packages being fetched over the wire. Special handling in
 	  filer? Maybe magic new pkgs under pkgimport? Probably cleanest via
 	  pkgimport, generating a "shimmy" pkg that only depends on the main
 	  pkg if the -dbg pkg will be built.
-	- Output graph to .dot format perhaps? For consumption via web.
+
+Todo (v0.1.2):
+	- Actual tests for everything.
 
 Longer term:
 	- Replace most usage of zhash and zlist with libbsd alternatives with
@@ -34,6 +36,8 @@ Longer term:
 	  everything is perfect. It would be good to have a better mechanism
 	  for dealing with problems.  Right now, everything is an assert() but
 	  some of those asserts should be replaced with actual error handling.
+	  An example is recovering with a sqlite journal in place - maybe just
+	  drop the journal.
 	- bdb with a different backend. I like postgresql, and the tooling for
 	  it is pretty good, maybe it will be good to have this database
 	  readable by others.
