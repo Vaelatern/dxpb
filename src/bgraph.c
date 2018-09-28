@@ -246,12 +246,16 @@ bgraph_resolve_wneed(bgraph hay, bgraph allhay, zhash_t *virt, bwords curwords, 
 	size_t i = -1;
 	for (i = 0; i < curwords->num_words; i++) {
 		char *curpkgname = bxbps_get_pkgname(curwords->words[i], allhay);
-		if (curpkgname == NULL && strlen(curwords->words[i]) > virtprefixlen) {
+		if (curpkgname == NULL &&
+				strlen(curwords->words[i]) > virtprefixlen &&
+				strncmp(curwords->words[i], "virtual?", 8) == 0) {
 			char *vpkgname = zhash_lookup(virt, curwords->words[i] + virtprefixlen);
-			curpkgname = bxbps_get_pkgname(vpkgname, allhay);
-			if (curpkgname == NULL)
+			if (vpkgname == NULL)
 				goto badwant;
+			curpkgname = bxbps_get_pkgname(vpkgname, allhay);
 		}
+		if (curpkgname == NULL)
+			goto badwant;
 		curpkg = bgraph_find_pkg(hay, allhay, curpkgname);
 		if (curpkg == NULL)
 			goto badwant;

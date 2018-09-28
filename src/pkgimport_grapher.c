@@ -650,7 +650,8 @@ find_package_for_worker (client_t *self)
 	enum pkg_archs arch = wrkr->arch;
 	struct pkg *pkg;
 	int assigned = 0;
-	bgraph pkgarch = NULL, hostarch = zhash_lookup(self->pkggraph, pkg_archs_str[wrkr->hostarch]);
+	bgraph pkgarch = NULL;
+	bgraph hostarch = zhash_lookup(self->pkggraph, pkg_archs_str[wrkr->hostarch]);
 tryagain:
 	pkgarch = zhash_lookup(self->pkggraph, pkg_archs_str[arch]);
 	for (pkg = zlist_first(self->nextup[arch]);

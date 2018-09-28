@@ -47,7 +47,6 @@ bxbps_get_pkgname(const char *spec, bgraph graph)
 	if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL)
 		return retVal;
 
-	fprintf(stderr, "The following spec is unacceptable: %s\n", spec);
 	FREE(retVal);
 
 	return retVal;
