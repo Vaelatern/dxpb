@@ -88,6 +88,7 @@ main(int argc, char * const *argv)
 			print_license();
 			return 0;
 		case 'h':
+			prologue(argv[0]);
 			help();
 			return 0;
 		case 'I':

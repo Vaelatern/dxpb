@@ -82,6 +82,7 @@ main(int argc, char * const *argv)
 	while ((c = getopt(argc, argv, optstring)) != -1) {
 		switch(c) {
 		case 'h':
+			prologue(argv[0]);
 			help();
 			return 0;
 		case 'L':
