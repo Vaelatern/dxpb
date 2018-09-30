@@ -43,6 +43,7 @@
 		<field name = "nativetargetneeds" type = "longstr" />
 		<field name = "crosshostneeds" type = "longstr" />
 		<field name = "crosstargetneeds" type = "longstr" />
+		<field name = "provides" type = "longstr" />
 		<field name = "cancross" type = "number" size = "1" />
 		<field name = "broken" type = "number" size = "1"/>
 		<field name = "bootstrap" type = "number" size = "1"/>

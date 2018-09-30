@@ -49,6 +49,7 @@ bpkg_destroy(struct pkg *lamb)
 	bwords_destroy(&(lamb->wneeds_cross_target), 1);
 	bwords_destroy(&(lamb->wneeds_native_host), 1);
 	bwords_destroy(&(lamb->wneeds_native_target), 1);
+	bwords_destroy(&(lamb->provides), 1);
 	zlist_destroy((zlist_t **) &(lamb->cross_needs));
 	zlist_destroy((zlist_t **) &(lamb->needs));
 	zlist_destroy((zlist_t **) &(lamb->needs_me));
@@ -180,6 +181,8 @@ bpkg_init_single(const char *xbps_src, struct pkg *template, const char *main_na
 	new_guy->broken = new_guy->broken || bxsrc_q_isset(fds, "broken");
 	assert(new_guy->wneeds_native_host == NULL);
 	assert(new_guy->wneeds_native_target == NULL);
+	assert(new_guy->provides == NULL);
+	new_guy->provides = bxsrc_q_to_words(fds, "provides");
 	if (!is_subpkg && !new_guy->broken) { /* This is the real package */
 		new_guy->wneeds_native_host =
 			bwords_merge_words(bxsrc_q_to_words(fds, "hostmakedepends"), NULL);
@@ -279,6 +282,8 @@ bpkg_read(pkgimport_msg_t *message)
 		bwords_from_units(pkgimport_msg_crosstargetneeds(message));
 	retVal->wneeds_native_host =
 		bwords_from_units(pkgimport_msg_nativehostneeds(message));
+	retVal->provides =
+		bwords_from_units(pkgimport_msg_provides(message));
 	retVal->wneeds_native_target =
 		bwords_from_units(pkgimport_msg_nativetargetneeds(message));
 	retVal->status = PKG_STATUS_NONE;

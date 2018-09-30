@@ -29,6 +29,7 @@ struct bdb_bound_params {
 	int	crosshostneeds;
 	int	destneeds;
 	int	crossdestneeds;
+	int	provides;
 	int	cancross;
 	int	broken;
 	int	bootstrap;

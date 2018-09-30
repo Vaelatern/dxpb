@@ -92,7 +92,7 @@ The following ABNF grammar defines the Package Import Managment Protocol:
 
     ;  No description
 
-    PKGINFO         = signature %d18 proto_version info_revision pkgname version arch nativehostneeds nativetargetneeds crosshostneeds crosstargetneeds cancross broken bootstrap restricted
+    PKGINFO         = signature %d18 proto_version info_revision pkgname version arch nativehostneeds nativetargetneeds crosshostneeds crosstargetneeds provides cancross broken bootstrap restricted
     proto_version   = string                ; Package Import Management Protocol Version 00
     info_revision   = string                ; Pkginfo Revision Within Protocol Version
     pkgname         = string                ;
@@ -102,6 +102,7 @@ The following ABNF grammar defines the Package Import Managment Protocol:
     nativetargetneeds = longstr             ;
     crosshostneeds  = longstr               ;
     crosstargetneeds = longstr              ;
+    provides        = longstr               ;
     cancross        = number-1              ;
     broken          = number-1              ;
     bootstrap       = number-1              ;

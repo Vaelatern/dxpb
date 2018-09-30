@@ -48,6 +48,7 @@ struct pkg {
 	bwords	wneeds_cross_target;
 	bwords	wneeds_native_host;
 	bwords	wneeds_native_target;
+	bwords	provides;
 	unsigned	long priority;
 	uint8_t		bad;
 	enum {

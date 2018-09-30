@@ -83,6 +83,7 @@
         nativetargetneeds   longstr
         crosshostneeds      longstr
         crosstargetneeds    longstr
+        provides            longstr
         cancross            number 1
         broken              number 1
         bootstrap           number 1
@@ -229,6 +230,12 @@ const char *
     pkgimport_msg_crosstargetneeds (pkgimport_msg_t *self);
 void
     pkgimport_msg_set_crosstargetneeds (pkgimport_msg_t *self, const char *value);
+
+//  Get/set the provides field
+const char *
+    pkgimport_msg_provides (pkgimport_msg_t *self);
+void
+    pkgimport_msg_set_provides (pkgimport_msg_t *self, const char *value);
 
 //  Get/set the cancross field
 byte

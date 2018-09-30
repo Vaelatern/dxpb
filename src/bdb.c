@@ -29,6 +29,7 @@ const char *BDB_TABLE_CREATE_STMT = "CREATE TABLE IF NOT EXISTS Packages \
 				       crosshostneeds TEXT, \
 				       destneeds TEXT, \
 				       crossdestneeds TEXT, \
+				       provides TEXT, \
 				       cancross BOOLEAN NOT NULL ON CONFLICT ROLLBACK, \
 				       broken BOOLEAN NOT NULL ON CONFLICT ROLLBACK, \
 				       bootstrap BOOLEAN NOT NULL ON CONFLICT ROLLBACK, \
@@ -61,8 +62,9 @@ const char *BDB_PKG_DELNOTARCH_STMT = "SELECT * FROM Packages WHERE \
 
 const char *BDB_ROW_CREATE_STMT = "INSERT OR REPLACE INTO Packages \
 				   (name,version,arch,hostneeds,destneeds,\
-				    crosshostneeds,crossdestneeds,cancross,\
-				    broken,bootstrap,restricted,hashid) \
+				    crosshostneeds,crossdestneeds,provides, \
+				    cancross,broken,bootstrap,restricted, \
+				    hashid) \
 				   VALUES ( \
 						   $name, \
 						   $version, \
@@ -71,6 +73,7 @@ const char *BDB_ROW_CREATE_STMT = "INSERT OR REPLACE INTO Packages \
 						   $destneeds, \
 						   $crosshostneeds, \
 						   $crossdestneeds, \
+						   $provides, \
 						   $cancross, \
 						   $broken, \
 						   $bootstrap, \
@@ -185,6 +188,11 @@ bdb_write_pkg(struct pkg *curpkg, struct bdb_bound_params *bound)
 
 	tmp = bwords_to_units(curpkg->wneeds_cross_target);
 	rc = sqlite3_bind_text(row, bound->crossdestneeds, tmp, -1, SQLITE_TRANSIENT);
+	free(tmp);
+	assert(rc == SQLITE_OK);
+
+	tmp = bwords_to_units(curpkg->provides);
+	rc = sqlite3_bind_text(row, bound->provides, tmp, -1, SQLITE_TRANSIENT);
 	free(tmp);
 	assert(rc == SQLITE_OK);
 
@@ -333,6 +341,7 @@ bdb_params_init_rows(struct bdb_bound_params *params)
 	params->crosshostneeds = sqlite3_bind_parameter_index(params->ROW, "$crosshostneeds");
 	params->destneeds = sqlite3_bind_parameter_index(params->ROW, "$destneeds");
 	params->crossdestneeds = sqlite3_bind_parameter_index(params->ROW, "$crossdestneeds");
+	params->provides = sqlite3_bind_parameter_index(params->ROW, "$provides");
 }
 
 static void
@@ -467,6 +476,7 @@ bdb_params_destroy(struct bdb_bound_params **params)
 	*params = NULL;
 }
 
+// Quite optimized here. But it's good.
 static void
 bdb_fill_from_column(struct bdb_bound_params *params, struct pkg *pkg, int col)
 {
@@ -529,6 +539,10 @@ bdb_fill_from_column(struct bdb_bound_params *params, struct pkg *pkg, int col)
 	case 'n': // name
 		tmp = sqlite3_column_text(params->ROW, col);
 		pkg->name = strdup((const char *)tmp);
+		break;
+	case 'p': // provides
+		tmp = sqlite3_column_text(params->ROW, col);
+		pkg->provides = bwords_from_units((const char *)tmp);
 		break;
 	case 'r': // restricted
 		pkg->restricted = sqlite3_column_int(params->ROW, col);
@@ -630,14 +644,16 @@ bdb_write_all(const char *db_path, bgraph grph, const char *hash)
 		perror("rc != ERR_CODE_OK for writing hash");
 		/* TODO: XXX: MUST HAVE a provision to work around this!
 		 * 2017-03-14
-		 * 2017-05-02 */
+		 * 2017-05-02
+		 * 2018-09-30 */
 	} else {
 		rc = bdb_write_tree(grph, params);
 		if (rc != ERR_CODE_OK) {
 			; /* TODO: XXX: MUST HAVE a provision to work around this!
 			     Likely a rollback of the database and not continuing with
 			     this function call except to destroy params.
-			     2017-03-14*/
+			     2017-03-14
+			     2018-09-30 */
 		}
 		sqlite3_exec(params->DB, "COMMIT TRANSACTION", NULL, NULL, NULL);
 	}

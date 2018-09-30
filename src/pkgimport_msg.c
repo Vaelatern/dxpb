@@ -42,6 +42,7 @@ struct _pkgimport_msg_t {
     char *nativetargetneeds;            //  nativetargetneeds
     char *crosshostneeds;               //  crosshostneeds
     char *crosstargetneeds;             //  crosstargetneeds
+    char *provides;                     //  provides
     byte cancross;                      //  cancross
     byte broken;                        //  broken
     byte bootstrap;                     //  bootstrap
@@ -227,6 +228,7 @@ pkgimport_msg_destroy (pkgimport_msg_t **self_p)
         free (self->nativetargetneeds);
         free (self->crosshostneeds);
         free (self->crosstargetneeds);
+        free (self->provides);
         free (self->virtualpkgs);
 
         //  Free object itself
@@ -275,6 +277,12 @@ pkgimport_msg_dup (pkgimport_msg_t *other)
         const char *str = pkgimport_msg_crosstargetneeds(other);
         if (str) {
             pkgimport_msg_set_crosstargetneeds(copy, str);
+        }
+    }
+    {
+        const char *str = pkgimport_msg_provides(other);
+        if (str) {
+            pkgimport_msg_set_provides(copy, str);
         }
     }
     pkgimport_msg_set_cancross (copy, pkgimport_msg_cancross (other));
@@ -568,6 +576,7 @@ pkgimport_msg_recv (pkgimport_msg_t *self, zsock_t *input)
             GET_LONGSTR (self->nativetargetneeds);
             GET_LONGSTR (self->crosshostneeds);
             GET_LONGSTR (self->crosstargetneeds);
+            GET_LONGSTR (self->provides);
             GET_NUMBER1 (self->cancross);
             GET_NUMBER1 (self->broken);
             GET_NUMBER1 (self->bootstrap);
@@ -749,6 +758,9 @@ pkgimport_msg_send (pkgimport_msg_t *self, zsock_t *output)
             frame_size += 4;
             if (self->crosstargetneeds)
                 frame_size += strlen (self->crosstargetneeds);
+            frame_size += 4;
+            if (self->provides)
+                frame_size += strlen (self->provides);
             frame_size += 1;            //  cancross
             frame_size += 1;            //  broken
             frame_size += 1;            //  bootstrap
@@ -879,6 +891,11 @@ pkgimport_msg_send (pkgimport_msg_t *self, zsock_t *output)
                 PUT_NUMBER4 (0);    //  Empty string
             if (self->crosstargetneeds) {
                 PUT_LONGSTR (self->crosstargetneeds);
+            }
+            else
+                PUT_NUMBER4 (0);    //  Empty string
+            if (self->provides) {
+                PUT_LONGSTR (self->provides);
             }
             else
                 PUT_NUMBER4 (0);    //  Empty string
@@ -1043,6 +1060,10 @@ pkgimport_msg_print (pkgimport_msg_t *self)
                 zsys_debug ("    crosstargetneeds='%s'", self->crosstargetneeds);
             else
                 zsys_debug ("    crosstargetneeds=");
+            if (self->provides)
+                zsys_debug ("    provides='%s'", self->provides);
+            else
+                zsys_debug ("    provides=");
             zsys_debug ("    cancross=%ld", (long) self->cancross);
             zsys_debug ("    broken=%ld", (long) self->broken);
             zsys_debug ("    bootstrap=%ld", (long) self->bootstrap);
@@ -1345,6 +1366,26 @@ pkgimport_msg_set_crosstargetneeds (pkgimport_msg_t *self, const char *value)
     assert (value);
     free (self->crosstargetneeds);
     self->crosstargetneeds = strdup (value);
+}
+
+
+//  --------------------------------------------------------------------------
+//  Get/set the provides field
+
+const char *
+pkgimport_msg_provides (pkgimport_msg_t *self)
+{
+    assert (self);
+    return self->provides;
+}
+
+void
+pkgimport_msg_set_provides (pkgimport_msg_t *self, const char *value)
+{
+    assert (self);
+    assert (value);
+    free (self->provides);
+    self->provides = strdup (value);
 }
 
 
@@ -1678,6 +1719,7 @@ pkgimport_msg_test (bool verbose)
     pkgimport_msg_set_nativetargetneeds (self, "Life is short but Now lasts for ever");
     pkgimport_msg_set_crosshostneeds (self, "Life is short but Now lasts for ever");
     pkgimport_msg_set_crosstargetneeds (self, "Life is short but Now lasts for ever");
+    pkgimport_msg_set_provides (self, "Life is short but Now lasts for ever");
     pkgimport_msg_set_cancross (self, 123);
     pkgimport_msg_set_broken (self, 123);
     pkgimport_msg_set_bootstrap (self, 123);
@@ -1696,6 +1738,7 @@ pkgimport_msg_test (bool verbose)
         assert (streq (pkgimport_msg_nativetargetneeds (self), "Life is short but Now lasts for ever"));
         assert (streq (pkgimport_msg_crosshostneeds (self), "Life is short but Now lasts for ever"));
         assert (streq (pkgimport_msg_crosstargetneeds (self), "Life is short but Now lasts for ever"));
+        assert (streq (pkgimport_msg_provides (self), "Life is short but Now lasts for ever"));
         assert (pkgimport_msg_cancross (self) == 123);
         assert (pkgimport_msg_broken (self) == 123);
         assert (pkgimport_msg_bootstrap (self) == 123);
