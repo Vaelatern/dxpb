@@ -633,6 +633,7 @@ get_package_list_for_arch (client_t *self)
 		if (self->nextup[i] != NULL)
 			zlist_destroy(&(self->nextup[i]));
 		self->nextup[i] = bgraph_what_next_for_arch(self->pkggraph, i);
+		blog_queueSelected(self->nextup[i]);
 	}
 }
 
