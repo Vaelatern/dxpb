@@ -106,7 +106,9 @@ bgraph_destroy(bgraph *deadmeat)
 {
 	bgraph goner = *deadmeat;
 	struct pkg *child;
+	assert(goner);
 	for (zhash_t *tmp = zhash_first(goner); tmp; tmp = zhash_next(goner)) {
+		assert(tmp);
 		for (child = zhash_first(tmp); child != NULL; child = zhash_next(tmp)) {
 			zhash_delete(tmp, zhash_cursor(tmp));
 		}
@@ -183,6 +185,8 @@ bgraph_find_pkg(zhash_t *arch, zhash_t *noarch, const char *pkgname)
 		retVal = zhash_lookup(arch, pkgname);
 	if (noarch != NULL && retVal == NULL)
 		retVal = zhash_lookup(noarch, pkgname);
+	if (retVal->arch >= ARCH_HOST)
+		return NULL;
 
 	return retVal;
 }
@@ -321,6 +325,7 @@ bgraph_attempt_resolution(bgraph grph)
 	zhash_t *virt = bgraph_get_vpkgs(grph);
 	for (enum pkg_archs arch = ARCH_NOARCH; arch < ARCH_HOST; arch++) {
 		bgraph_pitchfork(grph, pkg_archs_str[arch], &hay, NULL, NULL);
+		assert(hay);
 		for (struct pkg *needle = zhash_first(hay); needle != NULL;
 						needle = zhash_next(hay)) {
 			rc = bgraph_resolve_pkg(hay, allhay, hosthay, virt, needle);
@@ -395,10 +400,11 @@ bgraph_what_next_for_arch(bgraph grph, enum pkg_archs arch)
 {
 	struct pkg *needle;
 	bgraph hay;
-	zlist_t *retVal = zlist_new();
 	int found_bootstrap = 0;
+	zlist_t *retVal = zlist_new();
 
 	hay = zhash_lookup(grph, pkg_archs_str[arch]);
+	assert(hay != NULL);
 	for (needle = zhash_first(hay); needle != NULL; needle = zhash_next(hay))
 		if (bgraph_pkg_ready_to_build(needle, hay, NULL, 0) == ERR_CODE_YES) {
 			zlist_append(retVal, needle);
@@ -423,8 +429,11 @@ bgraph_get_pkg(const bgraph grph, const char *pkgname, const char *version, enum
 	assert(grph);
 	assert(pkgname);
 	assert(version);
-	assert(arch < ARCH_HOST);
-	bgraph archgraph = zhash_lookup(grph, pkg_archs_str[arch]);
+	enum pkg_archs tmparch = arch;
+	if (arch == ARCH_TARGET)
+		tmparch = ARCH_NOARCH;
+	assert(arch < ARCH_HOST || arch == ARCH_TARGET);
+	bgraph archgraph = zhash_lookup(grph, pkg_archs_str[tmparch]);
 	assert(archgraph != NULL);
 	struct pkg *pkg = zhash_lookup(archgraph, pkgname);
 

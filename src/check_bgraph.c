@@ -9,7 +9,7 @@ START_TEST(test_basic_bgraph)
 	zlist_t *list;
 	grph = bgraph_new();
 	ck_assert_ptr_nonnull(grph);
-	ck_assert_int_eq(zhash_size(grph), ARCH_NUM_MAX-1);
+	ck_assert_int_eq(zhash_size(grph), ARCH_NUM_MAX - 1 + 1);
 	for (zhash_t *item = zhash_first(grph); item != NULL;
 					item = zhash_next(grph)) {
 		ck_assert_int_eq(zhash_size(item), 0);
@@ -33,6 +33,7 @@ START_TEST(test_basic_bgraph_with_pkg)
 	grph = bgraph_new();
 	ck_assert_ptr_nonnull(grph);
 	rc = bgraph_insert_pkg(grph, newpkg);
+	bgraph_mark_pkg_not_in_progress(grph, "foo", "bar", ARCH_NOARCH);
 	ck_assert_int_eq(rc, ERR_CODE_OK);
 	list = bgraph_what_next_for_arch(grph, ARCH_NOARCH);
 	ck_assert_ptr_nonnull(list);
@@ -58,6 +59,8 @@ START_TEST(test_basic_bgraph_with_pkg_replacement)
 	rc = bgraph_insert_pkg(grph, newpkg);
 	ck_assert_int_eq(rc, ERR_CODE_OK);
 
+	bgraph_mark_pkg_not_in_progress(grph, "foo", "bar", ARCH_NOARCH);
+
 	list = bgraph_what_next_for_arch(grph, ARCH_NOARCH);
 	ck_assert_ptr_nonnull(list);
 	ck_assert_int_eq(zlist_size(list), 1);
@@ -66,6 +69,7 @@ START_TEST(test_basic_bgraph_with_pkg_replacement)
 
 	rc = bgraph_insert_pkg(grph, reppkg);
 	ck_assert_int_eq(rc, ERR_CODE_OK);
+	bgraph_mark_pkg_not_in_progress(grph, "foo", "baz", ARCH_NOARCH);
 	list = bgraph_what_next_for_arch(grph, ARCH_NOARCH);
 	ck_assert_ptr_nonnull(list);
 	ck_assert_int_eq(zlist_size(list), 1);
@@ -87,24 +91,29 @@ START_TEST(test_basic_bgraph_with_pkg_type_replacement)
 	grph = bgraph_new();
 	ck_assert_ptr_nonnull(grph);
 
-	for (enum pkg_archs i = 1; i <= ARCH_TARGET; i++) {
+	for (enum pkg_archs i = 1; i <= ARCH_HOST; i++) {
+		if (i == ARCH_HOST)
+			i = ARCH_TARGET;
 		rc = bgraph_insert_pkg(grph, bpkg_init("foo", "bar", pkg_archs_str[i]));
 		ck_assert_int_eq(rc, ERR_CODE_OK);
+		bgraph_mark_pkg_not_in_progress(grph, "foo", "bar", i);
 	}
 
-	for (enum pkg_archs i = 0; i <= ARCH_HOST; i++) {
+	for (enum pkg_archs i = 0; i < ARCH_HOST; i++) {
 		list = bgraph_what_next_for_arch(grph, i);
 		ck_assert_ptr_nonnull(list);
-		ck_assert_int_eq(zlist_size(list), i != ARCH_NOARCH && i != ARCH_HOST);
+		ck_assert_int_eq(zlist_size(list), i != ARCH_NOARCH);
 		zlist_destroy(&list);
 	}
 
 	rc = bgraph_insert_pkg(grph, reppkg);
 	ck_assert_int_eq(rc, ERR_CODE_OK);
-	for (enum pkg_archs i = 0; i <= ARCH_HOST; i++) {
+	bgraph_mark_pkg_not_in_progress(grph, "foo", "baz", ARCH_NOARCH);
+	for (enum pkg_archs i = 0; i < ARCH_HOST; i++) {
 		list = bgraph_what_next_for_arch(grph, i);
 		ck_assert_ptr_nonnull(list);
 		ck_assert_int_eq(zlist_size(list), i == ARCH_NOARCH);
+		ck_assert_ptr_nonnull(list);
 		if (i == ARCH_NOARCH)
 			ck_assert_ptr_eq(reppkg, zlist_first(list));
 		zlist_destroy(&list);
