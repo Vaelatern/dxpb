@@ -1,9 +1,9 @@
 Vaelatern's short list (v0.1.0):
 	- Debug dxpb as a whole.
 	- Work out how to handle dbg and 32bit packages
-	- Actually handle provides= packages
 
 Todo (v0.1.1):
+	- Only allow a package if it actually provides= what the spec wants.
 	- Improve xbps-src's `show-pkg-var` to not have a read-write loop.
 	  This requires significant modifications to dxpb.
 	- Shim to unmark package as bad (similar to dxpb-poke)

@@ -8,7 +8,7 @@
 #endif
 #define DXPB_BXBPS_H
 
-char	*bxbps_get_pkgname(const char *, bgraph);
+char	*bxbps_get_pkgname(const char *, bgraph, void *);
 int	 bxbps_spec_match(const char *, const char *, const char *);
 char	*bxbps_pkg_to_filename(const char *, const char *, const char *);
 char 	*bxbps_file_hash(const char *);

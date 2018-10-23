@@ -18,11 +18,17 @@
 #include "bgraph.h"
 #include "bxbps.h"
 
+#define VIRTUAL_STR "virtual?"
+const size_t VSTRLEN = strlen(VIRTUAL_STR);
+
 char *
-bxbps_get_pkgname(const char *spec, bgraph graph)
+bxbps_get_pkgname(const char *spec, bgraph graph, void *virtvoid)
 {
 	char *retVal = NULL;
 	void *tmp;
+	zhash_t *virt = virtvoid;
+	const char *vspec;
+	const char *match;
 
 	/* First step, see if the whole thing is a pkgname */
 	if ((tmp = zhash_lookup(graph, spec)) != NULL) {
@@ -39,14 +45,48 @@ bxbps_get_pkgname(const char *spec, bgraph graph)
 	retVal = xbps_pkg_name(spec);
 	if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL)
 		return retVal;
-
 	FREE(retVal);
 
 	/* And then, does it use our special matching? */
 	retVal = xbps_pkgpattern_name(spec);
 	if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL)
 		return retVal;
+	FREE(retVal);
 
+	/* Ok, now to check if it has not behaved, maybe it's virtual or
+	 * maybe it's a provides package */
+	if (!virt)
+		return retVal;
+
+	if (strncmp(spec, VIRTUAL_STR, VSTRLEN) == 0)
+		vspec = spec + VSTRLEN;
+	else
+		vspec = spec;
+
+	/* First step, see if the whole thing is a pkgname */
+	match = zhash_lookup(virt, vspec);
+	if ((tmp = zhash_lookup(graph, match)) != NULL) {
+		retVal = strdup(match);
+		if (retVal == NULL)
+			exit(ERR_CODE_NOMEM);
+		return retVal;
+	}
+
+	/* Second option, is it a pkgname-ver_rev ? Important to note that xbps
+	 * has strict rules on what a version may be. It must have a number
+	 * between the first '-' and the last '_'.
+	 * Vaelatern, 2017-07-06 */
+	match = xbps_pkg_name(vspec);
+	retVal = zhash_lookup(virt, match);
+	if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL)
+		return retVal;
+	FREE(retVal);
+
+	/* And then, does it use our special matching? */
+	match = xbps_pkgpattern_name(vspec);
+	retVal = zhash_lookup(virt, match);
+	if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL)
+		return retVal;
 	FREE(retVal);
 
 	return retVal;
@@ -55,7 +95,7 @@ bxbps_get_pkgname(const char *spec, bgraph graph)
 int
 bxbps_spec_match(const char *spec, const char *pkgname, const char *pkgver)
 {
-	if (strncmp(spec, "virtual?", strlen("virtual?")) == 0) // Assume virtual are OK
+	if (strncmp(spec, VIRTUAL_STR, VSTRLEN) == 0) // Assume virtual are OK
 		return ERR_CODE_YES;
 
 	int rc = xbps_pkgpattern_match(pkgname, spec);

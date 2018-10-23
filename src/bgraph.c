@@ -241,19 +241,10 @@ bgraph_pitchfork(bgraph grph, const char *arch, zhash_t **hay, zhash_t **allhay,
 static int
 bgraph_resolve_wneed(bgraph hay, bgraph allhay, zhash_t *virt, bwords curwords, void *ineed, void *needs_me, struct pkg *me)
 {
-	const int virtprefixlen = 8; // strlen("virtual?");
 	struct pkg *curpkg = NULL;
 	size_t i = -1;
 	for (i = 0; i < curwords->num_words; i++) {
-		char *curpkgname = bxbps_get_pkgname(curwords->words[i], allhay);
-		if (curpkgname == NULL &&
-				strlen(curwords->words[i]) > virtprefixlen &&
-				strncmp(curwords->words[i], "virtual?", 8) == 0) {
-			char *vpkgname = zhash_lookup(virt, curwords->words[i] + virtprefixlen);
-			if (vpkgname == NULL)
-				goto badwant;
-			curpkgname = bxbps_get_pkgname(vpkgname, allhay);
-		}
+		char *curpkgname = bxbps_get_pkgname(curwords->words[i], allhay, virt);
 		if (curpkgname == NULL)
 			goto badwant;
 		curpkg = bgraph_find_pkg(hay, allhay, curpkgname);
