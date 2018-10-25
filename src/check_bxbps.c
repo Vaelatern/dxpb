@@ -11,44 +11,44 @@ START_TEST(test_bxbps_get_pkgname)
 	bgraph alls = zhash_new();
 	zhash_insert(alls, "foo-bar1_1", &tmp);
 
-	tmp = bxbps_get_pkgname("foo", alls);
+	tmp = bxbps_get_pkgname("foo", alls, NULL);
 	ck_assert_ptr_eq(tmp, NULL);
 
-	tmp = bxbps_get_pkgname("foo-bar1_1", alls);
+	tmp = bxbps_get_pkgname("foo-bar1_1", alls, NULL);
 	ck_assert_str_eq(tmp, "foo-bar1_1");
 	free(tmp);
 
 	zhash_insert(alls, "foo", &tmp);
 
-	tmp = bxbps_get_pkgname("foo", alls);
+	tmp = bxbps_get_pkgname("foo", alls, NULL);
 	ck_assert_str_eq(tmp, "foo");
 	free(tmp);
 
-	tmp = bxbps_get_pkgname("foo-bar1_1", alls);
+	tmp = bxbps_get_pkgname("foo-bar1_1", alls, NULL);
 	ck_assert_str_eq(tmp, "foo-bar1_1");
 	free(tmp);
 
 	zhash_delete(alls, "foo-bar1_1");
 
-	tmp = bxbps_get_pkgname("foo-bar1_1", alls);
+	tmp = bxbps_get_pkgname("foo-bar1_1", alls, NULL);
 	ck_assert_str_eq(tmp, "foo");
 	free(tmp);
 
-	tmp = bxbps_get_pkgname("foo>=1.0", alls);
+	tmp = bxbps_get_pkgname("foo>=1.0", alls, NULL);
 	ck_assert_str_eq(tmp, "foo");
 	free(tmp);
 
-	tmp = bxbps_get_pkgname("foo-1.0_1", alls);
+	tmp = bxbps_get_pkgname("foo-1.0_1", alls, NULL);
 	ck_assert_str_eq(tmp, "foo");
 	free(tmp);
 
-	tmp = bxbps_get_pkgname("foo<=1.0", alls);
+	tmp = bxbps_get_pkgname("foo<=1.0", alls, NULL);
 	ck_assert_str_eq(tmp, "foo");
 	free(tmp);
 
 	zhash_insert(alls, "python3.4-service_directory", &tmp);
 
-	tmp = bxbps_get_pkgname("python3.4-service_directory>1.5_1", alls);
+	tmp = bxbps_get_pkgname("python3.4-service_directory>1.5_1", alls, NULL);
 	ck_assert_str_eq(tmp, "python3.4-service_directory");
 	free(tmp);
 
