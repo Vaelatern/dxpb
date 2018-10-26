@@ -185,8 +185,6 @@ bgraph_find_pkg(zhash_t *arch, zhash_t *noarch, const char *pkgname)
 		retVal = zhash_lookup(arch, pkgname);
 	if (noarch != NULL && retVal == NULL)
 		retVal = zhash_lookup(noarch, pkgname);
-	if (retVal->arch >= ARCH_HOST)
-		return NULL;
 
 	return retVal;
 }
@@ -247,6 +245,7 @@ bgraph_resolve_wneed(bgraph hay, bgraph allhay, zhash_t *virt, bwords curwords, 
 {
 	struct pkg *curpkg = NULL;
 	size_t i = -1;
+	assert(curwords != NULL);// no deps at all! For some reason
 	for (i = 0; i < curwords->num_words; i++) {
 		char *curpkgname = bxbps_get_pkgname(curwords->words[i], allhay, virt);
 		if (curpkgname == NULL)

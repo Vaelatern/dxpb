@@ -55,7 +55,7 @@ bxbps_get_pkgname(const char *spec, bgraph graph, void *virtvoid)
 
 	/* Ok, now to check if it has not behaved, maybe it's virtual or
 	 * maybe it's a provides package */
-	if (!virt)
+	if (virt == NULL || zhash_size(virt) == 0)
 		return retVal;
 
 	if (strncmp(spec, VIRTUAL_STR, VSTRLEN) == 0)

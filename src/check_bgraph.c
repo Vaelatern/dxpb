@@ -148,6 +148,31 @@ bwords_clone(bwords in)
 }
 
 void
+do_pkg_needs(struct pkg *pkg, bwords *host, bwords *target)
+{
+	if (target) {
+		pkg->wneeds_cross_target = bwords_clone(*target);
+		pkg->wneeds_native_target = bwords_clone(*target);
+		bwords_destroy(target, 0);
+	} else {
+		pkg->wneeds_cross_target = bwords_new();
+		pkg->wneeds_native_target = bwords_new();
+	}
+	if (host) {
+		pkg->wneeds_cross_host = bwords_clone(*host);
+		pkg->wneeds_native_host = bwords_clone(*host);
+		bwords_destroy(host, 0);
+	} else {
+		pkg->wneeds_cross_host = bwords_new();
+		pkg->wneeds_native_host = bwords_new();
+	}
+	assert(pkg->wneeds_cross_target != NULL);
+	assert(pkg->wneeds_native_target != NULL);
+	assert(pkg->wneeds_cross_host != NULL);
+	assert(pkg->wneeds_native_host != NULL);
+}
+
+void
 new_package(bgraph grph, char *name, char *ver, int noarch, int present,
 		bwords *host, bwords *target)
 {
@@ -155,6 +180,7 @@ new_package(bgraph grph, char *name, char *ver, int noarch, int present,
 	int rc;
 	if (noarch) {
 		pkg = bpkg_init(name, ver, pkg_archs_str[ARCH_NOARCH]);
+		do_pkg_needs(pkg, host, target);
 		rc = bgraph_insert_pkg(grph, pkg);
 		ck_assert_int_eq(rc, ERR_CODE_OK);
 		if (!present)
@@ -166,16 +192,7 @@ new_package(bgraph grph, char *name, char *ver, int noarch, int present,
 			if (i == ARCH_HOST)
 				i = ARCH_TARGET;
 			pkg = bpkg_init(name, ver, pkg_archs_str[i]);
-			if (target) {
-				pkg->wneeds_cross_target = bwords_clone(*target);
-				pkg->wneeds_native_target = bwords_clone(*target);
-				bwords_destroy(target, 0);
-			}
-			if (host) {
-				pkg->wneeds_cross_host = bwords_clone(*host);
-				pkg->wneeds_native_host = bwords_clone(*host);
-				bwords_destroy(host, 0);
-			}
+			do_pkg_needs(pkg, host, target);
 			rc = bgraph_insert_pkg(grph, pkg);
 			ck_assert_int_eq(rc, ERR_CODE_OK);
 			if (!present)
@@ -253,6 +270,20 @@ START_TEST(test_bgraph_with_simple_graph)
 	new_package(grph, "foo", "0.1", 0, 0, &a, NULL);
 	new_package(grph, "bar", "0.1", 1, 0, NULL, &b);
 	new_package(grph, "baz", "0.1", 0, 0, NULL, NULL);
+
+	for (enum pkg_archs i = 0; i < ARCH_HOST; i++) {
+		switch (i) {
+		case ARCH_NOARCH:
+			num_pkgs_for_arch(grph, i, 1, "bar");
+			break;
+		default:
+			num_pkgs_for_arch(grph, i, 3, "foo", "baz", "fol");
+		}
+	}
+
+	ck_assert_int_eq(1, 1); // Just a bookmark
+
+	bgraph_attempt_resolution(grph);
 
 	for (enum pkg_archs i = 0; i < ARCH_HOST; i++) {
 		if (i == ARCH_NOARCH)
