@@ -320,9 +320,11 @@ bgraph_attempt_resolution(bgraph grph)
 	// storage.
 	// Food for thought.
 	// Vaelatern, 2017-07-10
+	allhay = hosthay = NULL;
 	bgraph_pitchfork(grph, pkg_archs_str[ARCH_NOARCH], NULL, &allhay, &hosthay);
 	zhash_t *virt = bgraph_get_vpkgs(grph);
 	for (enum pkg_archs arch = ARCH_NOARCH; arch < ARCH_HOST; arch++) {
+		hay = NULL;
 		bgraph_pitchfork(grph, pkg_archs_str[arch], &hay, NULL, NULL);
 		assert(hay);
 		for (struct pkg *needle = zhash_first(hay); needle != NULL;
@@ -354,14 +356,15 @@ bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay, bgraph hosthay, int cr
 		rc = bxbps_spec_match(curneed->spec, pin->name, pin->ver);
 		if (rc != ERR_CODE_YES)
 			return rc;
-		if (pin->arch == ARCH_HOST) {
-			if (hosthay != NULL)
-				pin = zhash_lookup(hosthay, pin->name);
-			else
-				continue;
-		}
-		if (pin->arch == ARCH_TARGET)
+		if (pin->arch == ARCH_TARGET && hay != NULL) {
 			pin = zhash_lookup(hay, pin->name);
+		} else if (pin->arch == ARCH_HOST && hosthay != NULL) {
+			assert(hosthay != NULL);
+			pin = zhash_lookup(hosthay, pin->name);
+		} else if (pin->arch == ARCH_HOST || pin->arch == ARCH_TARGET)
+			continue;
+		if (pin->arch == ARCH_HOST || pin->arch == ARCH_TARGET)
+			continue;
 		assert(pin); // even if noarch, pin will be not null
 		if (pin->status != PKG_STATUS_IN_REPO)
 			return ERR_CODE_NO;
@@ -405,7 +408,7 @@ bgraph_what_next_for_arch(bgraph grph, enum pkg_archs arch)
 	hay = zhash_lookup(grph, pkg_archs_str[arch]);
 	assert(hay != NULL);
 	for (needle = zhash_first(hay); needle != NULL; needle = zhash_next(hay))
-		if (bgraph_pkg_ready_to_build(needle, hay, NULL, 0) == ERR_CODE_YES) {
+		if (bgraph_pkg_ready_to_build(needle, NULL, NULL, 0) == ERR_CODE_YES) {
 			zlist_append(retVal, needle);
 			found_bootstrap = found_bootstrap || (needle->bootstrap && (!needle->broken));
 		}

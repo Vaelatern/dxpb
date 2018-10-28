@@ -153,7 +153,6 @@ do_pkg_needs(struct pkg *pkg, bwords *host, bwords *target)
 	if (target) {
 		pkg->wneeds_cross_target = bwords_clone(*target);
 		pkg->wneeds_native_target = bwords_clone(*target);
-		bwords_destroy(target, 0);
 	} else {
 		pkg->wneeds_cross_target = bwords_new();
 		pkg->wneeds_native_target = bwords_new();
@@ -161,7 +160,6 @@ do_pkg_needs(struct pkg *pkg, bwords *host, bwords *target)
 	if (host) {
 		pkg->wneeds_cross_host = bwords_clone(*host);
 		pkg->wneeds_native_host = bwords_clone(*host);
-		bwords_destroy(host, 0);
 	} else {
 		pkg->wneeds_cross_host = bwords_new();
 		pkg->wneeds_native_host = bwords_new();
@@ -201,6 +199,8 @@ new_package(bgraph grph, char *name, char *ver, int noarch, int present,
 				bgraph_mark_pkg_present(grph, name, ver, i);
 		}
 	}
+	bwords_destroy(host, 0);
+	bwords_destroy(target, 0);
 }
 
 int
@@ -259,13 +259,16 @@ END_TEST
 START_TEST(test_bgraph_with_simple_graph)
 {
 	bgraph grph;
+	int rc;
 
 	grph = bgraph_new();
 	ck_assert_ptr_nonnull(grph);
 
 	bwords a = bwords_make(1, "bar");
 	bwords b = bwords_make(1, "baz");
-	bwords c = bwords_make(1, "fol");
+	bwords c = bwords_make(1, "foo");
+	bwords d = bwords_make(2, "fol", "baz");
+	new_package(grph, "los", "0.1", 0, 0, NULL, &d);
 	new_package(grph, "fol", "0.1", 0, 0, NULL, &c);
 	new_package(grph, "foo", "0.1", 0, 0, &a, NULL);
 	new_package(grph, "bar", "0.1", 1, 0, NULL, &b);
@@ -277,23 +280,24 @@ START_TEST(test_bgraph_with_simple_graph)
 			num_pkgs_for_arch(grph, i, 1, "bar");
 			break;
 		default:
-			num_pkgs_for_arch(grph, i, 3, "foo", "baz", "fol");
+			num_pkgs_for_arch(grph, i, 4, "los", "foo", "baz", "fol");
 		}
 	}
 
 	ck_assert_int_eq(1, 1); // Just a bookmark
 
-	bgraph_attempt_resolution(grph);
+	rc = bgraph_attempt_resolution(grph);
+	ck_assert_int_eq(rc, ERR_CODE_OK);
 
-	for (enum pkg_archs i = 0; i < ARCH_HOST; i++) {
-		if (i == ARCH_NOARCH)
+	for (enum pkg_archs i = 0; i < ARCH_HOST; i++)
+		switch (i) {
+		case ARCH_NOARCH:
 			num_pkgs_for_arch(grph, i, 1, "bar");
-		else
-			num_pkgs_for_arch(grph, i, 3, "foo", "baz", "fol");
-	}
-
-	bgraph_destroy(&grph);
-	ck_assert_ptr_null(grph);
+			break;
+		default:
+			num_pkgs_for_arch(grph, i, 1, "baz");
+			break;
+		}
 }
 END_TEST
 
