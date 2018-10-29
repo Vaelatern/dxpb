@@ -219,19 +219,24 @@ pkgnamecmp(void *pkgin, void *name)
 void
 num_pkgs_for_arch(bgraph grph, enum pkg_archs arch, int num, ...)
 {
+	ck_assert_ptr_nonnull(grph);
 	va_list ap;
+	ck_assert_int_eq(1, 1); // bookmark!
 	zlist_t *list = bgraph_what_next_for_arch(grph, arch);
 	ck_assert_ptr_nonnull(list);
 	ck_assert_int_eq(zlist_size(list), num);
 	const char *arg = NULL;
+	ck_assert_ptr_null(arg);
 	zlist_comparefn(list, pkgnamecmp);
 	va_start(ap, num);
 	for (int i = 0; i < num; i++) {
+		ck_assert(i < num);
 		arg = va_arg(ap, const char *);
 		ck_assert_int_eq(zlist_exists(list, (void*)arg), 1);
 	}
 	va_end(ap);
 	zlist_destroy(&list);
+	ck_assert_int_eq(1, 1); // A bookmark
 }
 
 START_TEST(test_basic_bgraph_with_new_package_functions)
@@ -301,6 +306,125 @@ START_TEST(test_bgraph_with_simple_graph)
 }
 END_TEST
 
+START_TEST(test_bgraph_with_simple_graph_partly_available)
+{
+	bgraph grph;
+	int rc;
+
+	grph = bgraph_new();
+	ck_assert_ptr_nonnull(grph);
+
+	bwords a = bwords_make(1, "bar");
+	bwords b = bwords_make(1, "baz");
+	bwords c = bwords_make(1, "foo");
+	bwords d = bwords_make(2, "foo", "baz");
+	new_package(grph, "los", "0.1", 0, 0, NULL, &d);
+	new_package(grph, "fol", "0.1", 0, 0, NULL, &c);
+	new_package(grph, "foo", "0.1", 0, 0, &a, NULL);
+	new_package(grph, "bar", "0.1", 1, 0, NULL, &b);
+	new_package(grph, "baz", "0.1", 0, 1, NULL, NULL);
+	ck_assert_ptr_null(a);
+	ck_assert_ptr_null(b);
+	ck_assert_ptr_null(c);
+	ck_assert_ptr_null(d);
+
+	for (enum pkg_archs i = 0; i < ARCH_HOST; i++) {
+		switch (i) {
+		case ARCH_NOARCH:
+			num_pkgs_for_arch(grph, i, 1, "bar");
+			break;
+		default:
+			num_pkgs_for_arch(grph, i, 3, "los", "foo", "fol");
+		}
+	}
+
+	ck_assert_int_eq(1, 1); // Just a bookmark
+
+	rc = bgraph_attempt_resolution(grph);
+	ck_assert_int_eq(rc, ERR_CODE_OK);
+	rc = bgraph_attempt_resolution(grph); // Should be safe to do many times
+	ck_assert_int_eq(rc, ERR_CODE_OK);
+
+	for (enum pkg_archs i = 0; i < ARCH_HOST; i++)
+		switch (i) {
+		case ARCH_NOARCH:
+			num_pkgs_for_arch(grph, i, 1, "bar");
+			break;
+		default:
+			num_pkgs_for_arch(grph, i, 0);
+			break;
+		}
+
+	bgraph_mark_pkg_present(grph, "bar", "0.1", ARCH_NOARCH);
+
+	for (enum pkg_archs i = 0; i < ARCH_HOST; i++)
+		switch (i) {
+		case ARCH_NOARCH:
+			num_pkgs_for_arch(grph, i, 0);
+			break;
+		default:
+			num_pkgs_for_arch(grph, i, 1, "foo");
+			break;
+		}
+
+	ck_assert_int_eq(1, 1); // Bookmark for the test suite
+	bwords e = bwords_make(1, "bar");
+	ck_assert_ptr_nonnull(e);
+	new_package(grph, "foo", "0.2", 0, 0, &e, NULL);
+	ck_assert_ptr_null(e);
+
+	rc = bgraph_attempt_resolution(grph);
+	ck_assert_int_eq(rc, ERR_CODE_OK);
+
+	for (enum pkg_archs i = 0; i < ARCH_HOST; i++)
+		switch (i) {
+		case ARCH_NOARCH:
+			num_pkgs_for_arch(grph, i, 0);
+			break;
+		default:
+			num_pkgs_for_arch(grph, i, 1, "foo");
+			break;
+		}
+
+	for (enum pkg_archs i = 1; i < ARCH_HOST; i++) {
+		rc = bgraph_mark_pkg_present(grph, "foo", "0.1", i);
+		ck_assert_int_eq(rc, ERR_CODE_NO);
+	}
+
+	for (enum pkg_archs i = 1; i < ARCH_HOST; i++) {
+		rc = bgraph_mark_pkg_present(grph, "foo", "0.2", i);
+		ck_assert_int_eq(rc, ERR_CODE_OK);
+	}
+
+	for (enum pkg_archs i = 0; i < ARCH_HOST; i++)
+		switch (i) {
+		case ARCH_NOARCH:
+			num_pkgs_for_arch(grph, i, 0);
+			break;
+		default:
+			num_pkgs_for_arch(grph, i, 2, "fol", "los");
+			break;
+		}
+
+	for (enum pkg_archs i = 1; i < ARCH_HOST; i++) {
+		rc = bgraph_mark_pkg_present(grph, "fol", "0.1", i);
+		ck_assert_int_eq(rc, ERR_CODE_OK);
+		rc = bgraph_mark_pkg_present(grph, "los", "0.1", i);
+		ck_assert_int_eq(rc, ERR_CODE_OK);
+	}
+
+	for (enum pkg_archs i = 0; i < ARCH_HOST; i++)
+		switch (i) {
+		case ARCH_NOARCH:
+			num_pkgs_for_arch(grph, i, 0);
+			break;
+		default:
+			num_pkgs_for_arch(grph, i, 0);
+			break;
+		}
+}
+END_TEST
+
 Suite * test_suite(void)
 {
 	Suite *s;
@@ -317,6 +441,7 @@ Suite * test_suite(void)
 	tcase_add_test(tc_core, test_basic_bgraph_with_pkg_type_replacement);
 	tcase_add_test(tc_core, test_basic_bgraph_with_new_package_functions);
 	tcase_add_test(tc_core, test_bgraph_with_simple_graph);
+	tcase_add_test(tc_core, test_bgraph_with_simple_graph_partly_available);
 	suite_add_tcase(s, tc_core);
 
 	return s;

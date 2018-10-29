@@ -63,7 +63,8 @@ bgraph_un_needs_me(struct pkg *poor_soul, struct pkg *origin)
 	zlist_t *cur_list = poor_soul->cross_needs;
 	for (i = zlist_first(cur_list); i != NULL; i = zlist_next(cur_list)) {
 		if (i->pkg == origin) {
-			i->pkg = NULL;
+			zlist_remove(cur_list, i);
+			bgraph_destroy_need(&i, poor_soul);
 			poor_soul->resolved = 0;
 		}
 	}
@@ -71,7 +72,8 @@ bgraph_un_needs_me(struct pkg *poor_soul, struct pkg *origin)
 	cur_list = poor_soul->needs;
 	for (i = zlist_first(cur_list); i != NULL; i = zlist_next(cur_list)) {
 		if (i->pkg == origin) {
-			i->pkg = NULL;
+			zlist_remove(cur_list, i);
+			bgraph_destroy_need(&i, poor_soul);
 			poor_soul->resolved = 0;
 		}
 	}
@@ -241,7 +243,7 @@ bgraph_pitchfork(bgraph grph, const char *arch, zhash_t **hay, zhash_t **allhay,
 }
 
 static int
-bgraph_resolve_wneed(bgraph hay, bgraph allhay, zhash_t *virt, bwords curwords, void *ineed, void *needs_me, struct pkg *me)
+bgraph_resolve_wneed(bgraph hay, bgraph allhay, zhash_t *virt, bwords curwords, void *ineed, struct pkg *me)
 {
 	struct pkg *curpkg = NULL;
 	size_t i = -1;
@@ -255,7 +257,7 @@ bgraph_resolve_wneed(bgraph hay, bgraph allhay, zhash_t *virt, bwords curwords, 
 			goto badwant;
 		FREE(curpkgname); /* mandated by the xbps functions */
 		zlist_append(ineed, bgraph_new_need(curwords->words[i], curpkg));
-		zlist_append(needs_me, me);
+		zlist_append(curpkg->needs_me, me);
 	}
 	return ERR_CODE_OK;
 badwant:
@@ -279,22 +281,22 @@ bgraph_resolve_pkg(bgraph hay, bgraph allhay, bgraph hosthay, zhash_t *virt, str
 	int rc;
 
 	rc = bgraph_resolve_wneed(hosthay, allhay, virt, subj->wneeds_cross_host,
-			subj->cross_needs, subj->needs_me, subj);
+			subj->cross_needs, subj);
 	if (rc == ERR_CODE_BADDEP)
 		goto badwant;
 
 	rc = bgraph_resolve_wneed(hay, allhay, virt, subj->wneeds_cross_target,
-			subj->cross_needs, subj->needs_me, subj);
+			subj->cross_needs, subj);
 	if (rc == ERR_CODE_BADDEP)
 		goto badwant;
 
 	rc = bgraph_resolve_wneed(hosthay, allhay, virt, subj->wneeds_native_host,
-			subj->needs, subj->needs_me, subj);
+			subj->needs, subj);
 	if (rc == ERR_CODE_BADDEP)
 		goto badwant;
 
 	rc = bgraph_resolve_wneed(hay, allhay, virt, subj->wneeds_native_target,
-			subj->needs, subj->needs_me, subj);
+			subj->needs, subj);
 	if (rc == ERR_CODE_BADDEP)
 		goto badwant;
 
@@ -352,6 +354,7 @@ bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay, bgraph hosthay, int cr
 	for (struct pkg_need *curneed = zlist_first(needs);
 			curneed != NULL; curneed = zlist_next(needs)) {
 		pin = curneed->pkg;
+		assert(pin);
 		assert(pin->name);
 		rc = bxbps_spec_match(curneed->spec, pin->name, pin->ver);
 		if (rc != ERR_CODE_YES)
