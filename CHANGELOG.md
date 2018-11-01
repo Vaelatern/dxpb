@@ -1,13 +1,13 @@
 # Changelog
 
-## 0.0.20.3 - 2018-10-30 - The one which chases the shadows away
+## 0.0.21 - 2018-10-31 - The one which is less needy
 ### Overview
 - Packages will now be tried 3 times before the build is declared a failure.
 - Graphers that restart connections to the frontend or import master no longer
   endlessly loop.
 - Virtual package prefixes are now double checked, increasing stability.
 - The grapher has a better grasp on if a package is virtual.
-- The graph can actually replace packages without crashing.
+- The graph can actually remove/replace packages (fixed the un_needs_me code)
 
 ## 0.0.20 - 2018-09-22 - The one which actually is aware of the graph
 ### Overview
