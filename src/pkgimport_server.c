@@ -79,6 +79,7 @@ struct tmppkg {
 	char	*name;
 	char	*arch;
 	char	*version;
+	char	*provides;
 	char	*cross_host;
 	char	*cross_trgt;
 	char	*native_host;
@@ -297,6 +298,7 @@ route_pkginfo (client_t *self)
 	tmp->name = strdup(pkgimport_msg_pkgname(me_sage));
 	tmp->version = strdup(pkgimport_msg_version(me_sage));
 	tmp->arch = strdup(pkgimport_msg_arch(me_sage));
+	tmp->provides = strdup(pkgimport_msg_provides(me_sage));
 	tmp->native_host = strdup(pkgimport_msg_nativehostneeds(me_sage));
 	tmp->native_trgt = strdup(pkgimport_msg_nativetargetneeds(me_sage));
 	tmp->cross_host = strdup(pkgimport_msg_crosshostneeds(me_sage));
@@ -307,7 +309,8 @@ route_pkginfo (client_t *self)
 	tmp->restricted = pkgimport_msg_restricted(me_sage);
 	if (!tmp->name || !tmp->name || !tmp->version || !tmp->arch ||
 				!tmp->native_host || !tmp->native_trgt ||
-				!tmp->cross_host || !tmp->cross_trgt) {
+				!tmp->cross_host || !tmp->cross_trgt ||
+				!tmp->provides) {
 		perror("Had memory issues while creating temporary pkgs");
 		exit(ERR_CODE_NOMEM);
 	}
@@ -494,6 +497,7 @@ grab_tmppkg_and_process (client_t *self)
 		pkgimport_msg_set_nativetargetneeds(self->message, tmp->native_trgt);
 		pkgimport_msg_set_crosshostneeds(self->message, tmp->cross_host);
 		pkgimport_msg_set_crosstargetneeds(self->message, tmp->cross_trgt);
+		pkgimport_msg_set_provides(self->message, tmp->provides);
 		pkgimport_msg_set_cancross(self->message, tmp->can_cross);
 		pkgimport_msg_set_broken(self->message, tmp->broken);
 		pkgimport_msg_set_bootstrap(self->message, tmp->bootstrap);

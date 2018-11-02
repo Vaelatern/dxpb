@@ -266,6 +266,7 @@ write_pkgs_to_db(zhash_t *pkgs, struct bdb_bound_params *params)
 	assert(params->crosshostneeds != 0);
 	assert(params->destneeds != 0);
 	assert(params->crossdestneeds != 0);
+	assert(params->provides != 0);
 
 	for (curpkg = zhash_first(pkgs); curpkg != NULL;
 			curpkg = zhash_next(pkgs)) {

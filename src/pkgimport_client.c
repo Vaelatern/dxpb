@@ -195,13 +195,14 @@ prepare_next_pkg (client_t *self)
 				self->curjob->to_send->wneeds_native_target));
 	pkgimport_msg_set_cancross(self->message,
 				self->curjob->to_send->can_cross);
+	pkgimport_msg_set_provides(self->message, bwords_to_units(
+				self->curjob->to_send->provides));
 	pkgimport_msg_set_broken(self->message, self->curjob->to_send->broken);
 	pkgimport_msg_set_bootstrap(self->message,
 				self->curjob->to_send->bootstrap);
 	pkgimport_msg_set_restricted(self->message,
 				self->curjob->to_send->restricted);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  set_xbps_src_path
@@ -216,7 +217,6 @@ set_xbps_src_path (client_t *self)
 	if (!self->xbps_src)
 		exit(ERR_CODE_NOMEM);
 }
-
 
 //  ---------------------------------------------------------------------------
 //  set_ssl_client_keys

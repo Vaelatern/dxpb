@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.21.1 - 2018-11-01 - The one which chases the shadows away
+### Overview
+- Now the "provides" variable is actually sent to the grapher
+
 ## 0.0.21 - 2018-10-31 - The one which is less needy
 ### Overview
 - Packages will now be tried 3 times before the build is declared a failure.
