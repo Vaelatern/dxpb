@@ -348,6 +348,7 @@ bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay, bgraph hosthay, int cr
 			needle->arch == ARCH_HOST ||
 			(needle->bad >= BGRAPH_BAD_TRIES && !needle->bootstrap))
 		return ERR_CODE_NO;
+	assert(!bpkg_is_virtual(needle));
 	zlist_t *needs = needle->needs;
 	if (cross)
 		needs = needle->cross_needs;
@@ -458,13 +459,15 @@ bgraph_mark_pkg(const bgraph grph, const char *pkgname, const char *version, enu
 	if (pkg == NULL)
 		return ERR_CODE_NO;
 
+	enum bgraph_pkg_mark_type tobuild = bpkg_is_virtual(pkg) ? PKG_STATUS_NONE : PKG_STATUS_TOBUILD;
+
 	switch(type) {
 	case BGRAPH_PKG_MARK_TYPE_IN_REPO:
 		// This logic was written before pkg->status existed, and was
 		// instead a complicated bundle of one-bit flags. If there is
 		// something to overhaul, this might be it. But the functions
 		// may actually represent actual package statuses, so hey.
-		pkg->status = val ? PKG_STATUS_IN_REPO : PKG_STATUS_TOBUILD;
+		pkg->status = val ? PKG_STATUS_IN_REPO : tobuild;
 		break;
 	case BGRAPH_PKG_MARK_TYPE_BAD:
 		pkg->bad += (pkg->bad < BGRAPH_BAD_TRIES) ? 1 : 0;
@@ -476,7 +479,7 @@ bgraph_mark_pkg(const bgraph grph, const char *pkgname, const char *version, enu
 		// instead a complicated bundle of one-bit flags. If there is
 		// something to overhaul, this might be it. But the functions
 		// may actually represent actual package statuses, so hey.
-		pkg->status = val ? PKG_STATUS_BUILDING : PKG_STATUS_TOBUILD;
+		pkg->status = val ? PKG_STATUS_BUILDING : tobuild;
 		break;
 	default:
 		exit(ERR_CODE_BADDOBBY);

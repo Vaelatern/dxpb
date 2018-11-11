@@ -1,6 +1,6 @@
 The following ABNF grammar defines the Package Import Managment Protocol:
 
-    pkgimport_msg   = *( HELLO | ROGER | IFORGOTU | RUREADY | READY | RESET | INVALID | RDY2WRK | PING | PLZREADALL | IAMTHEGRAPHER | KTHNKSBYE | STABLESTATUSPLZ | STOP | TURNONTHENEWS | PLZREAD | DIDREAD | PKGINFO | PKGDEL | STABLE | UNSTABLE | WESEEHASH | HEREVIRTUALPKGS )
+    pkgimport_msg   = *( HELLO | ROGER | IFORGOTU | RUREADY | READY | RESET | INVALID | RDY2WRK | PING | PLZREADALL | IAMTHEGRAPHER | KTHNKSBYE | STABLESTATUSPLZ | STOP | TURNONTHENEWS | PLZREAD | DIDREAD | PKGINFO | PKGDEL | STABLE | UNSTABLE | WESEEHASH | HEREVIRTUALPKGS | VIRTPKGINFO )
 
     ;  No description
 
@@ -137,6 +137,16 @@ The following ABNF grammar defines the Package Import Managment Protocol:
     HEREVIRTUALPKGS = signature %d23 proto_version virtualpkgs
     proto_version   = string                ; Package Import Management Protocol Version 00
     virtualpkgs     = longstr               ;
+
+    ;  No description
+
+    VIRTPKGINFO     = signature %d24 proto_version pkgname version arch depname deparch
+    proto_version   = string                ; Package Import Management Protocol Version 00
+    pkgname         = string                ;
+    version         = string                ;
+    arch            = string                ;
+    depname         = string                ;
+    deparch         = string                ;
 
     ; Strings are always length + text contents
     string          = number-1 *VCHAR

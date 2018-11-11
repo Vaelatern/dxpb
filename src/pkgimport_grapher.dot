@@ -69,6 +69,9 @@ digraph "pkgimport_grapher" {
  "unstable kthnksbye" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">kthnksbye</font></td></tr></table>>];
  "unstable" -> "unstable kthnksbye";
  "unstable kthnksbye" -> "die";
+ "unstable virtpkginfo" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">virtpkginfo</font></td></tr><tr><td align="left" port="r3">create virtpkg from info</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "unstable" -> "unstable virtpkginfo";
+ "unstable virtpkginfo" -> "unstable";
  "unstable pkginfo" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkginfo</font></td></tr><tr><td align="left" port="r3">create pkg from info</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "unstable" -> "unstable pkginfo";
  "unstable pkginfo" -> "unstable";
@@ -134,6 +137,9 @@ digraph "pkgimport_grapher" {
  "stable expired" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">expired</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "stable" -> "stable expired";
  "stable expired" -> "stable";
+ "stable virtpkginfo" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">virtpkginfo</font></td></tr><tr><td align="left" port="r3">create virtpkg from info</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "stable" -> "stable virtpkginfo";
+ "stable virtpkginfo" -> "unstable";
  "stable pkginfo" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkginfo</font></td></tr><tr><td align="left" port="r3">create pkg from info</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "stable" -> "stable pkginfo";
  "stable pkginfo" -> "unstable";

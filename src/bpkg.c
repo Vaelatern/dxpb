@@ -18,6 +18,13 @@
 #include "bxsrc.h"
 #include "bstring.h"
 #include "bpkg.h"
+#include "butil.h"
+
+int
+bpkg_is_virtual(struct pkg *in)
+{
+	return (in->depname != NULL) && (in->deparch != ARCH_NUM_MAX);
+}
 
 static void
 bpkg_create_allowed_archs(char *allowed_archs, bwords only_for_archs)
@@ -68,6 +75,7 @@ bpkg_init_basic()
 	new_guy->cross_needs = zlist_new();
 	new_guy->needs = zlist_new();
 	new_guy->needs_me = zlist_new();
+	new_guy->deparch = ARCH_NUM_MAX;
 	return new_guy;
 }
 
@@ -260,6 +268,21 @@ bpkg_init(const char *name, const char *ver, const char *arch)
 	struct pkg *retVal;
 	retVal = bpkg_init_new(name, ver);
 	retVal->arch = bpkg_enum_lookup(arch);
+	return retVal;
+}
+
+struct pkg *
+bpkg_virt_read(pkgimport_msg_t *message)
+{
+	struct pkg *retVal;
+	const char *tmpA, *tmpB;
+	tmpA = pkgimport_msg_pkgname(message);
+	tmpB = pkgimport_msg_version(message);
+	retVal = bpkg_init_new(tmpA, tmpB);
+	retVal->arch = bpkg_enum_lookup(pkgimport_msg_arch(message));
+	retVal->status = PKG_STATUS_NONE;
+	retVal->depname = butil_strdup(pkgimport_msg_depname(message));
+	retVal->deparch = bpkg_enum_lookup(pkgimport_msg_deparch(message));
 	return retVal;
 }
 

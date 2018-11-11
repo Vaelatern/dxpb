@@ -45,14 +45,15 @@ typedef enum {
     stable_event = 14,
     invalid_event = 15,
     kthnksbye_event = 16,
-    pkginfo_event = 17,
-    pkgdel_event = 18,
-    worker_gone_event = 19,
-    pkg_now_completed_event = 20,
-    pkg_not_here_event = 21,
-    pkg_here_event = 22,
-    pkg_failed_to_build_event = 23,
-    worker_not_appropiate_event = 24
+    virtpkginfo_event = 17,
+    pkginfo_event = 18,
+    pkgdel_event = 19,
+    worker_gone_event = 20,
+    pkg_now_completed_event = 21,
+    pkg_not_here_event = 22,
+    pkg_here_event = 23,
+    pkg_failed_to_build_event = 24,
+    worker_not_appropiate_event = 25
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -87,6 +88,7 @@ s_event_name [] = {
     "STABLE",
     "INVALID",
     "KTHNKSBYE",
+    "VIRTPKGINFO",
     "PKGINFO",
     "PKGDEL",
     "worker_gone",
@@ -196,6 +198,8 @@ static void
     get_packages (client_t *self);
 static void
     ask_around_for_wanted_pkgs (client_t *self);
+static void
+    create_virtpkg_from_info (client_t *self);
 static void
     create_pkg_from_info (client_t *self);
 static void
@@ -452,6 +456,9 @@ s_protocol_event (s_client_t *self, pkgimport_msg_t *message)
             break;
         case PKGIMPORT_MSG_HEREVIRTUALPKGS:
             return herevirtualpkgs_event;
+            break;
+        case PKGIMPORT_MSG_VIRTPKGINFO:
+            return virtpkginfo_event;
             break;
         default:
             zsys_error ("%s: unknown command %s, halting",
@@ -946,6 +953,33 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == virtpkginfo_event) {
+                    if (!self->exception) {
+                        //  create virtpkg from info
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ create virtpkg from info", self->log_prefix);
+                        create_virtpkg_from_info (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_ROGER);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgimport_msg_print (self->message);
+                        pkgimport_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception)
+                        self->state = unstable_state;
+                    if (!self->exception) {
+                        //  set expiry low
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set expiry low", self->log_prefix);
+                        set_expiry_low (&self->client);
+                    }
+                }
+                else
                 if (self->event == pkginfo_event) {
                     if (!self->exception) {
                         //  create pkg from info
@@ -1192,6 +1226,33 @@ s_client_execute (s_client_t *self, event_t event)
                     }
                 }
                 else
+                if (self->event == virtpkginfo_event) {
+                    if (!self->exception) {
+                        //  create virtpkg from info
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ create virtpkg from info", self->log_prefix);
+                        create_virtpkg_from_info (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_ROGER);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgimport_msg_print (self->message);
+                        pkgimport_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception)
+                        self->state = unstable_state;
+                    if (!self->exception) {
+                        //  set expiry low
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set expiry low", self->log_prefix);
+                        set_expiry_low (&self->client);
+                    }
+                }
+                else
                 if (self->event == pkginfo_event) {
                     if (!self->exception) {
                         //  create pkg from info
@@ -1388,6 +1449,33 @@ s_client_execute (s_client_t *self, event_t event)
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkgimport_msg_print (self->message);
                         pkgimport_msg_send (self->message, self->dealer);
+                    }
+                }
+                else
+                if (self->event == virtpkginfo_event) {
+                    if (!self->exception) {
+                        //  create virtpkg from info
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ create virtpkg from info", self->log_prefix);
+                        create_virtpkg_from_info (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send ROGER
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send ROGER",
+                                self->log_prefix);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_ROGER);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgimport_msg_print (self->message);
+                        pkgimport_msg_send (self->message, self->dealer);
+                    }
+                    if (!self->exception)
+                        self->state = unstable_state;
+                    if (!self->exception) {
+                        //  set expiry low
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ set expiry low", self->log_prefix);
+                        set_expiry_low (&self->client);
                     }
                 }
                 else

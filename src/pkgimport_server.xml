@@ -51,6 +51,10 @@
 		</event>
 	</state>
 	<state name = "worker working" inherit = "defaults">
+		<event name = "VIRTPKGINFO">
+			<action name = "route virtpkginfo" />
+			<action name = "send" message = "READY" />
+		</event>
 		<event name = "PKGINFO">
 			<action name = "route pkginfo" />
 			<action name = "send" message = "READY" />
@@ -77,6 +81,10 @@
 		</before>
 		<event name = "ROGER" />
 		<event name = "process pkgs">
+			<action name = "grab tmppkg and process" />
+		</event>
+		<event name = "send myself virtpkginfo">
+			<action name = "send" message = "VIRTPKGINFO" />
 			<action name = "grab tmppkg and process" />
 		</event>
 		<event name = "send myself pkginfo">

@@ -42,20 +42,22 @@ typedef enum {
     turnonthenews_event = 5,
     ask_worker_to_read_event = 6,
     ruready_event = 7,
-    pkginfo_event = 8,
-    pkgdel_event = 9,
-    didread_event = 10,
-    roger_event = 11,
-    process_pkgs_event = 12,
-    send_myself_pkginfo_event = 13,
-    send_myself_pkgdel_event = 14,
-    plzreadall_event = 15,
-    stablestatusplz_event = 16,
-    send_stable_event = 17,
-    send_unstable_event = 18,
-    weseehash_event = 19,
-    ping_event = 20,
-    expired_event = 21
+    virtpkginfo_event = 8,
+    pkginfo_event = 9,
+    pkgdel_event = 10,
+    didread_event = 11,
+    roger_event = 12,
+    process_pkgs_event = 13,
+    send_myself_virtpkginfo_event = 14,
+    send_myself_pkginfo_event = 15,
+    send_myself_pkgdel_event = 16,
+    plzreadall_event = 17,
+    stablestatusplz_event = 18,
+    send_stable_event = 19,
+    send_unstable_event = 20,
+    weseehash_event = 21,
+    ping_event = 22,
+    expired_event = 23
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -82,11 +84,13 @@ s_event_name [] = {
     "TURNONTHENEWS",
     "ask_worker_to_read",
     "RUREADY",
+    "VIRTPKGINFO",
     "PKGINFO",
     "PKGDEL",
     "DIDREAD",
     "ROGER",
     "process_pkgs",
+    "send_myself_virtpkginfo",
     "send_myself_pkginfo",
     "send_myself_pkgdel",
     "PLZREADALL",
@@ -171,6 +175,8 @@ static void
     assign_pending_work (client_t *self);
 static void
     add_worker_to_queue (client_t *self);
+static void
+    route_virtpkginfo (client_t *self);
 static void
     route_pkginfo (client_t *self);
 static void
@@ -431,6 +437,9 @@ s_protocol_event (pkgimport_msg_t *message)
             break;
         case PKGIMPORT_MSG_WESEEHASH:
             return weseehash_event;
+            break;
+        case PKGIMPORT_MSG_VIRTPKGINFO:
+            return virtpkginfo_event;
             break;
         default:
             //  Invalid pkgimport_msg_t
@@ -933,6 +942,26 @@ s_client_execute (s_client_t *self, event_t event)
                 break;
 
             case worker_working_state:
+                if (self->event == virtpkginfo_event) {
+                    if (!self->exception) {
+                        //  route virtpkginfo
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ route virtpkginfo", self->log_prefix);
+                        route_virtpkginfo (&self->client);
+                    }
+                    if (!self->exception) {
+                        //  send READY
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send READY",
+                                self->log_prefix);
+                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_READY);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgimport_msg_print (self->server->message);
+                        pkgimport_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgimport_msg_send (self->server->message, self->server->router);
+                    }
+                }
+                else
                 if (self->event == pkginfo_event) {
                     if (!self->exception) {
                         //  route pkginfo
@@ -1196,6 +1225,26 @@ s_client_execute (s_client_t *self, event_t event)
                 }
                 else
                 if (self->event == process_pkgs_event) {
+                    if (!self->exception) {
+                        //  grab tmppkg and process
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ grab tmppkg and process", self->log_prefix);
+                        grab_tmppkg_and_process (&self->client);
+                    }
+                }
+                else
+                if (self->event == send_myself_virtpkginfo_event) {
+                    if (!self->exception) {
+                        //  send VIRTPKGINFO
+                        if (self->server->verbose)
+                            zsys_debug ("%s:         $ send VIRTPKGINFO",
+                                self->log_prefix);
+                        pkgimport_msg_set_id (self->server->message, PKGIMPORT_MSG_VIRTPKGINFO);
+                        zsys_debug ("%s: Send message to client", self->log_prefix);
+                        pkgimport_msg_print (self->server->message);
+                        pkgimport_msg_set_routing_id (self->server->message, self->routing_id);
+                        pkgimport_msg_send (self->server->message, self->server->router);
+                    }
                     if (!self->exception) {
                         //  grab tmppkg and process
                         if (self->server->verbose)

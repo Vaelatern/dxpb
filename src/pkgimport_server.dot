@@ -79,6 +79,9 @@ digraph "pkgimport_server" {
  "worker working *" [shape = "Mrecord" style = dashed label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">*</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">return job to queue</td></tr><tr><td align="left" port="r3">assign pending work</td></tr></table>>];
  "worker working" -> "worker working *";
  "worker working *" -> "introduction";
+ "worker working virtpkginfo" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">virtpkginfo</font></td></tr><tr><td align="left" port="r3">route virtpkginfo</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "worker working" -> "worker working virtpkginfo";
+ "worker working virtpkginfo" -> "worker working";
  "worker working pkginfo" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">pkginfo</font></td></tr><tr><td align="left" port="r3">route pkginfo</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "worker working" -> "worker working pkginfo";
  "worker working pkginfo" -> "worker working";
@@ -125,6 +128,9 @@ digraph "pkgimport_server" {
  "grapher process pkgs" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">process pkgs</font></td></tr><tr><td align="left" port="r3">grab tmppkg and process</td></tr></table>>];
  "grapher" -> "grapher process pkgs";
  "grapher process pkgs" -> "grapher";
+ "grapher send myself virtpkginfo" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">send myself virtpkginfo</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">grab tmppkg and process</td></tr></table>>];
+ "grapher" -> "grapher send myself virtpkginfo";
+ "grapher send myself virtpkginfo" -> "grapher";
  "grapher send myself pkginfo" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">send myself pkginfo</font></td></tr><tr><td align="left" port="r3">send</td></tr><tr><td align="left" port="r3">grab tmppkg and process</td></tr></table>>];
  "grapher" -> "grapher send myself pkginfo";
  "grapher send myself pkginfo" -> "grapher";

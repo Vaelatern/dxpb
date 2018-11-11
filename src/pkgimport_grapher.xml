@@ -107,6 +107,12 @@
 		<event name = "expired">
 			<action name = "send" message = "PING" />
 		</event>
+		<event name = "VIRTPKGINFO" next = "unstable">
+			<action name = "create virtpkg from info">
+				Turn a pkgimport_msg into a struct pkg and save
+			</action>
+			<action name = "send" message = "ROGER" />
+		</event>
 		<event name = "PKGINFO" next = "unstable">
 			<action name = "create pkg from info">
 				Turn a pkgimport_msg into a struct pkg and save

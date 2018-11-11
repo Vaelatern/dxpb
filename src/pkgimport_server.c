@@ -75,10 +75,12 @@ struct _client_t {
 
 // This is a temporary structure for routing pkg data
 struct tmppkg {
-	enum	jobtype {PKGINFO, PKGDEL} jobtype;
+	enum	jobtype {VIRTPKGINFO, PKGINFO, PKGDEL} jobtype;
 	char	*name;
 	char	*arch;
 	char	*version;
+	char	*depname;
+	char	*deparch;
 	char	*provides;
 	char	*cross_host;
 	char	*cross_trgt;
@@ -307,10 +309,9 @@ route_pkginfo (client_t *self)
 	tmp->broken = pkgimport_msg_broken(me_sage);
 	tmp->bootstrap = pkgimport_msg_bootstrap(me_sage);
 	tmp->restricted = pkgimport_msg_restricted(me_sage);
-	if (!tmp->name || !tmp->name || !tmp->version || !tmp->arch ||
-				!tmp->native_host || !tmp->native_trgt ||
-				!tmp->cross_host || !tmp->cross_trgt ||
-				!tmp->provides) {
+	if (!tmp->name || !tmp->version || !tmp->arch || !tmp->provides ||
+			!tmp->native_trgt || !tmp->native_host ||
+			!tmp->cross_trgt || !tmp->cross_host) {
 		perror("Had memory issues while creating temporary pkgs");
 		exit(ERR_CODE_NOMEM);
 	}
@@ -345,6 +346,38 @@ request_pkg_deletion (client_t *self)
 		engine_send_event(self->server->knowngrapher, process_pkgs_event);
 
 	blog_pkgImportedForDeletion(tmp->name);
+}
+
+//  ---------------------------------------------------------------------------
+//  route_virtpkginfo
+//
+
+static void
+route_virtpkginfo (client_t *self)
+{
+	pkgimport_msg_t *me_sage = self->message;
+	struct tmppkg *tmp = calloc(1, sizeof(struct tmppkg));
+	if (tmp == NULL) {
+		perror("Couldn't even create a measly struct");
+		exit(ERR_CODE_NOMEM);
+	}
+	tmp->jobtype = VIRTPKGINFO;
+	tmp->name = strdup(pkgimport_msg_pkgname(me_sage));
+	tmp->version = strdup(pkgimport_msg_version(me_sage));
+	tmp->arch = strdup(pkgimport_msg_arch(me_sage));
+	tmp->depname = strdup(pkgimport_msg_depname(me_sage));
+	tmp->deparch = strdup(pkgimport_msg_deparch(me_sage));
+	if (!tmp->name || !tmp->version || !tmp->arch || !tmp->depname ||
+			!tmp->deparch) {
+		perror("Had memory issues while creating temporary pkgs");
+		exit(ERR_CODE_NOMEM);
+	}
+
+	blog_pkgImported(tmp->name, tmp->version, bpkg_enum_lookup(tmp->arch));
+
+	zlist_append(self->server->tmppkgs, tmp);
+	if (self->server->knowngrapher)
+		engine_send_event(self->server->knowngrapher, process_pkgs_event);
 }
 
 //  ---------------------------------------------------------------------------
@@ -488,9 +521,22 @@ grab_tmppkg_and_process (client_t *self)
 	if (tmp == NULL)
 		return;
 	pkgimport_msg_set_pkgname(self->message, tmp->name);
-	if (tmp->jobtype == PKGDEL) {
+	switch(tmp->jobtype) {
+	case VIRTPKGINFO:
+		pkgimport_msg_set_version(self->message, tmp->version);
+		pkgimport_msg_set_arch(self->message, tmp->arch);
+		pkgimport_msg_set_depname(self->message, tmp->depname);
+		pkgimport_msg_set_deparch(self->message, tmp->deparch);
+		engine_set_next_event(self, send_myself_pkgdel_event);
+		FREE(tmp->version);
+		FREE(tmp->arch);
+		FREE(tmp->depname);
+		FREE(tmp->deparch);
+		break;
+	case PKGDEL:
 		engine_set_next_event(self, send_myself_pkgdel_event); 
-	} else if (tmp->jobtype == PKGINFO) {
+		break;
+	case PKGINFO:
 		pkgimport_msg_set_version(self->message, tmp->version);
 		pkgimport_msg_set_arch(self->message, tmp->arch);
 		pkgimport_msg_set_nativehostneeds(self->message, tmp->native_host);
@@ -503,15 +549,16 @@ grab_tmppkg_and_process (client_t *self)
 		pkgimport_msg_set_bootstrap(self->message, tmp->bootstrap);
 		pkgimport_msg_set_restricted(self->message, tmp->restricted);
 		engine_set_next_event(self, send_myself_pkginfo_event);
-		free(tmp->version);
-		free(tmp->arch);
-		free(tmp->native_host);
-		free(tmp->native_trgt);
-		free(tmp->cross_host);
-		free(tmp->cross_trgt);
+		FREE(tmp->version);
+		FREE(tmp->arch);
+		FREE(tmp->native_host);
+		FREE(tmp->native_trgt);
+		FREE(tmp->cross_host);
+		FREE(tmp->cross_trgt);
+		break;
 	}
-	free(tmp->name);
-	free(tmp);
+	FREE(tmp->name);
+	FREE(tmp);
 }
 
 //  ---------------------------------------------------------------------------

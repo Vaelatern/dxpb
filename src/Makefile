@@ -76,6 +76,7 @@ OBJECTS = \
 	brepowatch.o \
 	bstring.o \
 	btranslate.o \
+	butil.o \
 	bvirtpkg.o \
 	bwords.o \
 	bworker.o \
@@ -219,7 +220,7 @@ blog.c: capnp/log.capnp.c
 #### Binaries and their needs ####
 ##################################
 
-$(BINARIES): bstring.o bfs.o
+$(BINARIES): bstring.o bfs.o butil.o
 
 dxpb-poke: dxpb-poke.o pkgimport_poke.o pkgimport_msg.o dxpb-client.o
 

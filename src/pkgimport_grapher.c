@@ -743,3 +743,20 @@ record_virtualpkgs (client_t *self)
 	bwords_destroy(&vpkgs, 1);
 	FREE(vpkgs_units);
 }
+
+//  ---------------------------------------------------------------------------
+//  create_virtpkg_from_info
+//
+
+static void
+create_virtpkg_from_info (client_t *self)
+{
+	assert(self);
+	assert(self->pkggraph);
+	int rc;
+	rc = bgraph_insert_pkg(self->pkggraph, bpkg_virt_read(self->message));
+	assert(rc == 0); // only != 0 if top level graph is very broken.
+	blog_pkgAddedToGraph(pkgimport_msg_pkgname(self->message),
+				pkgimport_msg_version(self->message),
+				bpkg_enum_lookup(pkgimport_msg_arch(self->message)));
+}

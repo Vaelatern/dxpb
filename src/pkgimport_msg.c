@@ -49,6 +49,8 @@ struct _pkgimport_msg_t {
     byte restricted;                    //  restricted
     char commithash [256];              //  Hash corresponding to git HEAD
     char *virtualpkgs;                  //  virtualpkgs
+    char depname [256];                 //  depname
+    char deparch [256];                 //  deparch
 };
 
 //  --------------------------------------------------------------------------
@@ -296,6 +298,8 @@ pkgimport_msg_dup (pkgimport_msg_t *other)
             pkgimport_msg_set_virtualpkgs(copy, str);
         }
     }
+    pkgimport_msg_set_depname (copy, pkgimport_msg_depname (other));
+    pkgimport_msg_set_deparch (copy, pkgimport_msg_deparch (other));
 
     return copy;
 }
@@ -656,6 +660,23 @@ pkgimport_msg_recv (pkgimport_msg_t *self, zsock_t *input)
             GET_LONGSTR (self->virtualpkgs);
             break;
 
+        case PKGIMPORT_MSG_VIRTPKGINFO:
+            {
+                char proto_version [256];
+                GET_STRING (proto_version);
+                if (strneq (proto_version, "READ00")) {
+                    zsys_warning ("pkgimport_msg: proto_version is invalid");
+                    rc = -2;    //  Malformed
+                    goto malformed;
+                }
+            }
+            GET_STRING (self->pkgname);
+            GET_STRING (self->version);
+            GET_STRING (self->arch);
+            GET_STRING (self->depname);
+            GET_STRING (self->deparch);
+            break;
+
         default:
             zsys_warning ("pkgimport_msg: bad message ID");
             rc = -2;            //  Malformed
@@ -787,6 +808,14 @@ pkgimport_msg_send (pkgimport_msg_t *self, zsock_t *output)
             frame_size += 4;
             if (self->virtualpkgs)
                 frame_size += strlen (self->virtualpkgs);
+            break;
+        case PKGIMPORT_MSG_VIRTPKGINFO:
+            frame_size += 1 + strlen ("READ00");
+            frame_size += 1 + strlen (self->pkgname);
+            frame_size += 1 + strlen (self->version);
+            frame_size += 1 + strlen (self->arch);
+            frame_size += 1 + strlen (self->depname);
+            frame_size += 1 + strlen (self->deparch);
             break;
     }
     //  Now serialize message into the frame
@@ -932,6 +961,15 @@ pkgimport_msg_send (pkgimport_msg_t *self, zsock_t *output)
             }
             else
                 PUT_NUMBER4 (0);    //  Empty string
+            break;
+
+        case PKGIMPORT_MSG_VIRTPKGINFO:
+            PUT_STRING ("READ00");
+            PUT_STRING (self->pkgname);
+            PUT_STRING (self->version);
+            PUT_STRING (self->arch);
+            PUT_STRING (self->depname);
+            PUT_STRING (self->deparch);
             break;
 
     }
@@ -1103,6 +1141,16 @@ pkgimport_msg_print (pkgimport_msg_t *self)
                 zsys_debug ("    virtualpkgs=");
             break;
 
+        case PKGIMPORT_MSG_VIRTPKGINFO:
+            zsys_debug ("PKGIMPORT_MSG_VIRTPKGINFO:");
+            zsys_debug ("    proto_version=read00");
+            zsys_debug ("    pkgname='%s'", self->pkgname);
+            zsys_debug ("    version='%s'", self->version);
+            zsys_debug ("    arch='%s'", self->arch);
+            zsys_debug ("    depname='%s'", self->depname);
+            zsys_debug ("    deparch='%s'", self->deparch);
+            break;
+
     }
 }
 
@@ -1218,6 +1266,9 @@ pkgimport_msg_command (pkgimport_msg_t *self)
             break;
         case PKGIMPORT_MSG_HEREVIRTUALPKGS:
             return ("HEREVIRTUALPKGS");
+            break;
+        case PKGIMPORT_MSG_VIRTPKGINFO:
+            return ("VIRTPKGINFO");
             break;
     }
     return "?";
@@ -1500,6 +1551,50 @@ pkgimport_msg_set_virtualpkgs (pkgimport_msg_t *self, const char *value)
     assert (value);
     free (self->virtualpkgs);
     self->virtualpkgs = strdup (value);
+}
+
+
+//  --------------------------------------------------------------------------
+//  Get/set the depname field
+
+const char *
+pkgimport_msg_depname (pkgimport_msg_t *self)
+{
+    assert (self);
+    return self->depname;
+}
+
+void
+pkgimport_msg_set_depname (pkgimport_msg_t *self, const char *value)
+{
+    assert (self);
+    assert (value);
+    if (value == self->depname)
+        return;
+    strncpy (self->depname, value, 255);
+    self->depname [255] = 0;
+}
+
+
+//  --------------------------------------------------------------------------
+//  Get/set the deparch field
+
+const char *
+pkgimport_msg_deparch (pkgimport_msg_t *self)
+{
+    assert (self);
+    return self->deparch;
+}
+
+void
+pkgimport_msg_set_deparch (pkgimport_msg_t *self, const char *value)
+{
+    assert (self);
+    assert (value);
+    if (value == self->deparch)
+        return;
+    strncpy (self->deparch, value, 255);
+    self->deparch [255] = 0;
 }
 
 
@@ -1801,6 +1896,26 @@ pkgimport_msg_test (bool verbose)
         pkgimport_msg_recv (self, input);
         assert (pkgimport_msg_routing_id (self));
         assert (streq (pkgimport_msg_virtualpkgs (self), "Life is short but Now lasts for ever"));
+    }
+    pkgimport_msg_set_id (self, PKGIMPORT_MSG_VIRTPKGINFO);
+
+    pkgimport_msg_set_pkgname (self, "Life is short but Now lasts for ever");
+    pkgimport_msg_set_version (self, "Life is short but Now lasts for ever");
+    pkgimport_msg_set_arch (self, "Life is short but Now lasts for ever");
+    pkgimport_msg_set_depname (self, "Life is short but Now lasts for ever");
+    pkgimport_msg_set_deparch (self, "Life is short but Now lasts for ever");
+    //  Send twice
+    pkgimport_msg_send (self, output);
+    pkgimport_msg_send (self, output);
+
+    for (instance = 0; instance < 2; instance++) {
+        pkgimport_msg_recv (self, input);
+        assert (pkgimport_msg_routing_id (self));
+        assert (streq (pkgimport_msg_pkgname (self), "Life is short but Now lasts for ever"));
+        assert (streq (pkgimport_msg_version (self), "Life is short but Now lasts for ever"));
+        assert (streq (pkgimport_msg_arch (self), "Life is short but Now lasts for ever"));
+        assert (streq (pkgimport_msg_depname (self), "Life is short but Now lasts for ever"));
+        assert (streq (pkgimport_msg_deparch (self), "Life is short but Now lasts for ever"));
     }
 
     pkgimport_msg_destroy (&self);

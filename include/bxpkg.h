@@ -41,6 +41,8 @@ struct pkg {
 	char	*name;
 	enum	pkg_archs arch;
 	char	*ver;
+	char	*depname;
+	enum	pkg_archs deparch;
 	void	*needs;
 	void	*cross_needs;
 	void	*needs_me;
