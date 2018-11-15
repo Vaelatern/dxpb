@@ -53,6 +53,7 @@ typedef struct {
 	zsock_t			*pub;
 	char 			 hash[256];
 	char			*dbpath;
+	zlist_t			*checkDiskFor[ARCH_HOST];
 	zlist_t			*nextup[ARCH_HOST];
 	bgraph			 pkggraph;
 	struct bworkgroup	*workers;
@@ -78,6 +79,10 @@ client_initialize (client_t *self)
 	self->pkggraph = NULL;
 	self->dbpath = NULL;
 	self->hash[0] = '\0';
+	for (enum pkg_archs i = ARCH_NOARCH; i < ARCH_NUM_MAX; i++) {
+		self->nextup = NULL;
+		self->checkDiskFor = NULL;
+	}
 	return 0;
 }
 
@@ -258,6 +263,7 @@ pkgimport_grapher_ask_worker_to_help(client_t *self, struct bworker *wrkr, struc
 	if (rc == ERR_CODE_OK) {
 		(void)bworker_job_assign(wrkr, pkg->name, pkg->ver, pkg->arch);
 		pkg->status = PKG_STATUS_BUILDING;
+		bgraph_mark_pkg_in_progress(self->pkggraph, pkg->name, pkg->ver, pkg->arch);
 		blog_workerAssigning(wrkr,
 				pkggraph_msg_pkgname(msg),
 				pkggraph_msg_version(msg),
@@ -386,6 +392,10 @@ static void
 get_packages (client_t *self)
 {
 	for (enum pkg_archs i = ARCH_NOARCH; i < ARCH_HOST; i++) {
+		if (self->checkDiskFor[i] != NULL)
+			zlist_destroy(&(self->checkDiskFor[i]));
+		self->checkDiskFor[i] = bgraph_to_get_status(self->pkggraph, i);
+
 		if (self->nextup[i] != NULL)
 			zlist_destroy(&(self->nextup[i]));
 		self->nextup[i] = bgraph_what_next_for_arch(self->pkggraph, i);

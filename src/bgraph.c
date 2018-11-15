@@ -339,6 +339,44 @@ bgraph_attempt_resolution(bgraph grph)
 }
 
 enum ret_codes
+bgraph_pkg_ready_to_want(struct pkg *needle, bgraph grph)
+{
+	enum ret_codes rc = ERR_CODE_OK;
+	struct pkg *pin;
+	if (needle->status != PKG_STATUS_NONE ||
+			needle->arch == ARCH_TARGET ||
+			needle->arch == ARCH_HOST ||
+			(needle->bad >= BGRAPH_BAD_TRIES && !needle->bootstrap))
+		return ERR_CODE_NO;
+	assert(!bpkg_is_virtual(needle));
+	zlist_t *needs = needle->needs;
+	if (cross)
+		needs = needle->cross_needs;
+	for (struct pkg_need *curneed = zlist_first(needs);
+			curneed != NULL; curneed = zlist_next(needs)) {
+		pin = curneed->pkg;
+		assert(pin);
+		assert(pin->name);
+		rc = bxbps_spec_match(curneed->spec, pin->name, pin->ver);
+		if (rc != ERR_CODE_YES)
+			return rc;
+		if (pin->arch == ARCH_TARGET && hay != NULL) {
+			pin = zhash_lookup(hay, pin->name);
+		} else if (pin->arch == ARCH_HOST && hosthay != NULL) {
+			assert(hosthay != NULL);
+			pin = zhash_lookup(hosthay, pin->name);
+		} else if (pin->arch == ARCH_HOST || pin->arch == ARCH_TARGET)
+			continue;
+		if (pin->arch == ARCH_HOST || pin->arch == ARCH_TARGET)
+			continue;
+		assert(pin); // even if noarch, pin will be not null
+		if (pin->status != PKG_STATUS_IN_REPO)
+			return ERR_CODE_NO;
+	}
+	return ERR_CODE_YES;
+}
+
+enum ret_codes
 bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay, bgraph hosthay, int cross)
 {
 	enum ret_codes rc = ERR_CODE_OK;
@@ -402,6 +440,25 @@ bgraph_zlist_filter(zlist_t *list, int (*cb)(struct pkg *, int),
  * It must be very fast.
  */
 zlist_t *
+bgraph_to_get_status(bgraph grph, enum pkg_archs arch)
+{
+	struct pkg *needle;
+	bgraph hay;
+	zlist_t *retVal = zlist_new();
+
+	hay = zhash_lookup(grph, pkg_archs_str[arch]);
+	assert(hay != NULL);
+	for (needle = zhash_first(hay); needle != NULL; needle = zhash_next(hay))
+		if (bgraph_pkg_ready_to_build(needle, NULL, NULL, 0) == ERR_CODE_YES)
+			zlist_append(retVal, needle);
+
+	return retVal;
+}
+
+/* This code will be run a lot.
+ * It must be very fast.
+ */
+zlist_t *
 bgraph_what_next_for_arch(bgraph grph, enum pkg_archs arch)
 {
 	struct pkg *needle;
@@ -449,6 +506,16 @@ bgraph_get_pkg(const bgraph grph, const char *pkgname, const char *version, enum
 	return pkg;
 }
 
+static inline int
+bgraph_mark_pkg_bad(struct pkg *pkg)
+{
+	pkg->bad += (pkg->bad < BGRAPH_BAD_TRIES) ? 1 : 0;
+	if (pkg->bad < BGRAPH_BAD_TRIES)
+		return ERR_CODE_NO; // No we will NOT mark it bad... yet.
+	pkg->status = PKG_STATUS_BAD;
+	return ERR_CODE_OK;
+}
+
 static int
 bgraph_mark_pkg(const bgraph grph, const char *pkgname, const char *version, enum pkg_archs arch,
 		enum bgraph_pkg_mark_type type, int val)
@@ -459,7 +526,7 @@ bgraph_mark_pkg(const bgraph grph, const char *pkgname, const char *version, enu
 	if (pkg == NULL)
 		return ERR_CODE_NO;
 
-	enum bgraph_pkg_mark_type tobuild = bpkg_is_virtual(pkg) ? PKG_STATUS_NONE : PKG_STATUS_TOBUILD;
+	enum bgraph_pkg_mark_type tobuild = bpkg_is_virtual(pkg) ? PKG_STATUS_BAD : PKG_STATUS_TOBUILD;
 
 	switch(type) {
 	case BGRAPH_PKG_MARK_TYPE_IN_REPO:
@@ -468,11 +535,13 @@ bgraph_mark_pkg(const bgraph grph, const char *pkgname, const char *version, enu
 		// something to overhaul, this might be it. But the functions
 		// may actually represent actual package statuses, so hey.
 		pkg->status = val ? PKG_STATUS_IN_REPO : tobuild;
+		if (pkg->status == PKG_STATUS_BAD) { // Didn't mean it....
+			pkg->status = PKG_STATUS_NONE;
+			rv = bgraph_mark_pkg_bad(pkg);
+		}
 		break;
 	case BGRAPH_PKG_MARK_TYPE_BAD:
-		pkg->bad += (pkg->bad < BGRAPH_BAD_TRIES) ? 1 : 0;
-		if (pkg->bad < BGRAPH_BAD_TRIES)
-			rV = ERR_CODE_NO; // No we will NOT mark it bad... yet.
+		rv = bgraph_mark_pkg_bad(pkg);
 		break;
 	case BGRAPH_PKG_MARK_TYPE_IN_PROGRESS:
 		// This logic was written before pkg->status existed, and was
@@ -480,6 +549,10 @@ bgraph_mark_pkg(const bgraph grph, const char *pkgname, const char *version, enu
 		// something to overhaul, this might be it. But the functions
 		// may actually represent actual package statuses, so hey.
 		pkg->status = val ? PKG_STATUS_BUILDING : tobuild;
+		if (pkg->status == PKG_STATUS_BAD) { // Didn't mean it....
+			pkg->status = PKG_STATUS_NONE;
+			rv = bgraph_mark_pkg_bad(pkg);
+		}
 		break;
 	default:
 		exit(ERR_CODE_BADDOBBY);

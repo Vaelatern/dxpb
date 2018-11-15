@@ -23,6 +23,7 @@ bgraph		 bgraph_new(void);
 void		 bgraph_destroy(bgraph *);
 int		 bgraph_insert_pkg(bgraph, struct pkg *);
 int		 bgraph_attempt_resolution(bgraph);
+zlist_t		*bgraph_to_get_status(bgraph, enum pkg_archs);
 zlist_t		*bgraph_what_next_for_arch(bgraph, enum pkg_archs);
 int		 bgraph_mark_pkg_absent(bgraph, char *, char *, enum pkg_archs);
 int		 bgraph_mark_pkg_present(bgraph, char *, char *, enum pkg_archs);
