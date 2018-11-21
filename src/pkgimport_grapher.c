@@ -80,8 +80,8 @@ client_initialize (client_t *self)
 	self->dbpath = NULL;
 	self->hash[0] = '\0';
 	for (enum pkg_archs i = ARCH_NOARCH; i < ARCH_NUM_MAX; i++) {
-		self->nextup = NULL;
-		self->checkDiskFor = NULL;
+		self->nextup[i] = NULL;
+		self->checkDiskFor[i] = NULL;
 	}
 	return 0;
 }
@@ -262,7 +262,6 @@ pkgimport_grapher_ask_worker_to_help(client_t *self, struct bworker *wrkr, struc
 		rc = ERR_CODE_SADSOCK;
 	if (rc == ERR_CODE_OK) {
 		(void)bworker_job_assign(wrkr, pkg->name, pkg->ver, pkg->arch);
-		pkg->status = PKG_STATUS_BUILDING;
 		bgraph_mark_pkg_in_progress(self->pkggraph, pkg->name, pkg->ver, pkg->arch);
 		blog_workerAssigning(wrkr,
 				pkggraph_msg_pkgname(msg),

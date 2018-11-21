@@ -25,6 +25,8 @@ struct bdb_bound_params {
 	int	name;
 	int	version;
 	int	arch;
+	int	depname;
+	int	deparch;
 	int	hostneeds;
 	int	crosshostneeds;
 	int	destneeds;

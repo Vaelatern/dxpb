@@ -25,6 +25,8 @@ const char *BDB_TABLE_CREATE_STMT = "CREATE TABLE IF NOT EXISTS Packages \
 				       name TEXT NOT NULL ON CONFLICT ROLLBACK, \
 				       version TEXT NOT NULL ON CONFLICT ROLLBACK, \
 				       arch TEXT NOT NULL ON CONFLICT ROLLBACK, \
+				       depname TEXT, \
+				       deparch TEXT, \
 				       hostneeds TEXT, \
 				       crosshostneeds TEXT, \
 				       destneeds TEXT, \
@@ -61,14 +63,16 @@ const char *BDB_PKG_DELNOTARCH_STMT = "SELECT * FROM Packages WHERE \
 				     (name = $name and arch != $arch)";
 
 const char *BDB_ROW_CREATE_STMT = "INSERT OR REPLACE INTO Packages \
-				   (name,version,arch,hostneeds,destneeds,\
-				    crosshostneeds,crossdestneeds,provides, \
-				    cancross,broken,bootstrap,restricted, \
-				    hashid) \
+				   (name,version,arch,depname,deparch,\
+				    hostneeds,destneeds,crosshostneeds,\
+				    crossdestneeds,provides,cancross,broken,\
+				    bootstrap,restricted,hashid) \
 				   VALUES ( \
 						   $name, \
 						   $version, \
 						   $arch, \
+						   $depname, \
+						   $deparch, \
 						   $hostneeds, \
 						   $destneeds, \
 						   $crosshostneeds, \
@@ -151,6 +155,12 @@ bdb_write_pkg(struct pkg *curpkg, struct bdb_bound_params *bound)
 	assert(rc == SQLITE_OK);
 
 	rc = sqlite3_bind_text(row, bound->version, curpkg->ver, -1, SQLITE_STATIC);
+	assert(rc == SQLITE_OK);
+
+	rc = sqlite3_bind_text(row, bound->depname, curpkg->depname, -1, SQLITE_STATIC);
+	assert(rc == SQLITE_OK);
+
+	rc = sqlite3_bind_text(row, bound->deparch, pkg_archs_str[curpkg->deparch], -1, SQLITE_STATIC);
 	assert(rc == SQLITE_OK);
 
 	rc = sqlite3_bind_int(row, bound->cancross, curpkg->can_cross);
@@ -256,6 +266,8 @@ write_pkgs_to_db(zhash_t *pkgs, struct bdb_bound_params *params)
 	assert(params->DELETE_OTHER_ARCH != NULL);
 	assert(params->name != 0);
 	assert(params->version != 0);
+	assert(params->depname != 0);
+	assert(params->deparch != 0);
 	assert(params->cancross != 0);
 	assert(params->broken != 0);
 	assert(params->hashid != 0);
@@ -332,6 +344,8 @@ bdb_params_init_rows(struct bdb_bound_params *params)
 	/* Set indexes for ROW*/
 	params->name = sqlite3_bind_parameter_index(params->ROW, "$name");
 	params->version = sqlite3_bind_parameter_index(params->ROW, "$version");
+	params->depname = sqlite3_bind_parameter_index(params->ROW, "$depname");
+	params->deparch = sqlite3_bind_parameter_index(params->ROW, "$deparch");
 	params->cancross = sqlite3_bind_parameter_index(params->ROW, "$cancross");
 	params->broken = sqlite3_bind_parameter_index(params->ROW, "$broken");
 	params->hashid = sqlite3_bind_parameter_index(params->ROW, "$hashid");
@@ -519,11 +533,22 @@ bdb_fill_from_column(struct bdb_bound_params *params, struct pkg *pkg, int col)
 			exit(ERR_CODE_BADDB);
 		}
 		break;
-	case 'd': //destneeds
-		tmp = sqlite3_column_text(params->ROW, col);
-		pkg->wneeds_native_target =
-					bwords_from_units((const char *)tmp);
-		break;
+	case 'd': //destneeds, depname, deparch
+		switch(colname[3]) {
+		case 't': // destneeds
+			tmp = sqlite3_column_text(params->ROW, col);
+			pkg->wneeds_native_target = bwords_from_units(
+					(const char *)tmp);
+			break;
+		case 'n': // depname
+			tmp = sqlite3_column_text(params->ROW, col);
+			pkg->depname = strdup((const char *)tmp);
+			break;
+		case 'a': // depname
+			tmp = sqlite3_column_text(params->ROW, col);
+			pkg->deparch = bpkg_enum_lookup((const char *)tmp);
+			break;
+		}
 	case 'h': // hashid hostneeds
 		switch(colname[1]) {
 		case 'a': // hashid

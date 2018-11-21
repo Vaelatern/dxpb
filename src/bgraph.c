@@ -348,30 +348,28 @@ bgraph_pkg_ready_to_want(struct pkg *needle, bgraph grph)
 			needle->arch == ARCH_HOST ||
 			(needle->bad >= BGRAPH_BAD_TRIES && !needle->bootstrap))
 		return ERR_CODE_NO;
-	assert(!bpkg_is_virtual(needle));
-	zlist_t *needs = needle->needs;
-	if (cross)
-		needs = needle->cross_needs;
-	for (struct pkg_need *curneed = zlist_first(needs);
-			curneed != NULL; curneed = zlist_next(needs)) {
-		pin = curneed->pkg;
-		assert(pin);
-		assert(pin->name);
-		rc = bxbps_spec_match(curneed->spec, pin->name, pin->ver);
-		if (rc != ERR_CODE_YES)
-			return rc;
-		if (pin->arch == ARCH_TARGET && hay != NULL) {
-			pin = zhash_lookup(hay, pin->name);
-		} else if (pin->arch == ARCH_HOST && hosthay != NULL) {
-			assert(hosthay != NULL);
-			pin = zhash_lookup(hosthay, pin->name);
-		} else if (pin->arch == ARCH_HOST || pin->arch == ARCH_TARGET)
-			continue;
-		if (pin->arch == ARCH_HOST || pin->arch == ARCH_TARGET)
-			continue;
-		assert(pin); // even if noarch, pin will be not null
+	if (bpkg_is_virtual(needle)) {
+		zhash_t *needhay = zhash_lookup(grph, pkg_archs_str[needle->deparch]);
+		assert(needhay);
+		pin = zhash_lookup(needhay, needle->depname);
 		if (pin->status != PKG_STATUS_IN_REPO)
 			return ERR_CODE_NO;
+	} else {
+		zlist_t *needs = needle->needs;
+		for (struct pkg_need *curneed = zlist_first(needs);
+				curneed != NULL; curneed = zlist_next(needs)) {
+			pin = curneed->pkg;
+			assert(pin);
+			assert(pin->name);
+			rc = bxbps_spec_match(curneed->spec, pin->name, pin->ver);
+			if (rc != ERR_CODE_YES)
+				return rc;
+			if (pin->arch == ARCH_HOST || pin->arch == ARCH_TARGET)
+				continue;
+			assert(pin); // even if noarch, pin will be not null
+			if (pin->status != PKG_STATUS_IN_REPO)
+				return ERR_CODE_NO;
+		}
 	}
 	return ERR_CODE_YES;
 }
@@ -404,8 +402,6 @@ bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay, bgraph hosthay, int cr
 			assert(hosthay != NULL);
 			pin = zhash_lookup(hosthay, pin->name);
 		} else if (pin->arch == ARCH_HOST || pin->arch == ARCH_TARGET)
-			continue;
-		if (pin->arch == ARCH_HOST || pin->arch == ARCH_TARGET)
 			continue;
 		assert(pin); // even if noarch, pin will be not null
 		if (pin->status != PKG_STATUS_IN_REPO)
@@ -449,7 +445,7 @@ bgraph_to_get_status(bgraph grph, enum pkg_archs arch)
 	hay = zhash_lookup(grph, pkg_archs_str[arch]);
 	assert(hay != NULL);
 	for (needle = zhash_first(hay); needle != NULL; needle = zhash_next(hay))
-		if (bgraph_pkg_ready_to_build(needle, NULL, NULL, 0) == ERR_CODE_YES)
+		if (bgraph_pkg_ready_to_want(needle, grph) == ERR_CODE_YES)
 			zlist_append(retVal, needle);
 
 	return retVal;
@@ -507,7 +503,7 @@ bgraph_get_pkg(const bgraph grph, const char *pkgname, const char *version, enum
 }
 
 static inline int
-bgraph_mark_pkg_bad(struct pkg *pkg)
+bgraph_think_about_marking_pkg_bad(struct pkg *pkg)
 {
 	pkg->bad += (pkg->bad < BGRAPH_BAD_TRIES) ? 1 : 0;
 	if (pkg->bad < BGRAPH_BAD_TRIES)
@@ -537,11 +533,11 @@ bgraph_mark_pkg(const bgraph grph, const char *pkgname, const char *version, enu
 		pkg->status = val ? PKG_STATUS_IN_REPO : tobuild;
 		if (pkg->status == PKG_STATUS_BAD) { // Didn't mean it....
 			pkg->status = PKG_STATUS_NONE;
-			rv = bgraph_mark_pkg_bad(pkg);
+			rV = bgraph_think_about_marking_pkg_bad(pkg);
 		}
 		break;
 	case BGRAPH_PKG_MARK_TYPE_BAD:
-		rv = bgraph_mark_pkg_bad(pkg);
+		rV = bgraph_think_about_marking_pkg_bad(pkg);
 		break;
 	case BGRAPH_PKG_MARK_TYPE_IN_PROGRESS:
 		// This logic was written before pkg->status existed, and was
@@ -551,7 +547,7 @@ bgraph_mark_pkg(const bgraph grph, const char *pkgname, const char *version, enu
 		pkg->status = val ? PKG_STATUS_BUILDING : tobuild;
 		if (pkg->status == PKG_STATUS_BAD) { // Didn't mean it....
 			pkg->status = PKG_STATUS_NONE;
-			rv = bgraph_mark_pkg_bad(pkg);
+			rV = bgraph_think_about_marking_pkg_bad(pkg);
 		}
 		break;
 	default:

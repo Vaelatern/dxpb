@@ -59,6 +59,7 @@ struct pkg {
 				PKG_STATUS_TOBUILD,
 				PKG_STATUS_BUILDING,
 				PKG_STATUS_IN_REPO,
+				PKG_STATUS_BAD,
 			} status;
 	unsigned	int can_cross : 1;
 	unsigned	int broken : 1;
