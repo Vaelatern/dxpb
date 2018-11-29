@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.21.3 - 2018-11-29 - The one which chases the shadows away
+## 0.0.22 - 2018-11-29 - The one which appreciates missing and fake packages
 ### Overview
 - Now the "provides" variable is actually sent to the grapher
 - The grapher actually notes when packages should be asked for, allowing
