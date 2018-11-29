@@ -75,9 +75,15 @@ digraph "pkgimport_client" {
  "ready plzread" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">plzread</font></td></tr><tr><td align="left" port="r3">prepare pkg reading</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "ready" -> "ready plzread";
  "ready plzread" -> "ready";
- "ready ready" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ready</font></td></tr><tr><td align="left" port="r3">prepare next pkg</td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "ready ready" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">ready</font></td></tr><tr><td align="left" port="r3">prepare next pkg</td></tr></table>>];
  "ready" -> "ready ready";
  "ready ready" -> "ready";
+ "ready send pkginfo" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">send pkginfo</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "ready" -> "ready send pkginfo";
+ "ready send pkginfo" -> "ready";
+ "ready send virtpkginfo" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">send virtpkginfo</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
+ "ready" -> "ready send virtpkginfo";
+ "ready send virtpkginfo" -> "ready";
  "ready no pkg found" [shape = "Mrecord" style = solid label = <<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">no pkg found</font></td></tr><tr><td align="left" port="r3">send</td></tr></table>>];
  "ready" -> "ready no pkg found";
  "ready no pkg found" -> "finished reading now what";

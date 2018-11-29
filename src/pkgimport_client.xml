@@ -39,7 +39,12 @@
 		</event>
 		<event name = "READY">
 			<action name = "prepare next pkg" />
+		</event>
+		<event name = "send pkginfo">
 			<action name = "send" message = "PKGINFO" />
+		</event>
+		<event name = "send virtpkginfo">
+			<action name = "send" message = "VIRTPKGINFO" />
 		</event>
 		<event name = "no pkg found" next = "finished reading now what">
 			<action name = "send" message = "PKGDEL" />

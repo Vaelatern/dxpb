@@ -171,37 +171,54 @@ static void
 prepare_next_pkg (client_t *self)
 {
 	if (self->curjob->actual_name == NULL) {
-		pkgimport_msg_set_id(self->message, PKGIMPORT_MSG_PKGDEL);
 		pkgimport_msg_set_pkgname(self->message, self->pkgname);
 		engine_set_exception(self, no_pkg_found_event);
 		return;
 	}
-	bpkg_read_step(self->xbps_src, self->curjob);
-	if (self->curjob->to_send == NULL) {
-		engine_set_exception(self, move_on_event);
-		return;
-	}
-	pkgimport_msg_set_id(self->message, PKGIMPORT_MSG_PKGINFO);
-	pkgimport_msg_set_pkgname(self->message, self->curjob->to_send->name);
-	pkgimport_msg_set_version(self->message, self->curjob->to_send->ver);
-	pkgimport_msg_set_arch(self->message, pkg_archs_str[self->curjob->to_send->arch]);
-	pkgimport_msg_set_crosshostneeds(self->message, bwords_to_units(
-				self->curjob->to_send->wneeds_cross_host));
-	pkgimport_msg_set_crosstargetneeds(self->message, bwords_to_units(
-				self->curjob->to_send->wneeds_cross_target));
-	pkgimport_msg_set_nativehostneeds(self->message, bwords_to_units(
-				self->curjob->to_send->wneeds_native_host));
-	pkgimport_msg_set_nativetargetneeds(self->message, bwords_to_units(
-				self->curjob->to_send->wneeds_native_target));
-	pkgimport_msg_set_cancross(self->message,
+	if (self->curjob->toread[0].to_use) {
+		pkgimport_msg_set_pkgname(self->message, self->curjob->toread[0].name);
+		pkgimport_msg_set_version(self->message, self->curjob->toread[0].ver);
+		pkgimport_msg_set_arch(self->message, pkg_archs_str[self->curjob->toread[0].arch]);
+		pkgimport_msg_set_depname(self->message, self->curjob->toread[0].depname);
+		pkgimport_msg_set_deparch(self->message, pkg_archs_str[self->curjob->toread[0].deparch]);
+		self->curjob->toread[0].to_use = 0;
+		engine_set_next_event(self, send_virtpkginfo_event);
+	} else if (self->curjob->toread[1].to_use) {
+		pkgimport_msg_set_pkgname(self->message, self->curjob->toread[1].name);
+		pkgimport_msg_set_version(self->message, self->curjob->toread[1].ver);
+		pkgimport_msg_set_arch(self->message, pkg_archs_str[self->curjob->toread[1].arch]);
+		pkgimport_msg_set_depname(self->message, self->curjob->toread[1].depname);
+		pkgimport_msg_set_deparch(self->message, pkg_archs_str[self->curjob->toread[1].deparch]);
+		self->curjob->toread[1].to_use = 0;
+		engine_set_next_event(self, send_virtpkginfo_event);
+	} else {
+		bpkg_read_step(self->xbps_src, self->curjob);
+		if (self->curjob->to_send == NULL) {
+			engine_set_exception(self, move_on_event);
+			return;
+		}
+		pkgimport_msg_set_pkgname(self->message, self->curjob->to_send->name);
+		pkgimport_msg_set_version(self->message, self->curjob->to_send->ver);
+		pkgimport_msg_set_arch(self->message, pkg_archs_str[self->curjob->to_send->arch]);
+		pkgimport_msg_set_crosshostneeds(self->message, bwords_to_units(
+					self->curjob->to_send->wneeds_cross_host));
+		pkgimport_msg_set_crosstargetneeds(self->message, bwords_to_units(
+					self->curjob->to_send->wneeds_cross_target));
+		pkgimport_msg_set_nativehostneeds(self->message, bwords_to_units(
+					self->curjob->to_send->wneeds_native_host));
+		pkgimport_msg_set_nativetargetneeds(self->message, bwords_to_units(
+					self->curjob->to_send->wneeds_native_target));
+		pkgimport_msg_set_cancross(self->message,
 				self->curjob->to_send->can_cross);
-	pkgimport_msg_set_provides(self->message, bwords_to_units(
-				self->curjob->to_send->provides));
-	pkgimport_msg_set_broken(self->message, self->curjob->to_send->broken);
-	pkgimport_msg_set_bootstrap(self->message,
+		pkgimport_msg_set_provides(self->message, bwords_to_units(
+					self->curjob->to_send->provides));
+		pkgimport_msg_set_broken(self->message, self->curjob->to_send->broken);
+		pkgimport_msg_set_bootstrap(self->message,
 				self->curjob->to_send->bootstrap);
-	pkgimport_msg_set_restricted(self->message,
+		pkgimport_msg_set_restricted(self->message,
 				self->curjob->to_send->restricted);
+		engine_set_next_event(self, send_pkginfo_event);
+	}
 }
 
 //  ---------------------------------------------------------------------------

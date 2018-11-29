@@ -10,7 +10,17 @@
 #endif
 #define DXPB_BPKG_H
 
+struct pkg_virt_import {
+	char *name;
+	char *ver;
+	enum pkg_archs arch;
+	char *depname;
+	enum pkg_archs deparch;
+	int to_use : 1;
+};
+
 struct pkg_importer {
+	struct pkg_virt_import	toread[2];
 	struct pkg	*template;
 	struct pkg	*to_send;
 	enum pkg_archs	 archnow;

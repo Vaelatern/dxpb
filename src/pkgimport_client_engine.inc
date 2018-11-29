@@ -35,14 +35,16 @@ typedef enum {
     connect_error_event = 5,
     plzread_event = 6,
     ready_event = 7,
-    no_pkg_found_event = 8,
-    move_on_event = 9,
-    invalid_event = 10,
-    iforgotu_event = 11,
-    reset_event = 12,
-    stop_event = 13,
-    kthnksbye_event = 14,
-    expired_event = 15
+    send_pkginfo_event = 8,
+    send_virtpkginfo_event = 9,
+    no_pkg_found_event = 10,
+    move_on_event = 11,
+    invalid_event = 12,
+    iforgotu_event = 13,
+    reset_event = 14,
+    stop_event = 15,
+    kthnksbye_event = 16,
+    expired_event = 17
 } event_t;
 
 //  Names for state machine logging and error reporting
@@ -67,6 +69,8 @@ s_event_name [] = {
     "connect_error",
     "PLZREAD",
     "READY",
+    "send_pkginfo",
+    "send_virtpkginfo",
     "no_pkg_found",
     "move_on",
     "INVALID",
@@ -635,12 +639,28 @@ s_client_execute (s_client_t *self, event_t event)
                             zsys_debug ("%s:         $ prepare next pkg", self->log_prefix);
                         prepare_next_pkg (&self->client);
                     }
+                }
+                else
+                if (self->event == send_pkginfo_event) {
                     if (!self->exception) {
                         //  send PKGINFO
                         if (self->verbose)
                             zsys_debug ("%s:         $ send PKGINFO",
                                 self->log_prefix);
                         pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_PKGINFO);
+                        zsys_debug ("%s: Send message to server", self->log_prefix);
+                        pkgimport_msg_print (self->message);
+                        pkgimport_msg_send (self->message, self->dealer);
+                    }
+                }
+                else
+                if (self->event == send_virtpkginfo_event) {
+                    if (!self->exception) {
+                        //  send VIRTPKGINFO
+                        if (self->verbose)
+                            zsys_debug ("%s:         $ send VIRTPKGINFO",
+                                self->log_prefix);
+                        pkgimport_msg_set_id (self->message, PKGIMPORT_MSG_VIRTPKGINFO);
                         zsys_debug ("%s: Send message to server", self->log_prefix);
                         pkgimport_msg_print (self->message);
                         pkgimport_msg_send (self->message, self->dealer);

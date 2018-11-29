@@ -174,14 +174,34 @@ bpkg_init_generic_host(struct pkg *template)
 	return new_guy;
 }
 
+static void
+bpkg_init_virt_import(struct pkg_virt_import *dut, const char *name,
+		const char *append, const char *ver, enum pkg_archs isarch,
+		enum pkg_archs deparch)
+{
+	char *tmp = strdup(name);
+	assert(tmp);
+	dut->name = bstring_add(tmp, append, NULL, NULL);
+	dut->arch = isarch;
+	dut->depname = strdup(name);
+	dut->deparch = deparch;
+	tmp = NULL;
+	tmp = strdup(ver);
+	assert(tmp);
+	dut->ver = tmp;
+	dut->to_use = 1;
+}
+
 /* In the following, we make some tests against the current broken
  * understanding, to help determine if additional processing is necessary.
  */
 static struct pkg *
 bpkg_init_single(const char *xbps_src, struct pkg *template, const char *main_name,
-		enum pkg_archs arch_spec, char is_subpkg)
+		enum pkg_archs arch_spec, char is_subpkg, struct pkg_importer *info)
 {
 	int fds[3];
+	int want32bit = (arch_spec == ARCH_X86_64);
+	int wantdbg = 0;
 	struct pkg *new_guy;
 	pid_t c_pid = bxsrc_init_read(xbps_src, template->name, fds, arch_spec, ARCH_NUM_MAX);
 	new_guy = bpkg_clone(template);
@@ -191,6 +211,27 @@ bpkg_init_single(const char *xbps_src, struct pkg *template, const char *main_na
 	assert(new_guy->wneeds_native_target == NULL);
 	assert(new_guy->provides == NULL);
 	new_guy->provides = bxsrc_q_to_words(fds, "provides");
+
+	wantdbg = !bxsrc_q_isset(fds, "nodebug");
+	if (want32bit)
+		want32bit = !bxsrc_q_isset(fds, "lib32disabled");
+
+	if (wantdbg)
+		bpkg_init_virt_import(&(info->toread[0]), template->name, "-dbg",
+				template->ver, arch_spec, arch_spec);
+	if (want32bit) {
+		enum pkg_archs wantarch = ARCH_NUM_MAX;
+		switch (arch_spec) {
+		case ARCH_X86_64:
+			wantarch = ARCH_I686;
+			break;
+		default:
+			assert("Can't do non-x86_64 -32bit pkgs" && false);
+		}
+		bpkg_init_virt_import(&(info->toread[1]), template->name, "-32bit",
+				template->ver, arch_spec, arch_spec);
+	}
+
 	if (!is_subpkg && !new_guy->broken) { /* This is the real package */
 		new_guy->wneeds_native_host =
 			bwords_merge_words(bxsrc_q_to_words(fds, "hostmakedepends"), NULL);
@@ -365,15 +406,19 @@ bpkg_read_step(const char *xbps_src, struct pkg_importer *info)
 	info->template->broken = (!(info->is_noarch) &&
 					!(info->allowed_archs[info->archnow]));
 
-	if (info->archnow == ARCH_NOARCH && !(info->is_noarch))
-		info->to_send = bpkg_init_generic_target(info->template);
-	else if (info->archnow == ARCH_HOST && !(info->is_noarch))
-		info->to_send = bpkg_init_generic_host(info->template);
-	else
-		info->to_send = bpkg_init_single(xbps_src, info->template,
-				info->is_subpkg ? info->actual_name : "",
-				info->archnow, info->is_subpkg);
-
+	if (!info->toread[0].to_use && !info->toread[1].to_use) {
+		if (info->archnow == ARCH_NOARCH && !(info->is_noarch))
+			info->to_send = bpkg_init_generic_target(info->template);
+		else if (info->archnow == ARCH_HOST && !(info->is_noarch))
+			info->to_send = bpkg_init_generic_host(info->template);
+		else
+			info->to_send = bpkg_init_single(xbps_src, info->template,
+					info->is_subpkg ? info->actual_name : "",
+					info->archnow, info->is_subpkg, info);
+		goto end;
+	} else {
+		goto returnfast;
+	}
 end:
 	if (info->archnext >= ARCH_HOST)
 		info->archnow = ARCH_NUM_MAX;
@@ -381,4 +426,6 @@ end:
 		info->archnow = ARCH_NUM_MAX;
 	else
 		info->archnow = (info->archnext++);
+returnfast:
+	return;
 }
