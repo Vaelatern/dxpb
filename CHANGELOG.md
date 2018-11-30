@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.22.1 - 2018-11-29 - The one which chases the shadows away
+### Overview
+- Virtual packages are no longer truncated into deleted packages by the import
+  master.
+
 ## 0.0.22 - 2018-11-29 - The one which appreciates missing and fake packages
 ### Overview
 - Now the "provides" variable is actually sent to the grapher

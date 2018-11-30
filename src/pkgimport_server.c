@@ -527,7 +527,7 @@ grab_tmppkg_and_process (client_t *self)
 		pkgimport_msg_set_arch(self->message, tmp->arch);
 		pkgimport_msg_set_depname(self->message, tmp->depname);
 		pkgimport_msg_set_deparch(self->message, tmp->deparch);
-		engine_set_next_event(self, send_myself_pkgdel_event);
+		engine_set_next_event(self, send_myself_virtpkginfo_event);
 		FREE(tmp->version);
 		FREE(tmp->arch);
 		FREE(tmp->depname);
