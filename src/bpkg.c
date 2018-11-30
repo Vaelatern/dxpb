@@ -229,7 +229,7 @@ bpkg_init_single(const char *xbps_src, struct pkg *template, const char *main_na
 			assert("Can't do non-x86_64 -32bit pkgs" && false);
 		}
 		bpkg_init_virt_import(&(info->toread[1]), template->name, "-32bit",
-				template->ver, arch_spec, arch_spec);
+				template->ver, arch_spec, wantarch);
 	}
 
 	if (!is_subpkg && !new_guy->broken) { /* This is the real package */
