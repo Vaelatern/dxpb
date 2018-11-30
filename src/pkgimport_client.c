@@ -172,10 +172,8 @@ prepare_next_pkg (client_t *self)
 {
 	if (self->curjob->actual_name == NULL) {
 		pkgimport_msg_set_pkgname(self->message, self->pkgname);
-		engine_set_exception(self, no_pkg_found_event);
-		return;
-	}
-	if (self->curjob->toread[0].to_use) {
+		engine_set_next_event(self, no_pkg_found_event);
+	} else if (self->curjob->toread[0].to_use) {
 		pkgimport_msg_set_pkgname(self->message, self->curjob->toread[0].name);
 		pkgimport_msg_set_version(self->message, self->curjob->toread[0].ver);
 		pkgimport_msg_set_arch(self->message, pkg_archs_str[self->curjob->toread[0].arch]);
