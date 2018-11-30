@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.22.3 - 2018-11-30 - The one which chases the shadows away
+## 0.0.22.4 - 2018-11-30 - The one which chases the shadows away
 ### Overview
 - Virtual packages are no longer truncated into deleted packages by the import
   master.

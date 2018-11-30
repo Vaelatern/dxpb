@@ -28,7 +28,7 @@ bxbps_get_pkgname(const char *spec, bgraph graph, void *virtvoid)
 	void *tmp;
 	zhash_t *virt = virtvoid;
 	const char *vspec;
-	const char *match;
+	char *match;
 
 	/* First step, see if the whole thing is a pkgname */
 	if ((tmp = zhash_lookup(graph, spec)) != NULL) {
