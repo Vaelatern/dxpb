@@ -65,7 +65,7 @@ bxbps_get_pkgname(const char *spec, bgraph graph, void *virtvoid)
 
 	/* First step, see if the whole thing is a pkgname */
 	match = zhash_lookup(virt, vspec);
-	if ((tmp = zhash_lookup(graph, match)) != NULL) {
+	if (match != NULL && (tmp = zhash_lookup(graph, match)) != NULL) {
 		retVal = strdup(match);
 		if (retVal == NULL)
 			exit(ERR_CODE_NOMEM);
@@ -78,16 +78,16 @@ bxbps_get_pkgname(const char *spec, bgraph graph, void *virtvoid)
 	 * Vaelatern, 2017-07-06 */
 	match = xbps_pkg_name(vspec);
 	retVal = zhash_lookup(virt, match);
+	FREE(match);
 	if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL)
 		return retVal;
-	FREE(retVal);
 
 	/* And then, does it use our special matching? */
 	match = xbps_pkgpattern_name(vspec);
 	retVal = zhash_lookup(virt, match);
+	FREE(match);
 	if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL)
 		return retVal;
-	FREE(retVal);
 
 	return retVal;
 }
