@@ -62,8 +62,8 @@ HARNESS_OBJECTS = harness-grapher.o \
 	harness-builder2.o \
 	harness-frontend.o \
 	harness-pkgimport-master.o
-TEST_BINARIES = check_bworker check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps check_brepowatch usebfs usebgit useblog
-TEST_OBJECTS = check_bworker.o check_bgraph.o check_bwords.o check_bstring.o check_btranslate.o check_bpkg.o check_bxbps.o check_brepowatch.o
+TEST_BINARIES = check_bworker check_bgraph check_bwords check_bstring check_btranslate check_bpkg check_bxbps check_brepowatch check_bdb usebfs usebgit useblog
+TEST_OBJECTS = check_bworker.o check_bgraph.o check_bwords.o check_bstring.o check_btranslate.o check_bpkg.o check_bxbps.o check_brepowatch.o check_bdb.o
 OBJECTS = \
 	bbuilder.o \
 	bdb.o \
@@ -151,7 +151,7 @@ dxpb-tagline.h: dxpb-tagline.txt
 
 check_%: LDLIBS += -larchive -lxbps -lcheck
 
-check_bpkg: check_bpkg.o pkgimport_msg.o bstring.o bxsrc.o bfs.o bxbps.o bwords.o bxpkg.o
+check_bpkg: check_bpkg.o pkgimport_msg.o bstring.o bxsrc.o bfs.o bxbps.o bwords.o bxpkg.o butil.o
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 	./$@
 
@@ -177,6 +177,11 @@ check_bwords: check_bwords.o bstring.o
 	./$@
 
 check_bxbps: check_bxbps.o bwords.o bstring.o bfs.o
+	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
+	./$@
+
+check_bdb: LDLIBS+= -lsqlite3
+check_bdb: check_bdb.o bwords.o bstring.o bxpkg.o bpkg.o bxsrc.o pkgimport_msg.o bgraph.o bxbps.o butil.o
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 	./$@
 

@@ -1,11 +1,11 @@
 # Changelog
 
-## 0.0.22.4 - 2018-11-30 - The one which chases the shadows away
+## 0.0.22.5 - 2018-12-02 - The one which chases the shadows away
 ### Overview
 - Virtual packages are no longer truncated into deleted packages by the import
   master.
 - Change x86_64 -32bit deps to i686.
-- No longer segfaults on expected input.
+- Avoids segfaults on expected input.
 
 ## 0.0.22 - 2018-11-29 - The one which appreciates missing and fake packages
 ### Overview

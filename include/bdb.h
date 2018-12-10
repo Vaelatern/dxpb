@@ -40,8 +40,8 @@ struct bdb_bound_params {
 
 int	bdb_write_hash_to_db(const char *, struct bdb_bound_params *);
 int	bdb_write_tree(zhash_t *, struct bdb_bound_params *);
-struct	bdb_bound_params *bdb_params_init();
-struct	bdb_bound_params *bdb_params_init_ro();
+struct	bdb_bound_params *bdb_params_init(const char *);
+struct	bdb_bound_params *bdb_params_init_ro(const char *);
 void	bdb_params_destroy(struct bdb_bound_params **);
 char 	*bdb_read_hash(struct bdb_bound_params *);
 int	bdb_read_pkgs_to_graph(bgraph *, struct bdb_bound_params *);

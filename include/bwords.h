@@ -25,3 +25,5 @@ char    *bwords_to_units(bwords);
 bwords	 bwords_from_units(const char *);
 bwords	 bwords_deduplicate(bwords);
 bwords	 bwords_from_string(const char *, const char *);
+bwords	 bwords_clone(bwords);
+bwords	 bwords_make(int, ...);

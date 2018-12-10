@@ -230,3 +230,25 @@ leave:
 		free(buf);
 	return retVal;
 }
+
+bwords
+bwords_make(int num, ...)
+{
+	va_list ap;
+	bwords retVal = bwords_new();
+	va_start(ap, num);
+	for (int i = 0; i < num; i++) {
+		bwords_append_word(retVal, va_arg(ap, const char *), 0);
+	}
+	va_end(ap);
+	return retVal;
+}
+
+bwords
+bwords_clone(bwords in)
+{
+	char *str = bwords_to_units(in);
+	bwords retVal = bwords_from_units(str);
+	free(str);
+	return retVal;
+}

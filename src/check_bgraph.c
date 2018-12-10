@@ -125,28 +125,6 @@ START_TEST(test_basic_bgraph_with_pkg_type_replacement)
 }
 END_TEST
 
-bwords
-bwords_make(int num, ...)
-{
-	va_list ap;
-	bwords retVal = bwords_new();
-	va_start(ap, num);
-	for (int i = 0; i < num; i++) {
-		bwords_append_word(retVal, va_arg(ap, const char *), 0);
-	}
-	va_end(ap);
-	return retVal;
-}
-
-bwords
-bwords_clone(bwords in)
-{
-	char *str = bwords_to_units(in);
-	bwords retVal = bwords_from_units(str);
-	free(str);
-	return retVal;
-}
-
 void
 do_pkg_needs(struct pkg *pkg, bwords *host, bwords *target)
 {

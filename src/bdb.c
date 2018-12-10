@@ -542,11 +542,15 @@ bdb_fill_from_column(struct bdb_bound_params *params, struct pkg *pkg, int col)
 			break;
 		case 'n': // depname
 			tmp = sqlite3_column_text(params->ROW, col);
-			pkg->depname = strdup((const char *)tmp);
+			pkg->depname = NULL;
+			if (tmp != NULL)
+				pkg->depname = strdup((const char *)tmp);
 			break;
-		case 'a': // depname
+		case 'a': // deparch
 			tmp = sqlite3_column_text(params->ROW, col);
-			pkg->deparch = bpkg_enum_lookup((const char *)tmp);
+			pkg->deparch = ARCH_NUM_MAX;
+			if (tmp != NULL)
+				pkg->deparch = bpkg_enum_lookup((const char *)tmp);
 			break;
 		}
 	case 'h': // hashid hostneeds
