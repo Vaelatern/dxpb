@@ -77,17 +77,21 @@ bxbps_get_pkgname(const char *spec, bgraph graph, void *virtvoid)
 	 * between the first '-' and the last '_'.
 	 * Vaelatern, 2017-07-06 */
 	match = xbps_pkg_name(vspec);
-	retVal = zhash_lookup(virt, match);
-	FREE(match);
-	if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL)
-		return retVal;
+	if (match != NULL) {
+		retVal = zhash_lookup(virt, match);
+		FREE(match);
+		if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL)
+			return retVal;
+	}
 
 	/* And then, does it use our special matching? */
 	match = xbps_pkgpattern_name(vspec);
-	retVal = zhash_lookup(virt, match);
-	FREE(match);
-	if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL)
-		return retVal;
+	if (match != NULL) {
+		retVal = zhash_lookup(virt, match);
+		FREE(match);
+		if (retVal != NULL && (tmp = zhash_lookup(graph, retVal)) != NULL)
+			return retVal;
+	}
 
 	return retVal;
 }
