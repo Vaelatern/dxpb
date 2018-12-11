@@ -156,7 +156,7 @@ check_bpkg: check_bpkg.o pkgimport_msg.o bstring.o bxsrc.o bfs.o bxbps.o bwords.
 	./$@
 
 check_bworker: LDLIBS+= -lbsd
-check_bworker: check_bworker.o pkgimport_msg.o bwords.o bxsrc.o bstring.o bpkg.o bxpkg.o
+check_bworker: check_bworker.o pkgimport_msg.o bwords.o bxsrc.o bstring.o bpkg.o bxpkg.o butil.o
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 	./$@
 
