@@ -15,7 +15,7 @@
 # endif
 #endif
 
-#include "../capnproto/compiler/c.capnp.h"
+#include "capnproto/compiler/c.capnp.h"
 
 #ifdef __cplusplus
 extern "C" {

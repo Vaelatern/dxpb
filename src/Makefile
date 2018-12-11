@@ -217,7 +217,7 @@ testdb: pkgimport_msg.o bxsrc.o bxbps.o bstring.o bwords.o bgraph.o bxpkg.o bdb.
 capnp/log.capnp.o: capnp/log.capnp.c
 
 capnp/log.capnp.c: log.capnp
-	$(CAPNP_BIN) compile log.capnp -oc:capnp
+	$(CAPNP_BIN) compile --src-prefix=. -I.. log.capnp -oc:capnp
 
 blog.c: capnp/log.capnp.c
 
