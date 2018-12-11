@@ -19,7 +19,7 @@
 #include "bxbps.h"
 
 #define VIRTUAL_STR "virtual?"
-const size_t VSTRLEN = strlen(VIRTUAL_STR);
+const size_t VSTRLEN = 8;// strlen(VIRTUAL_STR);
 
 char *
 bxbps_get_pkgname(const char *spec, bgraph graph, void *virtvoid)
