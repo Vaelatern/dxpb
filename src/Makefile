@@ -168,7 +168,7 @@ check_bstring: check_bstring.o
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 	./$@
 
-check_bgraph: check_bgraph.o pkgimport_msg.o bstring.o bxbps.o bfs.o bxpkg.o bpkg.o bwords.o bxsrc.o
+check_bgraph: check_bgraph.o pkgimport_msg.o bstring.o bxbps.o bfs.o bxpkg.o bpkg.o bwords.o bxsrc.o butil.o
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 	./$@
 
