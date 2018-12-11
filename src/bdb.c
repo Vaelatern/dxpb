@@ -553,6 +553,7 @@ bdb_fill_from_column(struct bdb_bound_params *params, struct pkg *pkg, int col)
 				pkg->deparch = bpkg_enum_lookup((const char *)tmp);
 			break;
 		}
+		break;
 	case 'h': // hashid hostneeds
 		switch(colname[1]) {
 		case 'a': // hashid
