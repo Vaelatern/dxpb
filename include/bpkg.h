@@ -16,7 +16,7 @@ struct pkg_virt_import {
 	enum pkg_archs arch;
 	char *depname;
 	enum pkg_archs deparch;
-	int to_use : 1;
+	uint8_t to_use : 1;
 };
 
 struct pkg_importer {
