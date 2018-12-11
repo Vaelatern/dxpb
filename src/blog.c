@@ -42,6 +42,7 @@ pkg_archs_translate(const enum pkg_archs in)
 	case ARCH_HOST: return Arch_virtual;
 	case ARCH_NUM_MAX: exit(ERR_CODE_BAD);
 	}
+	exit(ERR_CODE_BADDOBBY);
 }
 
 char
