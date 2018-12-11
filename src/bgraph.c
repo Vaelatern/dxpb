@@ -246,7 +246,7 @@ static int
 bgraph_resolve_wneed(bgraph hay, bgraph allhay, zhash_t *virt, bwords curwords, void *ineed, struct pkg *me)
 {
 	struct pkg *curpkg = NULL;
-	size_t i = -1;
+	size_t i = curwords->num_words;
 	assert(curwords != NULL);// no deps at all! For some reason
 	for (i = 0; i < curwords->num_words; i++) {
 		char *curpkgname = bxbps_get_pkgname(curwords->words[i], allhay, virt);
@@ -261,7 +261,7 @@ bgraph_resolve_wneed(bgraph hay, bgraph allhay, zhash_t *virt, bwords curwords, 
 	}
 	return ERR_CODE_OK;
 badwant:
-	assert(i >= 0);
+	assert(i < curwords->num_words);
 	fprintf(stderr, "The following spec is unacceptable: %s\n", curwords->words[i]);
 	return ERR_CODE_BADDEP;
 }
