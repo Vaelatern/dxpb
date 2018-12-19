@@ -266,8 +266,34 @@ badwant:
 	return ERR_CODE_BADDEP;
 }
 
+static enum ret_codes
+bgraph_resolve_virtpkg(bgraph grph, zhash_t *virt, struct pkg *subj)
+{
+	printf("Resolving %s - %s\n", subj->name, pkg_archs_str[subj->arch]);
+	struct pkg *curpkg = NULL;
+	bgraph hay = zhash_lookup(grph, pkg_archs_str[subj->deparch]);
+	char *curpkgname = bxbps_get_pkgname(subj->depname, hay, virt);
+	if (curpkgname == NULL)
+		goto badwant;
+	printf("\tcurpkgname %s\n", curpkgname);
+	curpkg = bgraph_find_pkg(hay, hay, curpkgname);
+	if (curpkg == NULL)
+		goto badwant;
+	FREE(curpkgname); /* mandated by the xbps functions */
+	printf("\tcurpkg->name %s\n", curpkg->name);
+	zlist_append(subj->needs, bgraph_new_need(subj->depname, curpkg));
+	zlist_append(subj->cross_needs, bgraph_new_need(subj->depname, curpkg));
+	zlist_append(curpkg->needs_me, subj);
+	subj->resolved = 1;
+	return ERR_CODE_OK;
+badwant:
+	fprintf(stderr, "The following spec is unacceptable: %s %s\n", subj->depname, pkg_archs_str[subj->deparch]);
+	return ERR_CODE_BADDEP;
+
+}
+
 static int
-bgraph_resolve_pkg(bgraph hay, bgraph allhay, bgraph hosthay, zhash_t *virt, struct pkg *subj)
+bgraph_resolve_pkg(bgraph grph, bgraph hay, bgraph allhay, bgraph hosthay, zhash_t *virt, struct pkg *subj)
 {
 	assert(allhay);
 	assert(hay);
@@ -277,6 +303,10 @@ bgraph_resolve_pkg(bgraph hay, bgraph allhay, bgraph hosthay, zhash_t *virt, str
 
 	if (subj->resolved)
 		return ERR_CODE_OK;
+
+	if (bpkg_is_virtual(subj)) {
+		return bgraph_resolve_virtpkg(grph, virt, subj);
+	}
 
 	int rc;
 
@@ -331,7 +361,7 @@ bgraph_attempt_resolution(bgraph grph)
 		assert(hay);
 		for (struct pkg *needle = zhash_first(hay); needle != NULL;
 						needle = zhash_next(hay)) {
-			rc = bgraph_resolve_pkg(hay, allhay, hosthay, virt, needle);
+			rc = bgraph_resolve_pkg(grph, hay, allhay, hosthay, virt, needle);
 			retVal = retVal == ERR_CODE_OK ? rc : retVal;
 		}
 	}
@@ -379,6 +409,7 @@ bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay, bgraph hosthay, int cr
 {
 	enum ret_codes rc = ERR_CODE_OK;
 	struct pkg *pin;
+	printf("\t\tstatus: %d vs. %d\n", needle->status, PKG_STATUS_TOBUILD);
 	if (needle->status != PKG_STATUS_TOBUILD ||
 			needle->arch == ARCH_TARGET ||
 			needle->arch == ARCH_HOST ||
@@ -393,7 +424,11 @@ bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay, bgraph hosthay, int cr
 		pin = curneed->pkg;
 		assert(pin);
 		assert(pin->name);
+		printf("\t\tNeed %s\n", pin->name);
+		printf("\t\t\tstatus: %d vs. %d\n", pin->status, PKG_STATUS_TOBUILD);
 		rc = bxbps_spec_match(curneed->spec, pin->name, pin->ver);
+		printf("\t\t\tSpec matchable: %d vs. %d\n", rc, ERR_CODE_YES);
+		printf("\t\t\tpkg_arch == %s\n", pkg_archs_str[pin->arch]);
 		if (rc != ERR_CODE_YES)
 			return rc;
 		if (pin->arch == ARCH_TARGET && hay != NULL) {
@@ -404,6 +439,7 @@ bgraph_pkg_ready_to_build(struct pkg *needle, bgraph hay, bgraph hosthay, int cr
 		} else if (pin->arch == ARCH_HOST || pin->arch == ARCH_TARGET)
 			continue;
 		assert(pin); // even if noarch, pin will be not null
+		printf("\t\t\tChecking if in repo\n");
 		if (pin->status != PKG_STATUS_IN_REPO)
 			return ERR_CODE_NO;
 	}
@@ -466,6 +502,7 @@ bgraph_what_next_for_arch(bgraph grph, enum pkg_archs arch)
 	assert(hay != NULL);
 	for (needle = zhash_first(hay); needle != NULL; needle = zhash_next(hay))
 		if (bgraph_pkg_ready_to_build(needle, NULL, NULL, 0) == ERR_CODE_YES) {
+			printf("\t We can use %s\n", needle->name);
 			zlist_append(retVal, needle);
 			found_bootstrap = found_bootstrap || (needle->bootstrap && (!needle->broken));
 		}

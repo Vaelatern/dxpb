@@ -181,6 +181,37 @@ new_package(bgraph grph, char *name, char *ver, int noarch, int present,
 	bwords_destroy(target, 0);
 }
 
+void
+new_virtpackage(bgraph grph, char *name, char *ver, int noarch, int present,
+		char *depname, enum pkg_archs deparch)
+{
+	struct pkg *pkg;
+	int rc;
+	if (noarch) {
+		pkg = bpkg_init(name, ver, pkg_archs_str[ARCH_NOARCH]);
+		pkg->depname = strdup(depname);
+		pkg->deparch = deparch;
+		rc = bgraph_insert_pkg(grph, pkg);
+		ck_assert_int_eq(rc, ERR_CODE_OK);
+		if (!present)
+			bgraph_mark_pkg_not_in_progress(grph, name, ver, ARCH_NOARCH);
+		else
+			bgraph_mark_pkg_present(grph, name, ver, ARCH_NOARCH);
+	} else {
+		for (enum pkg_archs i = 1; i < ARCH_HOST; i++) {
+			pkg = bpkg_init(name, ver, pkg_archs_str[i]);
+			pkg->depname = strdup(depname);
+			pkg->deparch = deparch;
+			rc = bgraph_insert_pkg(grph, pkg);
+			ck_assert_int_eq(rc, ERR_CODE_OK);
+			if (!present)
+				bgraph_mark_pkg_not_in_progress(grph, name, ver, i);
+			else
+				bgraph_mark_pkg_present(grph, name, ver, i);
+		}
+	}
+}
+
 int
 pkgnamecmp(void *pkgin, void *name)
 {
@@ -403,6 +434,57 @@ START_TEST(test_bgraph_with_simple_graph_partly_available)
 }
 END_TEST
 
+START_TEST(test_bgraph_with_simple_graph_virtpkgs)
+{
+	puts("NOW IN VIRTPKGS TEST");
+	bgraph grph;
+	int rc;
+
+	grph = bgraph_new();
+	ck_assert_ptr_nonnull(grph);
+
+	bwords a = bwords_make(1, "bar");
+	bwords b = bwords_make(1, "baz");
+	bwords c = bwords_make(1, "foo");
+	bwords d = bwords_make(2, "fol", "baz");
+	bwords e = bwords_make(1, "los-dev");
+	new_package(grph, "los", "0.1", 0, 0, NULL, &d);
+	new_package(grph, "fol", "0.1", 0, 0, NULL, &c);
+	new_package(grph, "foo", "0.1", 0, 0, &a, NULL);
+	new_package(grph, "bar", "0.1", 1, 0, NULL, &b);
+	new_package(grph, "baz", "0.1", 0, 0, NULL, NULL);
+	new_virtpackage(grph, "los-dev", "0.1", 0, 0, "los", ARCH_X86_64);
+	new_package(grph, "bam", "0.1", 0, 0, &e, NULL);
+
+	for (enum pkg_archs i = 0; i < ARCH_HOST; i++) {
+		switch (i) {
+		case ARCH_NOARCH:
+			num_pkgs_for_arch(grph, i, 1, "bar");
+			break;
+		default:
+			num_pkgs_for_arch(grph, i, 5, "los", "foo", "baz", "fol", "bam");
+		}
+	}
+
+	puts("ABOUT TO RESOLVE");
+	ck_assert_int_eq(1, 1); // Just a bookmark
+
+	rc = bgraph_attempt_resolution(grph);
+	ck_assert_int_eq(rc, ERR_CODE_OK);
+
+	for (enum pkg_archs i = 0; i < ARCH_HOST; i++)
+		switch (i) {
+		case ARCH_NOARCH:
+			num_pkgs_for_arch(grph, i, 1, "bar");
+			break;
+		default:
+			num_pkgs_for_arch(grph, i, 1, "baz");
+			break;
+		}
+	puts("NOW DONE WITH VIRTPKGS TEST");
+}
+END_TEST
+
 Suite * test_suite(void)
 {
 	Suite *s;
@@ -420,6 +502,7 @@ Suite * test_suite(void)
 	tcase_add_test(tc_core, test_basic_bgraph_with_new_package_functions);
 	tcase_add_test(tc_core, test_bgraph_with_simple_graph);
 	tcase_add_test(tc_core, test_bgraph_with_simple_graph_partly_available);
+	tcase_add_test(tc_core, test_bgraph_with_simple_graph_virtpkgs);
 	suite_add_tcase(s, tc_core);
 
 	return s;
