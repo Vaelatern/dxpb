@@ -1,0 +1,44 @@
+High Level:
+	Poked by git
+	Poke xbulk for 9 architectures.
+	Wait for another poke.
+	For now, rsync is still the way packages return to the repo.
+
+System layer:
+	The IRC Bot:
+		Be connected to IRC
+		When told that a build has completed, post details to IRC.
+	The Graph Server:
+		Listen on http for a webhook, then:
+			Find the packages changed
+			Send the package list to the Job Server
+	The Job Server:
+		Have 9 Work Servers
+		Wait for Work Servers to come online:
+			Add them to the list of active Work Servers
+			Instead of a list, there is a preconfigured set of
+				"fingerprints", describing the workers, 1 Work
+				Server per fingerprint.
+			If there are outstanding packages, make sure the work
+				servers are notified.
+		Wait for lists of packages
+			Tell the Work Servers online that they should build.
+			Keep the list of packages if any workers are not
+				presently connected.
+		Wait for a ping:
+			Mark the worker as currently active
+		Wait for a log:
+			Mark the worker as currently active
+			Write the log to file.
+	The Work Server:
+		Check in with the Job Server:
+			Every 30 seconds, ping.
+		Accept a poke:
+			Run an arbitrary script.
+			Send the output from the script to the job server.
+
+Finding the packages changed:
+	Have a git hash
+	Locate the most recent git hash
+	Diff the trees, finding dir names directly under /srcpkgs/
+	Save hash to database (boltdb)
