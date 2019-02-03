@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/dxpb/dxpb/internal/pkg/util"
-	"github.com/dxpb/dxpb/internal/app/webhook_target"
+	"github.com/dxpb/dxpb/internal/util"
+	"github.com/dxpb/dxpb/internal/webhook_target"
 )
 
 func main() {
