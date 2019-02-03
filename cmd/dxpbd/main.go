@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/dxpb/dxpb/internal/pkg/util"
 	"github.com/dxpb/dxpb/internal/app/webhook_target"
 )
 
@@ -11,4 +12,5 @@ func main() {
 	gitBind := ":8080"
 	gitEvent := make(chan webhook_target.Event)
 	go webhook_target.GithubListener(gitEvent, gitBind)
+	util.Pause()
 }
