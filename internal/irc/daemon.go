@@ -34,5 +34,5 @@ func Start() {
 }
 
 func CommitMade(who string, hash string, message string) {
-	obj.Noticef("%s committed %s: %s", who, hash, message)
+	obj.Noticef("#dxpb3", "%s committed %s: %s", who, hash, message)
 }
