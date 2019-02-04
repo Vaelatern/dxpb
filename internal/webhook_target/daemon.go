@@ -15,6 +15,10 @@ type Event struct {
 }
 
 func GithubListener(out chan Event) {
+	if viper.GetString("githubhook.secret") == "" {
+		log.Panic("Githubhook secret is empty")
+	}
+
 	hook, err := github.New(github.Options.Secret(viper.GetString("githubhook.secret")))
 
 	if err != nil {

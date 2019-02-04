@@ -10,9 +10,6 @@ import (
 var obj *irc.Connection
 
 func Start() {
-	if viper.GetString("irc.secret") == "" {
-		log.Panic("Githubhook secret is empty")
-	}
 	log.Println("Beginning IRC bot")
 	obj = irc.IRC(viper.GetString("irc.nick"), viper.GetString("irc.nick"))
 	obj.UseTLS = viper.GetBool("irc.ssl")
