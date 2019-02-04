@@ -1,5 +1,3 @@
 #!/bin/sh
 
-for cmd in $(ls ./cmd); do
-	rm -f $cmd
-done
+for cmd in cmd/*; do rm -f -- "${cmd#cmd/}"; done
