@@ -19,6 +19,6 @@ func Start() {
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatalf("Could not read in configuration file: %s\n", err)
+		log.Panicf("Could not read in configuration file: %s\n", err)
 	}
 }

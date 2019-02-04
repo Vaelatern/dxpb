@@ -11,7 +11,7 @@ var obj *irc.Connection
 
 func Start() {
 	if viper.GetString("irc.secret") == "" {
-		log.Fatal("Githubhook secret is empty")
+		log.Panic("Githubhook secret is empty")
 	}
 	log.Println("Beginning IRC bot")
 	obj = irc.IRC(viper.GetString("irc.nick"), viper.GetString("irc.nick"))
@@ -28,7 +28,7 @@ func Start() {
 
 	err := obj.Connect(viper.GetString("irc.server"))
 	if err != nil {
-		log.Fatalf("Failed to connect to IRC server %s\n", viper.GetString("irc.server"))
+		log.Panicf("Failed to connect to IRC server %s\n", viper.GetString("irc.server"))
 	}
 	obj.Loop()
 }
