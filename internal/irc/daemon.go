@@ -3,8 +3,8 @@ package irc
 import (
 	"log"
 
-	"github.com/thoj/go-ircevent"
 	"github.com/spf13/viper"
+	"github.com/thoj/go-ircevent"
 )
 
 var obj *irc.Connection
@@ -15,11 +15,11 @@ func Start() {
 	obj.UseTLS = viper.GetBool("irc.ssl")
 	obj.QuitMessage = "Server restart"
 
-	obj.AddCallback("001", func (event *irc.Event) {
+	obj.AddCallback("001", func(event *irc.Event) {
 		log.Printf("Joining %s\n", viper.GetString("irc.channel"))
 		obj.Join(viper.GetString("irc.channel"))
 	})
-	obj.AddCallback("PRIVMSG", func (event *irc.Event) {
+	obj.AddCallback("PRIVMSG", func(event *irc.Event) {
 		log.Println(event.Message())
 	})
 

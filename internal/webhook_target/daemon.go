@@ -4,14 +4,14 @@ import (
 	"log"
 	"net/http"
 
-	"gopkg.in/go-playground/webhooks.v5/github"
 	"github.com/spf13/viper"
+	"gopkg.in/go-playground/webhooks.v5/github"
 )
 
 type Event struct {
 	Committer string
-	Hash string
-	Msg string
+	Hash      string
+	Msg       string
 }
 
 func GithubListener(out chan Event) {
@@ -42,12 +42,12 @@ func handleAll(hook *github.Webhook, out chan Event) http.HandlerFunc {
 		case github.PushPayload:
 			push := payload.(github.PushPayload)
 			for _, commit := range push.Commits {
-				send := Event {
+				send := Event{
 					Committer: commit.Committer.Username,
-					Hash: commit.ID[:12],
-					Msg: commit.Message,
+					Hash:      commit.ID[:12],
+					Msg:       commit.Message,
 				}
-				out<-send
+				out <- send
 			}
 		}
 	}
