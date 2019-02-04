@@ -1,3 +1,4 @@
 /dxpbd
 /dxpbuilder
 vendor/
+*.toml

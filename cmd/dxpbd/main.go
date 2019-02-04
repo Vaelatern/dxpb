@@ -10,13 +10,21 @@ import (
 func main() {
 	log.Println("hello!")
 	Start()
-	go irc.Start()
+
+	ircClient, err := irc.New()
+	if err != nil {
+		log.Panic(err)
+	}
+
+	log.Println("Connecting to IRC")
+	go ircClient.Connect()
+
 	gitEvent := make(chan webhook_target.Event)
 	go webhook_target.GithubListener(gitEvent)
 	for {
 		select {
 		case event := <-gitEvent:
-			irc.CommitMade(event.Committer, event.Hash, event.Msg)
+			ircClient.NoticeCommit(event.Committer, event.Hash, event.Msg)
 		}
 	}
 }

@@ -12,8 +12,6 @@ func Start() {
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 	viper.SetDefault("githubhook", map[string]string{"bind": ":8080", "path": "/github", "secret": ""})
-	viper.SetDefault("irc", map[string]string{"nick": "dxpbd", "server": "irc.example.com:6697", "channel": "#dxpb"})
-	viper.SetDefault("irc.ssl", true)
 	viper.SetConfigName("dxpbd")
 	viper.AddConfigPath("/etc/dxpb")
 	viper.AddConfigPath(".")
