@@ -4,35 +4,35 @@ import (
 	"log"
 
 	"github.com/thoj/go-ircevent"
+	"github.com/spf13/viper"
 )
 
 var obj *irc.Connection
 
 func Start() {
-	channame := "#dxpb3"
-	servername := "irc.freenode.net:6697"
-
+	if viper.GetString("irc.secret") == "" {
+		log.Fatal("Githubhook secret is empty")
+	}
 	log.Println("Beginning IRC bot")
-	obj = irc.IRC("dxpb", "dxpb")
-	obj.UseTLS = true
-	obj.VerboseCallbackHandler = false
+	obj = irc.IRC(viper.GetString("irc.nick"), viper.GetString("irc.nick"))
+	obj.UseTLS = viper.GetBool("irc.ssl")
 	obj.QuitMessage = "Server restart"
 
 	obj.AddCallback("001", func (event *irc.Event) {
-		log.Printf("Joining %s\n", channame)
-		obj.Join(channame)
+		log.Printf("Joining %s\n", viper.GetString("irc.channel"))
+		obj.Join(viper.GetString("irc.channel"))
 	})
 	obj.AddCallback("PRIVMSG", func (event *irc.Event) {
 		log.Println(event.Message())
 	})
 
-	err := obj.Connect(servername)
+	err := obj.Connect(viper.GetString("irc.server"))
 	if err != nil {
-		log.Fatalf("Failed to connect to IRC server %s\n", servername)
+		log.Fatalf("Failed to connect to IRC server %s\n", viper.GetString("irc.server"))
 	}
 	obj.Loop()
 }
 
 func CommitMade(who string, hash string, message string) {
-	obj.Noticef("#dxpb3", "%s committed %s: %s", who, hash, message)
+	obj.Noticef(viper.GetString("irc.channel"), "%s committed %s: %s", who, hash, message)
 }

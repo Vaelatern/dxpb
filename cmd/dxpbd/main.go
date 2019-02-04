@@ -9,10 +9,10 @@ import (
 
 func main() {
 	log.Println("hello!")
+	Start()
 	go irc.Start()
-	gitBind := ":3003"
 	gitEvent := make(chan webhook_target.Event)
-	go webhook_target.GithubListener(gitEvent, gitBind)
+	go webhook_target.GithubListener(gitEvent)
 	for {
 		select {
 		case event := <-gitEvent:

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"gopkg.in/go-playground/webhooks.v5/github"
+	"github.com/spf13/viper"
 )
 
 type Event struct {
@@ -13,19 +14,16 @@ type Event struct {
 	Msg string
 }
 
-func GithubListener(out chan Event, bindto string) {
-	path := "/github"
-	secret := "FF"
-
-	hook, err := github.New(github.Options.Secret(secret))
+func GithubListener(out chan Event) {
+	hook, err := github.New(github.Options.Secret(viper.GetString("githubhook.secret")))
 
 	if err != nil {
-		log.Fatal("Couldn't initiate github structure")
+		log.Panic("Couldn't initiate github structure")
 	}
 
-	log.Printf("Beginning Github listener, listening on %s\n", bindto)
-	http.HandleFunc(path, handleAll(hook, out))
-	log.Fatal(http.ListenAndServe(bindto, nil))
+	log.Printf("Beginning Github listener, listening on %s\n", viper.GetString("githubhook.bind"))
+	http.HandleFunc(viper.GetString("githubhook.path"), handleAll(hook, out))
+	log.Fatal(http.ListenAndServe(viper.GetString("githubhook.bind"), nil))
 }
 
 func handleAll(hook *github.Webhook, out chan Event) http.HandlerFunc {

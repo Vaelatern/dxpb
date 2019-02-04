@@ -1,0 +1,10 @@
+debug: false
+githubhook:
+  bind: :8080
+  path: /webhook
+  secret:
+irc:
+  nick: nickhere
+  server: irc.example.com:6697
+  channel: '#mychan'
+  ssl: true
