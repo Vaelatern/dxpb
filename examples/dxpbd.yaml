@@ -4,6 +4,7 @@ githubhook:
   path: /webhook
   secret:
 irc:
+  disabled: true
   nick: nickhere
   server: irc.example.com:6697
   channel: '#mychan'

@@ -10,6 +10,7 @@ import (
 
 // New returns a new IRC client that is initailized and ready for use.
 func New() (Client, error) {
+	viper.SetDefault("irc.disabled", false)
 	viper.SetDefault("irc.nick", "dxpb")
 	viper.SetDefault("irc.ssl", true)
 
