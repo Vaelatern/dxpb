@@ -1,13 +1,12 @@
 package main
 
 import (
-	"log"
-
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
-func Start() {
+func Start() error {
+	pflag.StringP("output-conf", "O", "", "Output sample configuration file")
 	pflag.BoolP("debug", "d", false, "Debug mode")
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
@@ -15,8 +14,5 @@ func Start() {
 	viper.SetConfigName("dxpbd")
 	viper.AddConfigPath("/etc/dxpb")
 	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Panicf("Could not read in configuration file: %s\n", err)
-	}
+	return viper.ReadInConfig()
 }
