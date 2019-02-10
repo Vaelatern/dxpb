@@ -8,5 +8,9 @@ commit must have a problem statement.
 The second paragraph in a commit should start "Solution: " and that's where you
 have a written description of how you solve the problem.
 
+If there is a discussion regarding a feature, consider duplicating the
+discussion in the commit message, at least as a summary, to provide more
+insight into why or how a feature came to be.
+
 For more information on this idea, please see
 https://www.youtube.com/watch?v=xFVDNTXIC_Y
