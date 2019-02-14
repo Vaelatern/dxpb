@@ -1,0 +1,11 @@
+language: go
+sudo: false
+go:
+  - "1.x"
+  - "1.10.x"
+script:
+  - diff -u <(echo -n) <(gofmt -d -s cmd internal)
+  - go vet ./...
+  - go test -v -race ./...
+notifications:
+  email: false
