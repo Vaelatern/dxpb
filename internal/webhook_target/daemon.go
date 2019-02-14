@@ -8,12 +8,28 @@ import (
 	"gopkg.in/go-playground/webhooks.v5/github"
 )
 
+// EventType declares the type of an Event
+type EventType int
+
+// Constant enumeration of EventType values
+const (
+	Commit EventType = iota
+	PullRequest
+	Issue
+)
+
+// Event type is sent to describe github events recieved as webhooks
 type Event struct {
-	Committer string
-	Hash      string
-	Msg       string
+	Type      EventType // Type of the event
+	Committer string    // who created the event
+	Hash      string    // hash of commit (when applicable)
+	Msg       string    // message associated with event
+	Number    int64     // Number (when applicable)
 }
 
+// GithubListener creates an http listener, configured by viper, which
+// acts as a webhook target for github events, sending events to the
+// out Event channel
 func GithubListener(out chan Event) {
 	if viper.GetString("githubhook.secret") == "" {
 		log.Panic("Githubhook secret is empty")
@@ -43,9 +59,34 @@ func handleAll(hook *github.Webhook, out chan Event) http.HandlerFunc {
 			push := payload.(github.PushPayload)
 			for _, commit := range push.Commits {
 				send := Event{
+					Type:      Commit,
 					Committer: commit.Committer.Username,
 					Hash:      commit.ID[:12],
 					Msg:       commit.Message,
+				}
+				out <- send
+			}
+		case github.PullRequestPayload:
+			prPayload := payload.(github.PullRequestPayload)
+			if prPayload.Action == "opened" {
+				pr := prPayload.PullRequest
+				send := Event{
+					Type:      PullRequest,
+					Committer: pr.User.GravatarID,
+					Number:    pr.Number,
+					Msg:       pr.Title,
+				}
+				out <- send
+			}
+		case github.IssuesPayload:
+			iPayload := payload.(github.IssuesPayload)
+			if iPayload.Action == "opened" {
+				issue := iPayload.Issue
+				send := Event{
+					Type:      Issue,
+					Committer: issue.User.GravatarID,
+					Number:    issue.Number,
+					Msg:       issue.Title,
 				}
 				out <- send
 			}

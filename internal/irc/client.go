@@ -4,8 +4,9 @@ import (
 	"errors"
 	"log"
 
+	"github.com/dxpb/dxpb/internal/webhook_target"
 	"github.com/spf13/viper"
-	"github.com/thoj/go-ircevent"
+	irc "github.com/thoj/go-ircevent"
 )
 
 // New returns a new IRC client that is initailized and ready for use.
@@ -44,9 +45,15 @@ func (c *Client) Connect() error {
 	return errors.New("Impossible return, IRC connection loop exited")
 }
 
-// NoticeCommit sends a formatted message to the connected channel
-// that includes the person, the hash itself, and an arbitrary message
-// associated with the commit.
-func (c *Client) NoticeCommit(who, hash, msg string) {
-	c.Noticef(c.channel, "%s committed %s: %s", who, hash, msg)
+// NoticeEvent sends a formatted message to the connected channel
+// that includes a summary of the github event.
+func (c *Client) NoticeEvent(event webhook_target.Event) {
+	switch event.Type {
+	case webhook_target.Commit:
+		c.Noticef(c.channel, "%s committed %s: %s", event.Committer, event.Hash, event.Msg)
+	case webhook_target.PullRequest:
+		c.Noticef(c.channel, "%s created PR %i: %s", event.Committer, event.Number, event.Msg)
+	case webhook_target.Issue:
+		c.Noticef(c.channel, "%s opened Issue #%i: %s", event.Committer, event.Number, event.Msg)
+	}
 }

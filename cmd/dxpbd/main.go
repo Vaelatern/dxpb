@@ -27,7 +27,7 @@ func main() {
 	for {
 		select {
 		case event := <-gitEvent:
-			ircClient.NoticeCommit(event.Committer, event.Hash, event.Msg)
+			ircClient.NoticeEvent(event)
 		}
 	}
 }
