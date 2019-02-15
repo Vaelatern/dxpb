@@ -25,6 +25,7 @@ type Event struct {
 	Hash      string    // hash of commit (when applicable)
 	Msg       string    // message associated with event
 	Number    int64     // Number (when applicable)
+	Action    string    // In event of an issue or pull request, what is being done
 }
 
 // GithubListener creates an http listener, configured by viper, which
@@ -68,28 +69,26 @@ func handleAll(hook *github.Webhook, out chan Event) http.HandlerFunc {
 			}
 		case github.PullRequestPayload:
 			prPayload := payload.(github.PullRequestPayload)
-			if prPayload.Action == "opened" {
-				pr := prPayload.PullRequest
-				send := Event{
-					Type:      PullRequest,
-					Committer: pr.User.GravatarID,
-					Number:    pr.Number,
-					Msg:       pr.Title,
-				}
-				out <- send
+			pr := prPayload.PullRequest
+			send := Event{
+				Type:      PullRequest,
+				Committer: pr.User.GravatarID,
+				Number:    pr.Number,
+				Msg:       pr.Title,
+				Action:    prPayload.Action,
 			}
+			out <- send
 		case github.IssuesPayload:
 			iPayload := payload.(github.IssuesPayload)
-			if iPayload.Action == "opened" {
-				issue := iPayload.Issue
-				send := Event{
-					Type:      Issue,
-					Committer: issue.User.GravatarID,
-					Number:    issue.Number,
-					Msg:       issue.Title,
-				}
-				out <- send
+			issue := iPayload.Issue
+			send := Event{
+				Type:      Issue,
+				Committer: issue.User.GravatarID,
+				Number:    issue.Number,
+				Msg:       issue.Title,
+				Action:    iPayload.Action,
 			}
+			out <- send
 		}
 	}
 }

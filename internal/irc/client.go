@@ -52,8 +52,8 @@ func (c *Client) NoticeEvent(event webhook_target.Event) {
 	case webhook_target.Commit:
 		c.Noticef(c.channel, "%s committed %s: %s", event.Committer, event.Hash, event.Msg)
 	case webhook_target.PullRequest:
-		c.Noticef(c.channel, "%s created PR %i: %s", event.Committer, event.Number, event.Msg)
+		c.Noticef(c.channel, "%s %s PR %i: %s", event.Committer, event.Action, event.Number, event.Msg)
 	case webhook_target.Issue:
-		c.Noticef(c.channel, "%s opened Issue #%i: %s", event.Committer, event.Number, event.Msg)
+		c.Noticef(c.channel, "%s %s Issue #%i: %s", event.Committer, event.Action, event.Number, event.Msg)
 	}
 }
