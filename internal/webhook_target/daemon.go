@@ -1,37 +1,23 @@
 package webhook_target
 
 import (
+	"context"
 	"log"
+	"net"
 	"net/http"
+	"sync"
 
 	"github.com/spf13/viper"
 	"gopkg.in/go-playground/webhooks.v5/github"
+	"zombiezen.com/go/capnproto2/rpc"
+
+	"github.com/dxpb/dxpb/internal/spec"
 )
-
-// EventType declares the type of an Event
-type EventType int
-
-// Constant enumeration of EventType values
-const (
-	Commit EventType = iota
-	PullRequest
-	Issue
-)
-
-// Event type is sent to describe github events recieved as webhooks
-type Event struct {
-	Type      EventType // Type of the event
-	Committer string    // who created the event
-	Hash      string    // hash of commit (when applicable)
-	Msg       string    // message associated with event
-	Number    int64     // Number (when applicable)
-	Action    string    // In event of an issue or pull request, what is being done
-}
 
 // GithubListener creates an http listener, configured by viper, which
 // acts as a webhook target for github events, sending events to the
-// out Event channel
-func GithubListener(out chan Event) {
+// out RPC connection
+func GithubListener(out net.Conn) {
 	if viper.GetString("githubhook.secret") == "" {
 		log.Panic("Githubhook secret is empty")
 	}
@@ -47,8 +33,18 @@ func GithubListener(out chan Event) {
 	log.Fatal(http.ListenAndServe(viper.GetString("githubhook.bind"), nil))
 }
 
-func handleAll(hook *github.Webhook, out chan Event) http.HandlerFunc {
+func handleAll(hook *github.Webhook, outpipe net.Conn) http.HandlerFunc {
+	var (
+		init sync.Once
+		out  spec.IrcBot
+		ctx  context.Context
+	)
 	return func(w http.ResponseWriter, r *http.Request) {
+		init.Do(func() {
+			ctx = context.Background()
+			conn := rpc.NewConn(rpc.StreamTransport(outpipe))
+			out = spec.IrcBot{Client: conn.Bootstrap(ctx)}
+		})
 		payload, err := hook.Parse(r, github.PushEvent)
 		if err != nil {
 			if err == github.ErrEventNotFound {
@@ -59,36 +55,51 @@ func handleAll(hook *github.Webhook, out chan Event) http.HandlerFunc {
 		case github.PushPayload:
 			push := payload.(github.PushPayload)
 			for _, commit := range push.Commits {
-				send := Event{
-					Type:      Commit,
-					Committer: commit.Committer.Username,
-					Hash:      commit.ID[:12],
-					Msg:       commit.Message,
-				}
-				out <- send
+				out.NoteGhEvent(ctx, func(p spec.IrcBot_noteGhEvent_Params) error {
+					gh, err := p.NewGh()
+					if err != nil {
+						return err
+					}
+					gh.SetWho(commit.Committer.Username)
+					gh.SetCommit()
+					asCommit := gh.Commit()
+					asCommit.SetHash(commit.ID)
+					asCommit.SetMsg(commit.Message)
+					return nil
+				})
 			}
 		case github.PullRequestPayload:
 			prPayload := payload.(github.PullRequestPayload)
 			pr := prPayload.PullRequest
-			send := Event{
-				Type:      PullRequest,
-				Committer: pr.User.GravatarID,
-				Number:    pr.Number,
-				Msg:       pr.Title,
-				Action:    prPayload.Action,
-			}
-			out <- send
+			out.NoteGhEvent(ctx, func(p spec.IrcBot_noteGhEvent_Params) error {
+				gh, err := p.NewGh()
+				if err != nil {
+					return err
+				}
+				gh.SetWho(pr.User.GravatarID)
+				gh.SetPullRequest()
+				asPr := gh.PullRequest()
+				asPr.SetNumber(pr.Number)
+				asPr.SetMsg(pr.Title)
+				asPr.SetAction(prPayload.Action)
+				return nil
+			})
 		case github.IssuesPayload:
 			iPayload := payload.(github.IssuesPayload)
 			issue := iPayload.Issue
-			send := Event{
-				Type:      Issue,
-				Committer: issue.User.GravatarID,
-				Number:    issue.Number,
-				Msg:       issue.Title,
-				Action:    iPayload.Action,
-			}
-			out <- send
+			out.NoteGhEvent(ctx, func(p spec.IrcBot_noteGhEvent_Params) error {
+				gh, err := p.NewGh()
+				if err != nil {
+					return err
+				}
+				gh.SetWho(issue.User.GravatarID)
+				gh.SetIssue()
+				asIssue := gh.Issue()
+				asIssue.SetNumber(issue.Number)
+				asIssue.SetMsg(issue.Title)
+				asIssue.SetAction(iPayload.Action)
+				return nil
+			})
 		}
 	}
 }

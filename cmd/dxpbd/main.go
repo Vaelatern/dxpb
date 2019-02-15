@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net"
 
 	"github.com/spf13/viper"
 
@@ -18,16 +19,12 @@ func main() {
 		log.Panic(err)
 	}
 
+	var ircpipe net.Conn
+	var ircside net.Conn
 	if !viper.GetBool("irc.disabled") {
-		go ircClient.Connect()
+		ircside, ircpipe = net.Pipe()
+		go ircClient.Connect(ircside)
 	}
 
-	gitEvent := make(chan webhook_target.Event)
-	go webhook_target.GithubListener(gitEvent)
-	for {
-		select {
-		case event := <-gitEvent:
-			ircClient.NoticeEvent(event)
-		}
-	}
+	webhook_target.GithubListener(ircpipe)
 }
