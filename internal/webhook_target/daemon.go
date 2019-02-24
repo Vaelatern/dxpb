@@ -76,7 +76,7 @@ func handleAll(hook *github.Webhook, outpipe net.Conn) http.HandlerFunc {
 				if err != nil {
 					return err
 				}
-				gh.SetWho(pr.User.GravatarID)
+				gh.SetWho(pr.User.Login)
 				gh.SetPullRequest()
 				asPr := gh.PullRequest()
 				asPr.SetNumber(pr.Number)
@@ -92,7 +92,7 @@ func handleAll(hook *github.Webhook, outpipe net.Conn) http.HandlerFunc {
 				if err != nil {
 					return err
 				}
-				gh.SetWho(issue.User.GravatarID)
+				gh.SetWho(issue.User.Login)
 				gh.SetIssue()
 				asIssue := gh.Issue()
 				asIssue.SetNumber(issue.Number)
