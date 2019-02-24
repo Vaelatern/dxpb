@@ -86,7 +86,7 @@ func (c *Client) NoteGhEvent(call spec.IrcBot_noteGhEvent) error {
 		if err != nil {
 			return err
 		}
-		c.Noticef(c.channel, "%s %s PR %i: %s", committer, action, thing.Number(), msg)
+		c.Noticef(c.channel, "%s %s PR %d: %s", committer, action, thing.Number(), msg)
 	case spec.GithubEvent_Which_issue:
 		thing := event.Issue()
 		committer, err := event.Who()
@@ -101,7 +101,7 @@ func (c *Client) NoteGhEvent(call spec.IrcBot_noteGhEvent) error {
 		if err != nil {
 			return err
 		}
-		c.Noticef(c.channel, "%s %s Issue #%i: %s", committer, action, thing.Number(), msg)
+		c.Noticef(c.channel, "%s %s Issue #%d: %s", committer, action, thing.Number(), msg)
 	}
 	return nil
 }
