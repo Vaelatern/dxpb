@@ -45,7 +45,7 @@ func handleAll(hook *github.Webhook, outpipe net.Conn) http.HandlerFunc {
 			conn := rpc.NewConn(rpc.StreamTransport(outpipe))
 			out = spec.IrcBot{Client: conn.Bootstrap(ctx)}
 		})
-		payload, err := hook.Parse(r, github.PushEvent)
+		payload, err := hook.Parse(r, github.PushEvent, github.IssuesEvent, github.PullRequestEvent)
 		if err != nil {
 			if err == github.ErrEventNotFound {
 				// ok event wasn;t one of the ones asked to be parsed
