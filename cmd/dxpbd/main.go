@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/viper"
 
+	"github.com/dxpb/dxpb/internal/http"
 	"github.com/dxpb/dxpb/internal/irc"
-	"github.com/dxpb/dxpb/internal/webhook_target"
 )
 
 func main() {
@@ -26,5 +26,9 @@ func main() {
 		go ircClient.Connect(ircside)
 	}
 
-	webhook_target.GithubListener(ircpipe)
+	httpd, err := http.New(ircpipe)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(httpd.Start())
 }

@@ -1,9 +1,8 @@
-package webhook_target
+package http
 
 import (
 	"context"
-	"log"
-	"net"
+	"errors"
 	"net/http"
 	"sync"
 
@@ -17,23 +16,19 @@ import (
 // GithubListener creates an http listener, configured by viper, which
 // acts as a webhook target for github events, sending events to the
 // out RPC connection
-func GithubListener(out net.Conn) {
-	if viper.GetString("githubhook.secret") == "" {
-		log.Panic("Githubhook secret is empty")
+func (s server) githubListener() error {
+	if viper.GetString("github.secret") == "" {
+		return errors.New("Can't add a github webhook without a github secret")
 	}
 
-	hook, err := github.New(github.Options.Secret(viper.GetString("githubhook.secret")))
+	var err error
 
-	if err != nil {
-		log.Panic("Couldn't initiate github structure")
-	}
+	s.github, err = github.New(github.Options.Secret(viper.GetString("github.secret")))
 
-	log.Printf("Beginning Github listener, listening on %s\n", viper.GetString("githubhook.bind"))
-	http.HandleFunc(viper.GetString("githubhook.path"), handleAll(hook, out))
-	log.Fatal(http.ListenAndServe(viper.GetString("githubhook.bind"), nil))
+	return err
 }
 
-func handleAll(hook *github.Webhook, outpipe net.Conn) http.HandlerFunc {
+func (s server) handleGithubWebhook() http.HandlerFunc {
 	var (
 		init sync.Once
 		out  spec.IrcBot
@@ -42,10 +37,10 @@ func handleAll(hook *github.Webhook, outpipe net.Conn) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		init.Do(func() {
 			ctx = context.Background()
-			conn := rpc.NewConn(rpc.StreamTransport(outpipe))
+			conn := rpc.NewConn(rpc.StreamTransport(s.toIRC))
 			out = spec.IrcBot{Client: conn.Bootstrap(ctx)}
 		})
-		payload, err := hook.Parse(r, github.PushEvent, github.IssuesEvent, github.PullRequestEvent)
+		payload, err := s.github.Parse(r, github.PushEvent, github.IssuesEvent, github.PullRequestEvent)
 		if err != nil {
 			if err == github.ErrEventNotFound {
 				// ok event wasn;t one of the ones asked to be parsed

@@ -1,7 +1,9 @@
 debug: false
-githubhook:
+http:
   bind: :8080
-  path: /webhook
+  github: /webhook
+  prometheus: /metrics
+github:
   secret:
 irc:
   disabled: true

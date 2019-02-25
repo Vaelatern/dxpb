@@ -4,11 +4,24 @@ import (
 	"log"
 	"net"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/spf13/viper"
 	irc "github.com/thoj/go-ircevent"
 	"zombiezen.com/go/capnproto2/rpc"
 
 	"github.com/dxpb/dxpb/internal/spec"
+)
+
+var (
+	msgsToSend = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "dxpb_irc_msg_to_send",
+		Help: "Total number of messages to send",
+	})
+	msgsSent = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "dxpb_irc_msg_sent",
+		Help: "Total number of messages sent",
+	})
 )
 
 // New returns a new IRC client that is initailized and ready for use.
@@ -48,9 +61,10 @@ func (c *Client) Connect(in net.Conn) error {
 	return conn.Wait() // Should not ever get here, but if it does we should see this error.
 }
 
-// NoticeEvent sends a formatted message to the connected channel
+// NoteGhEvent sends a formatted message to the connected channel
 // that includes a summary of the github event.
 func (c *Client) NoteGhEvent(call spec.IrcBot_noteGhEvent) error {
+	msgsToSend.Inc()
 	event, err := call.Params.Gh()
 	if err != nil {
 		return err
@@ -71,6 +85,7 @@ func (c *Client) NoteGhEvent(call spec.IrcBot_noteGhEvent) error {
 		if err != nil {
 			return err
 		}
+		msgsSent.Inc()
 		c.Noticef(c.channel, "%s committed %s: %s", committer, hash, msg)
 	case spec.GithubEvent_Which_pullRequest:
 		thing := event.PullRequest()
@@ -86,6 +101,7 @@ func (c *Client) NoteGhEvent(call spec.IrcBot_noteGhEvent) error {
 		if err != nil {
 			return err
 		}
+		msgsSent.Inc()
 		c.Noticef(c.channel, "%s %s PR %d: %s", committer, action, thing.Number(), msg)
 	case spec.GithubEvent_Which_issue:
 		thing := event.Issue()
@@ -101,6 +117,7 @@ func (c *Client) NoteGhEvent(call spec.IrcBot_noteGhEvent) error {
 		if err != nil {
 			return err
 		}
+		msgsSent.Inc()
 		c.Noticef(c.channel, "%s %s Issue #%d: %s", committer, action, thing.Number(), msg)
 	}
 	return nil
