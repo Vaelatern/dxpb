@@ -86,7 +86,7 @@ func (c *Client) NoteGhEvent(call spec.IrcBot_noteGhEvent) error {
 			return err
 		}
 		msgsSent.Inc()
-		c.Noticef(c.channel, "%s committed %s: %s", committer, hash, msg)
+		c.Noticef(c.channel, "%s committed %s: %s", committer, hash[:8], msg)
 	case spec.GithubEvent_Which_pullRequest:
 		thing := event.PullRequest()
 		committer, err := event.Who()
