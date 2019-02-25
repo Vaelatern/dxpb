@@ -3,6 +3,8 @@ package http
 import (
 	"context"
 	"errors"
+	"io"
+	"log"
 	"net/http"
 	"sync"
 
@@ -16,7 +18,7 @@ import (
 // GithubListener creates an http listener, configured by viper, which
 // acts as a webhook target for github events, sending events to the
 // out RPC connection
-func (s server) githubListener() error {
+func (s *server) githubListener() error {
 	if viper.GetString("github.secret") == "" {
 		return errors.New("Can't add a github webhook without a github secret")
 	}
@@ -24,8 +26,10 @@ func (s server) githubListener() error {
 	var err error
 
 	s.github, err = github.New(github.Options.Secret(viper.GetString("github.secret")))
-
-	return err
+	if err != nil {
+		s.github = nil
+	}
+	return err // either nil, or not.
 }
 
 func (s server) handleGithubWebhook() http.HandlerFunc {
@@ -34,6 +38,14 @@ func (s server) handleGithubWebhook() http.HandlerFunc {
 		out  spec.IrcBot
 		ctx  context.Context
 	)
+	if s.github == nil {
+		log.Println("Github Hook nil! Can't serve github requests!")
+		return func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(500)
+			io.WriteString(w, "Github webhook inadequately initialized")
+		}
+	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		init.Do(func() {
 			ctx = context.Background()
