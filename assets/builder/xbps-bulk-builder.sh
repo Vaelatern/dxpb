@@ -3,7 +3,7 @@
 # [-b builddir] where xbulk configures itself and the build output is logged
 #               default: clean out and (re)use $PWD/builddir
 
-# [-d distdir] $PWD/void-packages
+# [-D distdir] $PWD/void-packages
 # [-h hostdir] $PWD/hostdir
 # [-m masterdir] $PWD/chroot
 
@@ -32,7 +32,7 @@ XB_OVERLAYFS=
 
 USAGE="Usage: $0 [-a target] [-B boostrap] [-c conf] [-R repo] [-t|-N] [-D|-h|-m dir] [-b builddir]"
 
-while getopts a:B:b:c:d:h:m:NR:t OPT; do
+while getopts a:B:b:c:D:h:m:NR:t OPT; do
 	case "$OPT" in
 	a)
 		XB_CROSS="-a $OPTARG"
@@ -44,7 +44,7 @@ while getopts a:B:b:c:d:h:m:NR:t OPT; do
 		DXPB_BUILDDIR=$(realpath "$OPTARG")
 		mkdir -p "$DXPB_BUILDDIR"
 		;;
-	d)
+	D)
 		[ -d "$OPTARG" ] || {
 			printf "ERROR: Cannot find DISTDIR "
 			printf "'%s': No such file or directory.\n" "$OPTARG"
