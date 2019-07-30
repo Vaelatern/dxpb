@@ -9,6 +9,7 @@ import (
 
 	"github.com/dxpb/dxpb/internal/http"
 	"github.com/dxpb/dxpb/internal/irc"
+	"github.com/dxpb/dxpb/internal/pool"
 )
 
 func startConfig() {
@@ -32,6 +33,8 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
+
+	go pool.RunPool(viper.GetStringSlice("drones"))
 
 	var ircpipe net.Conn
 	var ircside net.Conn

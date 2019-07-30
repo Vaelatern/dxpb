@@ -11,6 +11,86 @@ import (
 	server "zombiezen.com/go/capnproto2/server"
 )
 
+type Arch uint16
+
+// Arch_TypeID is the unique identifier for the type Arch.
+const Arch_TypeID = 0x838f23a24aa17915
+
+// Values of Arch.
+const (
+	Arch_noarch    Arch = 0
+	Arch_x8664     Arch = 1
+	Arch_x8664Musl Arch = 2
+	Arch_i686      Arch = 3
+	Arch_i686Musl  Arch = 4
+	Arch_armV6     Arch = 5
+	Arch_armV6Musl Arch = 6
+)
+
+// String returns the enum's constant name.
+func (c Arch) String() string {
+	switch c {
+	case Arch_noarch:
+		return "noarch"
+	case Arch_x8664:
+		return "x8664"
+	case Arch_x8664Musl:
+		return "x8664Musl"
+	case Arch_i686:
+		return "i686"
+	case Arch_i686Musl:
+		return "i686Musl"
+	case Arch_armV6:
+		return "armV6"
+	case Arch_armV6Musl:
+		return "armV6Musl"
+
+	default:
+		return ""
+	}
+}
+
+// ArchFromString returns the enum value with a name,
+// or the zero value if there's no such value.
+func ArchFromString(c string) Arch {
+	switch c {
+	case "noarch":
+		return Arch_noarch
+	case "x8664":
+		return Arch_x8664
+	case "x8664Musl":
+		return Arch_x8664Musl
+	case "i686":
+		return Arch_i686
+	case "i686Musl":
+		return Arch_i686Musl
+	case "armV6":
+		return Arch_armV6
+	case "armV6Musl":
+		return Arch_armV6Musl
+
+	default:
+		return 0
+	}
+}
+
+type Arch_List struct{ capnp.List }
+
+func NewArch_List(s *capnp.Segment, sz int32) (Arch_List, error) {
+	l, err := capnp.NewUInt16List(s, sz)
+	return Arch_List{l.List}, err
+}
+
+func (l Arch_List) At(i int) Arch {
+	ul := capnp.UInt16List{List: l.List}
+	return Arch(ul.At(i))
+}
+
+func (l Arch_List) Set(i int, v Arch) {
+	ul := capnp.UInt16List{List: l.List}
+	ul.Set(i, uint16(v))
+}
+
 type GithubEvent struct{ capnp.Struct }
 type GithubEvent_commit GithubEvent
 type GithubEvent_pullRequest GithubEvent
@@ -311,6 +391,305 @@ func (p GithubEvent_issue_Promise) Struct() (GithubEvent_issue, error) {
 	return GithubEvent_issue{s}, err
 }
 
+type Results uint16
+
+// Results_TypeID is the unique identifier for the type Results.
+const Results_TypeID = 0xb28d687bb0cb1f6b
+
+// Values of Results.
+const (
+	Results_ok  Results = 0
+	Results_err Results = 1
+)
+
+// String returns the enum's constant name.
+func (c Results) String() string {
+	switch c {
+	case Results_ok:
+		return "ok"
+	case Results_err:
+		return "err"
+
+	default:
+		return ""
+	}
+}
+
+// ResultsFromString returns the enum value with a name,
+// or the zero value if there's no such value.
+func ResultsFromString(c string) Results {
+	switch c {
+	case "ok":
+		return Results_ok
+	case "err":
+		return Results_err
+
+	default:
+		return 0
+	}
+}
+
+type Results_List struct{ capnp.List }
+
+func NewResults_List(s *capnp.Segment, sz int32) (Results_List, error) {
+	l, err := capnp.NewUInt16List(s, sz)
+	return Results_List{l.List}, err
+}
+
+func (l Results_List) At(i int) Results {
+	ul := capnp.UInt16List{List: l.List}
+	return Results(ul.At(i))
+}
+
+func (l Results_List) Set(i int, v Results) {
+	ul := capnp.UInt16List{List: l.List}
+	ul.Set(i, uint16(v))
+}
+
+type BuildType uint16
+
+// BuildType_TypeID is the unique identifier for the type BuildType.
+const BuildType_TypeID = 0xb8a5ce903391283e
+
+// Values of BuildType.
+const (
+	BuildType_bulk       BuildType = 0
+	BuildType_individual BuildType = 1
+)
+
+// String returns the enum's constant name.
+func (c BuildType) String() string {
+	switch c {
+	case BuildType_bulk:
+		return "bulk"
+	case BuildType_individual:
+		return "individual"
+
+	default:
+		return ""
+	}
+}
+
+// BuildTypeFromString returns the enum value with a name,
+// or the zero value if there's no such value.
+func BuildTypeFromString(c string) BuildType {
+	switch c {
+	case "bulk":
+		return BuildType_bulk
+	case "individual":
+		return BuildType_individual
+
+	default:
+		return 0
+	}
+}
+
+type BuildType_List struct{ capnp.List }
+
+func NewBuildType_List(s *capnp.Segment, sz int32) (BuildType_List, error) {
+	l, err := capnp.NewUInt16List(s, sz)
+	return BuildType_List{l.List}, err
+}
+
+func (l BuildType_List) At(i int) BuildType {
+	ul := capnp.UInt16List{List: l.List}
+	return BuildType(ul.At(i))
+}
+
+func (l BuildType_List) Set(i int, v BuildType) {
+	ul := capnp.UInt16List{List: l.List}
+	ul.Set(i, uint16(v))
+}
+
+type Logger struct{ Client capnp.Client }
+
+// Logger_TypeID is the unique identifier for the type Logger.
+const Logger_TypeID = 0xced160c65625ebcc
+
+func (c Logger) Append(ctx context.Context, params func(Logger_append_Params) error, opts ...capnp.CallOption) Logger_append_Results_Promise {
+	if c.Client == nil {
+		return Logger_append_Results_Promise{Pipeline: capnp.NewPipeline(capnp.ErrorAnswer(capnp.ErrNullClient))}
+	}
+	call := &capnp.Call{
+		Ctx: ctx,
+		Method: capnp.Method{
+			InterfaceID:   0xced160c65625ebcc,
+			MethodID:      0,
+			InterfaceName: "basic.capnp:Logger",
+			MethodName:    "append",
+		},
+		Options: capnp.NewCallOptions(opts),
+	}
+	if params != nil {
+		call.ParamsSize = capnp.ObjectSize{DataSize: 0, PointerCount: 1}
+		call.ParamsFunc = func(s capnp.Struct) error { return params(Logger_append_Params{Struct: s}) }
+	}
+	return Logger_append_Results_Promise{Pipeline: capnp.NewPipeline(c.Client.Call(call))}
+}
+
+type Logger_Server interface {
+	Append(Logger_append) error
+}
+
+func Logger_ServerToClient(s Logger_Server) Logger {
+	c, _ := s.(server.Closer)
+	return Logger{Client: server.New(Logger_Methods(nil, s), c)}
+}
+
+func Logger_Methods(methods []server.Method, s Logger_Server) []server.Method {
+	if cap(methods) == 0 {
+		methods = make([]server.Method, 0, 1)
+	}
+
+	methods = append(methods, server.Method{
+		Method: capnp.Method{
+			InterfaceID:   0xced160c65625ebcc,
+			MethodID:      0,
+			InterfaceName: "basic.capnp:Logger",
+			MethodName:    "append",
+		},
+		Impl: func(c context.Context, opts capnp.CallOptions, p, r capnp.Struct) error {
+			call := Logger_append{c, opts, Logger_append_Params{Struct: p}, Logger_append_Results{Struct: r}}
+			return s.Append(call)
+		},
+		ResultsSize: capnp.ObjectSize{DataSize: 0, PointerCount: 0},
+	})
+
+	return methods
+}
+
+// Logger_append holds the arguments for a server call to Logger.append.
+type Logger_append struct {
+	Ctx     context.Context
+	Options capnp.CallOptions
+	Params  Logger_append_Params
+	Results Logger_append_Results
+}
+
+type Logger_append_Params struct{ capnp.Struct }
+
+// Logger_append_Params_TypeID is the unique identifier for the type Logger_append_Params.
+const Logger_append_Params_TypeID = 0xc4db11d8bf7d0e78
+
+func NewLogger_append_Params(s *capnp.Segment) (Logger_append_Params, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 1})
+	return Logger_append_Params{st}, err
+}
+
+func NewRootLogger_append_Params(s *capnp.Segment) (Logger_append_Params, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 1})
+	return Logger_append_Params{st}, err
+}
+
+func ReadRootLogger_append_Params(msg *capnp.Message) (Logger_append_Params, error) {
+	root, err := msg.RootPtr()
+	return Logger_append_Params{root.Struct()}, err
+}
+
+func (s Logger_append_Params) String() string {
+	str, _ := text.Marshal(0xc4db11d8bf7d0e78, s.Struct)
+	return str
+}
+
+func (s Logger_append_Params) Logs() ([]byte, error) {
+	p, err := s.Struct.Ptr(0)
+	return []byte(p.Data()), err
+}
+
+func (s Logger_append_Params) HasLogs() bool {
+	p, err := s.Struct.Ptr(0)
+	return p.IsValid() || err != nil
+}
+
+func (s Logger_append_Params) SetLogs(v []byte) error {
+	return s.Struct.SetData(0, v)
+}
+
+// Logger_append_Params_List is a list of Logger_append_Params.
+type Logger_append_Params_List struct{ capnp.List }
+
+// NewLogger_append_Params creates a new list of Logger_append_Params.
+func NewLogger_append_Params_List(s *capnp.Segment, sz int32) (Logger_append_Params_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 1}, sz)
+	return Logger_append_Params_List{l}, err
+}
+
+func (s Logger_append_Params_List) At(i int) Logger_append_Params {
+	return Logger_append_Params{s.List.Struct(i)}
+}
+
+func (s Logger_append_Params_List) Set(i int, v Logger_append_Params) error {
+	return s.List.SetStruct(i, v.Struct)
+}
+
+func (s Logger_append_Params_List) String() string {
+	str, _ := text.MarshalList(0xc4db11d8bf7d0e78, s.List)
+	return str
+}
+
+// Logger_append_Params_Promise is a wrapper for a Logger_append_Params promised by a client call.
+type Logger_append_Params_Promise struct{ *capnp.Pipeline }
+
+func (p Logger_append_Params_Promise) Struct() (Logger_append_Params, error) {
+	s, err := p.Pipeline.Struct()
+	return Logger_append_Params{s}, err
+}
+
+type Logger_append_Results struct{ capnp.Struct }
+
+// Logger_append_Results_TypeID is the unique identifier for the type Logger_append_Results.
+const Logger_append_Results_TypeID = 0xcaa77452f9c37eeb
+
+func NewLogger_append_Results(s *capnp.Segment) (Logger_append_Results, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 0})
+	return Logger_append_Results{st}, err
+}
+
+func NewRootLogger_append_Results(s *capnp.Segment) (Logger_append_Results, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 0})
+	return Logger_append_Results{st}, err
+}
+
+func ReadRootLogger_append_Results(msg *capnp.Message) (Logger_append_Results, error) {
+	root, err := msg.RootPtr()
+	return Logger_append_Results{root.Struct()}, err
+}
+
+func (s Logger_append_Results) String() string {
+	str, _ := text.Marshal(0xcaa77452f9c37eeb, s.Struct)
+	return str
+}
+
+// Logger_append_Results_List is a list of Logger_append_Results.
+type Logger_append_Results_List struct{ capnp.List }
+
+// NewLogger_append_Results creates a new list of Logger_append_Results.
+func NewLogger_append_Results_List(s *capnp.Segment, sz int32) (Logger_append_Results_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 0}, sz)
+	return Logger_append_Results_List{l}, err
+}
+
+func (s Logger_append_Results_List) At(i int) Logger_append_Results {
+	return Logger_append_Results{s.List.Struct(i)}
+}
+
+func (s Logger_append_Results_List) Set(i int, v Logger_append_Results) error {
+	return s.List.SetStruct(i, v.Struct)
+}
+
+func (s Logger_append_Results_List) String() string {
+	str, _ := text.MarshalList(0xcaa77452f9c37eeb, s.List)
+	return str
+}
+
+// Logger_append_Results_Promise is a wrapper for a Logger_append_Results promised by a client call.
+type Logger_append_Results_Promise struct{ *capnp.Pipeline }
+
+func (p Logger_append_Results_Promise) Struct() (Logger_append_Results, error) {
+	s, err := p.Pipeline.Struct()
+	return Logger_append_Results{s}, err
+}
+
 type IrcBot struct{ Client capnp.Client }
 
 // IrcBot_TypeID is the unique identifier for the type IrcBot.
@@ -515,52 +894,791 @@ func (p IrcBot_noteGhEvent_Results_Promise) Struct() (IrcBot_noteGhEvent_Results
 	return IrcBot_noteGhEvent_Results{s}, err
 }
 
-const schema_902d2bfc3bbf0d43 = "x\xda\xa4\xd2?hSQ\x14\x06\xf0\xef\xbb\xf7\xa5\xaf" +
-	"\xd5Ds}\x11\xa4K\xa1\x88\x83m\x83\xb6\x086\"" +
-	")j\xa8E\x0b\xb9EAP\x87\x97\xf0h\x02\xf9S" +
-	"\xf3^tR\xd0*\x828t\xd0AA\x07\xc1Q;" +
-	"8\x95R\xc4:\x8bT\x117\x07\x177\x07EDQ" +
-	"\x9f\\k^\"\xa4\x93[\xee\xcd\xe1\xdc\xdfw\xce\xdb" +
-	"S\xe1\x84\xd8\x1b{)\x01=\x1c\xeb\x09\xaf\x1e\xdb\xb6" +
-	"i5>t\x07:N\x11\x1eN<=\xf0chd" +
-	"\x019\xcb\x96\x80\xf3\x82\xab\xce\x1b\xda\x80\xb3\xc6\x0f`" +
-	"\xa8_\xad\\\x7f\xf7\xfc\xe3C(\x87@\xcc\xfc3v" +
-	"R\x8c\x12t\xce\x8a,\x18\x8eo\x99\x1f^p\xbce" +
-	"\xa8\xb8lw\x03\x9d\x8b\xe2\xaesM\x98N\x97\xc5\xa4" +
-	"\xf3\xc8\xfc\x0a\x1f\xdfp\x0e\xbe\xbf_^\x83\xdeA\xd1" +
-	"\x96l\xb7l\x02c\xb7\xc5\xa0\xe9{O,\x82\xe1\x93" +
-	"\x9b\xa7No\xde\xf5\xe0s\xd7Rg\x9f\xfc\x04:\xe3" +
-	"\xd2T\xbe\xbd5\xfb\xfa\xd9\xf2\xca\x97u\xa2e\x84k" +
-	"2CX\xe1\xa5+\xf3\xfb\x97\xbe\xf5\x7f\xed\xdecI" +
-	"~\x07\x9d\x15\xb9\x88\x91\xb0\xe0\xfa\xe5b\xba\xe8\x8a\xb9" +
-	"\xda\\f\xb2\x1c\x94\x9a\x85\xdcy\xaf\x16 O\xea\xa4" +
-	"\xb4\x00\x8b\x80r\x07\x01}FR\x97\x04\x13\x0cC\xb2" +
-	"\xfd\x86\xf22\x10\x09\xf1\xcb\\F9\xd5t\x01\"!" +
-	"\x7f\x9a\xcb(\x91\x1a\x1f\x85\xb0/\x94\xea\x8cC0\x0e" +
-	"f\x8b\xf5j\xb5\x1c\x84s\xcdJe\xc6;\xd7\x84\xed" +
-	"\xf9\xc1@\xd9\xf7\x9b^$\x93F6\xd5(\x1e\xaa\x07" +
-	"\xe9Z=\xf0&K\x7f\x80;\xf3\x03n\xc3\xad\xfa\xda" +
-	"\x8a\x90\x89~@\xf7J\xea\x94\xa0\x9c-1\xd9N\x0e" +
-	"2\x09F=\xd9\xea)\xeb\x81\x09j\xc9\x18\x10\xad\x9c" +
-	"\xad\xc1*U\x80P}v\xd8z\x17\xb6W\x0b&\x98" +
-	"'\xff\xe5u\x0c.\xdd\xcab\xa2\xe8\xb8\xb4\x92L\xd1" +
-	"\x02T.\x03\xe8\x09I}\\P\x91)\xc6\x005e" +
-	"\xe6zDR\xe7\x05\x95\x10)\xf6\x00j\xdaT\x1e\x95" +
-	"\xd4'\x04\xb3\xb5f\xb5\xe05\x18\x83`\x0c\xb4\xab\xfe" +
-	"l4<\xb7\x18\x94\xeb\xb5\xd6q\xc3U\xa6\xd7\x07\xda" +
-	"\xb2\xd8\xdd,\xbd\xdd,}\xffo\xd9hy3Y\xcf" +
-	"oV\x02\x7fc\xf4\xdfO\xa3\xa56\xfb\xcd\xed\xeeT" +
-	"\x8b\x14\x85Qg:\xd52Ei\xd4\x83m\xf5\xd6\x92" +
-	"\xeb\x97\"g\xa1\xe1\xd6\x8a\xd1\xb13\xc2\xef\x00\x00\x00" +
-	"\xff\xff\x16\xa7\x0e\x1c"
+type Builder struct{ Client capnp.Client }
+
+// Builder_TypeID is the unique identifier for the type Builder.
+const Builder_TypeID = 0x8e22cadf94183d27
+
+func (c Builder) Capabilities(ctx context.Context, params func(Builder_capabilities_Params) error, opts ...capnp.CallOption) Builder_capabilities_Results_Promise {
+	if c.Client == nil {
+		return Builder_capabilities_Results_Promise{Pipeline: capnp.NewPipeline(capnp.ErrorAnswer(capnp.ErrNullClient))}
+	}
+	call := &capnp.Call{
+		Ctx: ctx,
+		Method: capnp.Method{
+			InterfaceID:   0x8e22cadf94183d27,
+			MethodID:      0,
+			InterfaceName: "basic.capnp:Builder",
+			MethodName:    "capabilities",
+		},
+		Options: capnp.NewCallOptions(opts),
+	}
+	if params != nil {
+		call.ParamsSize = capnp.ObjectSize{DataSize: 0, PointerCount: 0}
+		call.ParamsFunc = func(s capnp.Struct) error { return params(Builder_capabilities_Params{Struct: s}) }
+	}
+	return Builder_capabilities_Results_Promise{Pipeline: capnp.NewPipeline(c.Client.Call(call))}
+}
+func (c Builder) Build(ctx context.Context, params func(Builder_build_Params) error, opts ...capnp.CallOption) Builder_build_Results_Promise {
+	if c.Client == nil {
+		return Builder_build_Results_Promise{Pipeline: capnp.NewPipeline(capnp.ErrorAnswer(capnp.ErrNullClient))}
+	}
+	call := &capnp.Call{
+		Ctx: ctx,
+		Method: capnp.Method{
+			InterfaceID:   0x8e22cadf94183d27,
+			MethodID:      1,
+			InterfaceName: "basic.capnp:Builder",
+			MethodName:    "build",
+		},
+		Options: capnp.NewCallOptions(opts),
+	}
+	if params != nil {
+		call.ParamsSize = capnp.ObjectSize{DataSize: 0, PointerCount: 2}
+		call.ParamsFunc = func(s capnp.Struct) error { return params(Builder_build_Params{Struct: s}) }
+	}
+	return Builder_build_Results_Promise{Pipeline: capnp.NewPipeline(c.Client.Call(call))}
+}
+
+type Builder_Server interface {
+	Capabilities(Builder_capabilities) error
+
+	Build(Builder_build) error
+}
+
+func Builder_ServerToClient(s Builder_Server) Builder {
+	c, _ := s.(server.Closer)
+	return Builder{Client: server.New(Builder_Methods(nil, s), c)}
+}
+
+func Builder_Methods(methods []server.Method, s Builder_Server) []server.Method {
+	if cap(methods) == 0 {
+		methods = make([]server.Method, 0, 2)
+	}
+
+	methods = append(methods, server.Method{
+		Method: capnp.Method{
+			InterfaceID:   0x8e22cadf94183d27,
+			MethodID:      0,
+			InterfaceName: "basic.capnp:Builder",
+			MethodName:    "capabilities",
+		},
+		Impl: func(c context.Context, opts capnp.CallOptions, p, r capnp.Struct) error {
+			call := Builder_capabilities{c, opts, Builder_capabilities_Params{Struct: p}, Builder_capabilities_Results{Struct: r}}
+			return s.Capabilities(call)
+		},
+		ResultsSize: capnp.ObjectSize{DataSize: 0, PointerCount: 1},
+	})
+
+	methods = append(methods, server.Method{
+		Method: capnp.Method{
+			InterfaceID:   0x8e22cadf94183d27,
+			MethodID:      1,
+			InterfaceName: "basic.capnp:Builder",
+			MethodName:    "build",
+		},
+		Impl: func(c context.Context, opts capnp.CallOptions, p, r capnp.Struct) error {
+			call := Builder_build{c, opts, Builder_build_Params{Struct: p}, Builder_build_Results{Struct: r}}
+			return s.Build(call)
+		},
+		ResultsSize: capnp.ObjectSize{DataSize: 8, PointerCount: 0},
+	})
+
+	return methods
+}
+
+// Builder_capabilities holds the arguments for a server call to Builder.capabilities.
+type Builder_capabilities struct {
+	Ctx     context.Context
+	Options capnp.CallOptions
+	Params  Builder_capabilities_Params
+	Results Builder_capabilities_Results
+}
+
+// Builder_build holds the arguments for a server call to Builder.build.
+type Builder_build struct {
+	Ctx     context.Context
+	Options capnp.CallOptions
+	Params  Builder_build_Params
+	Results Builder_build_Results
+}
+
+type Builder_What struct{ capnp.Struct }
+
+// Builder_What_TypeID is the unique identifier for the type Builder_What.
+const Builder_What_TypeID = 0xaf9eac8061af076b
+
+func NewBuilder_What(s *capnp.Segment) (Builder_What, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 2})
+	return Builder_What{st}, err
+}
+
+func NewRootBuilder_What(s *capnp.Segment) (Builder_What, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 2})
+	return Builder_What{st}, err
+}
+
+func ReadRootBuilder_What(msg *capnp.Message) (Builder_What, error) {
+	root, err := msg.RootPtr()
+	return Builder_What{root.Struct()}, err
+}
+
+func (s Builder_What) String() string {
+	str, _ := text.Marshal(0xaf9eac8061af076b, s.Struct)
+	return str
+}
+
+func (s Builder_What) Name() (string, error) {
+	p, err := s.Struct.Ptr(0)
+	return p.Text(), err
+}
+
+func (s Builder_What) HasName() bool {
+	p, err := s.Struct.Ptr(0)
+	return p.IsValid() || err != nil
+}
+
+func (s Builder_What) NameBytes() ([]byte, error) {
+	p, err := s.Struct.Ptr(0)
+	return p.TextBytes(), err
+}
+
+func (s Builder_What) SetName(v string) error {
+	return s.Struct.SetText(0, v)
+}
+
+func (s Builder_What) Ver() (string, error) {
+	p, err := s.Struct.Ptr(1)
+	return p.Text(), err
+}
+
+func (s Builder_What) HasVer() bool {
+	p, err := s.Struct.Ptr(1)
+	return p.IsValid() || err != nil
+}
+
+func (s Builder_What) VerBytes() ([]byte, error) {
+	p, err := s.Struct.Ptr(1)
+	return p.TextBytes(), err
+}
+
+func (s Builder_What) SetVer(v string) error {
+	return s.Struct.SetText(1, v)
+}
+
+func (s Builder_What) Arch() Arch {
+	return Arch(s.Struct.Uint16(0))
+}
+
+func (s Builder_What) SetArch(v Arch) {
+	s.Struct.SetUint16(0, uint16(v))
+}
+
+// Builder_What_List is a list of Builder_What.
+type Builder_What_List struct{ capnp.List }
+
+// NewBuilder_What creates a new list of Builder_What.
+func NewBuilder_What_List(s *capnp.Segment, sz int32) (Builder_What_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 8, PointerCount: 2}, sz)
+	return Builder_What_List{l}, err
+}
+
+func (s Builder_What_List) At(i int) Builder_What { return Builder_What{s.List.Struct(i)} }
+
+func (s Builder_What_List) Set(i int, v Builder_What) error { return s.List.SetStruct(i, v.Struct) }
+
+func (s Builder_What_List) String() string {
+	str, _ := text.MarshalList(0xaf9eac8061af076b, s.List)
+	return str
+}
+
+// Builder_What_Promise is a wrapper for a Builder_What promised by a client call.
+type Builder_What_Promise struct{ *capnp.Pipeline }
+
+func (p Builder_What_Promise) Struct() (Builder_What, error) {
+	s, err := p.Pipeline.Struct()
+	return Builder_What{s}, err
+}
+
+type Builder_Capability struct{ capnp.Struct }
+
+// Builder_Capability_TypeID is the unique identifier for the type Builder_Capability.
+const Builder_Capability_TypeID = 0xf64adeda9400745f
+
+func NewBuilder_Capability(s *capnp.Segment) (Builder_Capability, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 0})
+	return Builder_Capability{st}, err
+}
+
+func NewRootBuilder_Capability(s *capnp.Segment) (Builder_Capability, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 0})
+	return Builder_Capability{st}, err
+}
+
+func ReadRootBuilder_Capability(msg *capnp.Message) (Builder_Capability, error) {
+	root, err := msg.RootPtr()
+	return Builder_Capability{root.Struct()}, err
+}
+
+func (s Builder_Capability) String() string {
+	str, _ := text.Marshal(0xf64adeda9400745f, s.Struct)
+	return str
+}
+
+func (s Builder_Capability) Arch() Arch {
+	return Arch(s.Struct.Uint16(0))
+}
+
+func (s Builder_Capability) SetArch(v Arch) {
+	s.Struct.SetUint16(0, uint16(v))
+}
+
+func (s Builder_Capability) Type() BuildType {
+	return BuildType(s.Struct.Uint16(2) ^ 1)
+}
+
+func (s Builder_Capability) SetType(v BuildType) {
+	s.Struct.SetUint16(2, uint16(v)^1)
+}
+
+// Builder_Capability_List is a list of Builder_Capability.
+type Builder_Capability_List struct{ capnp.List }
+
+// NewBuilder_Capability creates a new list of Builder_Capability.
+func NewBuilder_Capability_List(s *capnp.Segment, sz int32) (Builder_Capability_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 8, PointerCount: 0}, sz)
+	return Builder_Capability_List{l}, err
+}
+
+func (s Builder_Capability_List) At(i int) Builder_Capability {
+	return Builder_Capability{s.List.Struct(i)}
+}
+
+func (s Builder_Capability_List) Set(i int, v Builder_Capability) error {
+	return s.List.SetStruct(i, v.Struct)
+}
+
+func (s Builder_Capability_List) String() string {
+	str, _ := text.MarshalList(0xf64adeda9400745f, s.List)
+	return str
+}
+
+// Builder_Capability_Promise is a wrapper for a Builder_Capability promised by a client call.
+type Builder_Capability_Promise struct{ *capnp.Pipeline }
+
+func (p Builder_Capability_Promise) Struct() (Builder_Capability, error) {
+	s, err := p.Pipeline.Struct()
+	return Builder_Capability{s}, err
+}
+
+type Builder_Opts struct{ capnp.Struct }
+
+// Builder_Opts_TypeID is the unique identifier for the type Builder_Opts.
+const Builder_Opts_TypeID = 0xf85627eda839d41a
+
+func NewBuilder_Opts(s *capnp.Segment) (Builder_Opts, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 1})
+	return Builder_Opts{st}, err
+}
+
+func NewRootBuilder_Opts(s *capnp.Segment) (Builder_Opts, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 1})
+	return Builder_Opts{st}, err
+}
+
+func ReadRootBuilder_Opts(msg *capnp.Message) (Builder_Opts, error) {
+	root, err := msg.RootPtr()
+	return Builder_Opts{root.Struct()}, err
+}
+
+func (s Builder_Opts) String() string {
+	str, _ := text.Marshal(0xf85627eda839d41a, s.Struct)
+	return str
+}
+
+func (s Builder_Opts) IgnorePkgSpec() bool {
+	return s.Struct.Bit(0)
+}
+
+func (s Builder_Opts) SetIgnorePkgSpec(v bool) {
+	s.Struct.SetBit(0, v)
+}
+
+func (s Builder_Opts) Log() Logger {
+	p, _ := s.Struct.Ptr(0)
+	return Logger{Client: p.Interface().Client()}
+}
+
+func (s Builder_Opts) HasLog() bool {
+	p, err := s.Struct.Ptr(0)
+	return p.IsValid() || err != nil
+}
+
+func (s Builder_Opts) SetLog(v Logger) error {
+	if v.Client == nil {
+		return s.Struct.SetPtr(0, capnp.Ptr{})
+	}
+	seg := s.Segment()
+	in := capnp.NewInterface(seg, seg.Message().AddCap(v.Client))
+	return s.Struct.SetPtr(0, in.ToPtr())
+}
+
+// Builder_Opts_List is a list of Builder_Opts.
+type Builder_Opts_List struct{ capnp.List }
+
+// NewBuilder_Opts creates a new list of Builder_Opts.
+func NewBuilder_Opts_List(s *capnp.Segment, sz int32) (Builder_Opts_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 8, PointerCount: 1}, sz)
+	return Builder_Opts_List{l}, err
+}
+
+func (s Builder_Opts_List) At(i int) Builder_Opts { return Builder_Opts{s.List.Struct(i)} }
+
+func (s Builder_Opts_List) Set(i int, v Builder_Opts) error { return s.List.SetStruct(i, v.Struct) }
+
+func (s Builder_Opts_List) String() string {
+	str, _ := text.MarshalList(0xf85627eda839d41a, s.List)
+	return str
+}
+
+// Builder_Opts_Promise is a wrapper for a Builder_Opts promised by a client call.
+type Builder_Opts_Promise struct{ *capnp.Pipeline }
+
+func (p Builder_Opts_Promise) Struct() (Builder_Opts, error) {
+	s, err := p.Pipeline.Struct()
+	return Builder_Opts{s}, err
+}
+
+func (p Builder_Opts_Promise) Log() Logger {
+	return Logger{Client: p.Pipeline.GetPipeline(0).Client()}
+}
+
+type Builder_capabilities_Params struct{ capnp.Struct }
+
+// Builder_capabilities_Params_TypeID is the unique identifier for the type Builder_capabilities_Params.
+const Builder_capabilities_Params_TypeID = 0x9fe0e82ce7dbd61e
+
+func NewBuilder_capabilities_Params(s *capnp.Segment) (Builder_capabilities_Params, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 0})
+	return Builder_capabilities_Params{st}, err
+}
+
+func NewRootBuilder_capabilities_Params(s *capnp.Segment) (Builder_capabilities_Params, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 0})
+	return Builder_capabilities_Params{st}, err
+}
+
+func ReadRootBuilder_capabilities_Params(msg *capnp.Message) (Builder_capabilities_Params, error) {
+	root, err := msg.RootPtr()
+	return Builder_capabilities_Params{root.Struct()}, err
+}
+
+func (s Builder_capabilities_Params) String() string {
+	str, _ := text.Marshal(0x9fe0e82ce7dbd61e, s.Struct)
+	return str
+}
+
+// Builder_capabilities_Params_List is a list of Builder_capabilities_Params.
+type Builder_capabilities_Params_List struct{ capnp.List }
+
+// NewBuilder_capabilities_Params creates a new list of Builder_capabilities_Params.
+func NewBuilder_capabilities_Params_List(s *capnp.Segment, sz int32) (Builder_capabilities_Params_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 0}, sz)
+	return Builder_capabilities_Params_List{l}, err
+}
+
+func (s Builder_capabilities_Params_List) At(i int) Builder_capabilities_Params {
+	return Builder_capabilities_Params{s.List.Struct(i)}
+}
+
+func (s Builder_capabilities_Params_List) Set(i int, v Builder_capabilities_Params) error {
+	return s.List.SetStruct(i, v.Struct)
+}
+
+func (s Builder_capabilities_Params_List) String() string {
+	str, _ := text.MarshalList(0x9fe0e82ce7dbd61e, s.List)
+	return str
+}
+
+// Builder_capabilities_Params_Promise is a wrapper for a Builder_capabilities_Params promised by a client call.
+type Builder_capabilities_Params_Promise struct{ *capnp.Pipeline }
+
+func (p Builder_capabilities_Params_Promise) Struct() (Builder_capabilities_Params, error) {
+	s, err := p.Pipeline.Struct()
+	return Builder_capabilities_Params{s}, err
+}
+
+type Builder_capabilities_Results struct{ capnp.Struct }
+
+// Builder_capabilities_Results_TypeID is the unique identifier for the type Builder_capabilities_Results.
+const Builder_capabilities_Results_TypeID = 0x985efa717f498039
+
+func NewBuilder_capabilities_Results(s *capnp.Segment) (Builder_capabilities_Results, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 1})
+	return Builder_capabilities_Results{st}, err
+}
+
+func NewRootBuilder_capabilities_Results(s *capnp.Segment) (Builder_capabilities_Results, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 1})
+	return Builder_capabilities_Results{st}, err
+}
+
+func ReadRootBuilder_capabilities_Results(msg *capnp.Message) (Builder_capabilities_Results, error) {
+	root, err := msg.RootPtr()
+	return Builder_capabilities_Results{root.Struct()}, err
+}
+
+func (s Builder_capabilities_Results) String() string {
+	str, _ := text.Marshal(0x985efa717f498039, s.Struct)
+	return str
+}
+
+func (s Builder_capabilities_Results) Result() (Builder_Capability_List, error) {
+	p, err := s.Struct.Ptr(0)
+	return Builder_Capability_List{List: p.List()}, err
+}
+
+func (s Builder_capabilities_Results) HasResult() bool {
+	p, err := s.Struct.Ptr(0)
+	return p.IsValid() || err != nil
+}
+
+func (s Builder_capabilities_Results) SetResult(v Builder_Capability_List) error {
+	return s.Struct.SetPtr(0, v.List.ToPtr())
+}
+
+// NewResult sets the result field to a newly
+// allocated Builder_Capability_List, preferring placement in s's segment.
+func (s Builder_capabilities_Results) NewResult(n int32) (Builder_Capability_List, error) {
+	l, err := NewBuilder_Capability_List(s.Struct.Segment(), n)
+	if err != nil {
+		return Builder_Capability_List{}, err
+	}
+	err = s.Struct.SetPtr(0, l.List.ToPtr())
+	return l, err
+}
+
+// Builder_capabilities_Results_List is a list of Builder_capabilities_Results.
+type Builder_capabilities_Results_List struct{ capnp.List }
+
+// NewBuilder_capabilities_Results creates a new list of Builder_capabilities_Results.
+func NewBuilder_capabilities_Results_List(s *capnp.Segment, sz int32) (Builder_capabilities_Results_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 1}, sz)
+	return Builder_capabilities_Results_List{l}, err
+}
+
+func (s Builder_capabilities_Results_List) At(i int) Builder_capabilities_Results {
+	return Builder_capabilities_Results{s.List.Struct(i)}
+}
+
+func (s Builder_capabilities_Results_List) Set(i int, v Builder_capabilities_Results) error {
+	return s.List.SetStruct(i, v.Struct)
+}
+
+func (s Builder_capabilities_Results_List) String() string {
+	str, _ := text.MarshalList(0x985efa717f498039, s.List)
+	return str
+}
+
+// Builder_capabilities_Results_Promise is a wrapper for a Builder_capabilities_Results promised by a client call.
+type Builder_capabilities_Results_Promise struct{ *capnp.Pipeline }
+
+func (p Builder_capabilities_Results_Promise) Struct() (Builder_capabilities_Results, error) {
+	s, err := p.Pipeline.Struct()
+	return Builder_capabilities_Results{s}, err
+}
+
+type Builder_build_Params struct{ capnp.Struct }
+
+// Builder_build_Params_TypeID is the unique identifier for the type Builder_build_Params.
+const Builder_build_Params_TypeID = 0xe95aba507536661c
+
+func NewBuilder_build_Params(s *capnp.Segment) (Builder_build_Params, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2})
+	return Builder_build_Params{st}, err
+}
+
+func NewRootBuilder_build_Params(s *capnp.Segment) (Builder_build_Params, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2})
+	return Builder_build_Params{st}, err
+}
+
+func ReadRootBuilder_build_Params(msg *capnp.Message) (Builder_build_Params, error) {
+	root, err := msg.RootPtr()
+	return Builder_build_Params{root.Struct()}, err
+}
+
+func (s Builder_build_Params) String() string {
+	str, _ := text.Marshal(0xe95aba507536661c, s.Struct)
+	return str
+}
+
+func (s Builder_build_Params) What() (Builder_What, error) {
+	p, err := s.Struct.Ptr(0)
+	return Builder_What{Struct: p.Struct()}, err
+}
+
+func (s Builder_build_Params) HasWhat() bool {
+	p, err := s.Struct.Ptr(0)
+	return p.IsValid() || err != nil
+}
+
+func (s Builder_build_Params) SetWhat(v Builder_What) error {
+	return s.Struct.SetPtr(0, v.Struct.ToPtr())
+}
+
+// NewWhat sets the what field to a newly
+// allocated Builder_What struct, preferring placement in s's segment.
+func (s Builder_build_Params) NewWhat() (Builder_What, error) {
+	ss, err := NewBuilder_What(s.Struct.Segment())
+	if err != nil {
+		return Builder_What{}, err
+	}
+	err = s.Struct.SetPtr(0, ss.Struct.ToPtr())
+	return ss, err
+}
+
+func (s Builder_build_Params) Options() (Builder_Opts, error) {
+	p, err := s.Struct.Ptr(1)
+	return Builder_Opts{Struct: p.Struct()}, err
+}
+
+func (s Builder_build_Params) HasOptions() bool {
+	p, err := s.Struct.Ptr(1)
+	return p.IsValid() || err != nil
+}
+
+func (s Builder_build_Params) SetOptions(v Builder_Opts) error {
+	return s.Struct.SetPtr(1, v.Struct.ToPtr())
+}
+
+// NewOptions sets the options field to a newly
+// allocated Builder_Opts struct, preferring placement in s's segment.
+func (s Builder_build_Params) NewOptions() (Builder_Opts, error) {
+	ss, err := NewBuilder_Opts(s.Struct.Segment())
+	if err != nil {
+		return Builder_Opts{}, err
+	}
+	err = s.Struct.SetPtr(1, ss.Struct.ToPtr())
+	return ss, err
+}
+
+// Builder_build_Params_List is a list of Builder_build_Params.
+type Builder_build_Params_List struct{ capnp.List }
+
+// NewBuilder_build_Params creates a new list of Builder_build_Params.
+func NewBuilder_build_Params_List(s *capnp.Segment, sz int32) (Builder_build_Params_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2}, sz)
+	return Builder_build_Params_List{l}, err
+}
+
+func (s Builder_build_Params_List) At(i int) Builder_build_Params {
+	return Builder_build_Params{s.List.Struct(i)}
+}
+
+func (s Builder_build_Params_List) Set(i int, v Builder_build_Params) error {
+	return s.List.SetStruct(i, v.Struct)
+}
+
+func (s Builder_build_Params_List) String() string {
+	str, _ := text.MarshalList(0xe95aba507536661c, s.List)
+	return str
+}
+
+// Builder_build_Params_Promise is a wrapper for a Builder_build_Params promised by a client call.
+type Builder_build_Params_Promise struct{ *capnp.Pipeline }
+
+func (p Builder_build_Params_Promise) Struct() (Builder_build_Params, error) {
+	s, err := p.Pipeline.Struct()
+	return Builder_build_Params{s}, err
+}
+
+func (p Builder_build_Params_Promise) What() Builder_What_Promise {
+	return Builder_What_Promise{Pipeline: p.Pipeline.GetPipeline(0)}
+}
+
+func (p Builder_build_Params_Promise) Options() Builder_Opts_Promise {
+	return Builder_Opts_Promise{Pipeline: p.Pipeline.GetPipeline(1)}
+}
+
+type Builder_build_Results struct{ capnp.Struct }
+
+// Builder_build_Results_TypeID is the unique identifier for the type Builder_build_Results.
+const Builder_build_Results_TypeID = 0xd84b85756d95b69f
+
+func NewBuilder_build_Results(s *capnp.Segment) (Builder_build_Results, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 0})
+	return Builder_build_Results{st}, err
+}
+
+func NewRootBuilder_build_Results(s *capnp.Segment) (Builder_build_Results, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 0})
+	return Builder_build_Results{st}, err
+}
+
+func ReadRootBuilder_build_Results(msg *capnp.Message) (Builder_build_Results, error) {
+	root, err := msg.RootPtr()
+	return Builder_build_Results{root.Struct()}, err
+}
+
+func (s Builder_build_Results) String() string {
+	str, _ := text.Marshal(0xd84b85756d95b69f, s.Struct)
+	return str
+}
+
+func (s Builder_build_Results) Done() Results {
+	return Results(s.Struct.Uint16(0))
+}
+
+func (s Builder_build_Results) SetDone(v Results) {
+	s.Struct.SetUint16(0, uint16(v))
+}
+
+// Builder_build_Results_List is a list of Builder_build_Results.
+type Builder_build_Results_List struct{ capnp.List }
+
+// NewBuilder_build_Results creates a new list of Builder_build_Results.
+func NewBuilder_build_Results_List(s *capnp.Segment, sz int32) (Builder_build_Results_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 8, PointerCount: 0}, sz)
+	return Builder_build_Results_List{l}, err
+}
+
+func (s Builder_build_Results_List) At(i int) Builder_build_Results {
+	return Builder_build_Results{s.List.Struct(i)}
+}
+
+func (s Builder_build_Results_List) Set(i int, v Builder_build_Results) error {
+	return s.List.SetStruct(i, v.Struct)
+}
+
+func (s Builder_build_Results_List) String() string {
+	str, _ := text.MarshalList(0xd84b85756d95b69f, s.List)
+	return str
+}
+
+// Builder_build_Results_Promise is a wrapper for a Builder_build_Results promised by a client call.
+type Builder_build_Results_Promise struct{ *capnp.Pipeline }
+
+func (p Builder_build_Results_Promise) Struct() (Builder_build_Results, error) {
+	s, err := p.Pipeline.Struct()
+	return Builder_build_Results{s}, err
+}
+
+const schema_902d2bfc3bbf0d43 = "x\xda\xacVkl\x14\xf5\x16?g\x9e[\xee.\xdb" +
+	"?S\x12n\xc3\xbd\x9b\xf4\x96\x0b\x14\xda\xd0\x96[\xda" +
+	"\xbd\xe9\xddRnS[h\xdc\xa9\x04\x0d\x1auvw" +
+	"\xdc\x1d\xbb/\xe6AiLy\x88\x84H\xacB\x02\x89" +
+	"\xf0\x01B\x13\xa2&*\x8a\xc1\x88\x84\x10AL\xacJ" +
+	"\x82O\x94\x80\x8f/h\x88&jP\xc1\xc7\x98\xffl" +
+	"gv\xda.|\xf2\xcbdv\xf6\xcc\xefw\xce\xef\xfc" +
+	"\xce\xf9\xcf\xb2\x0c\xdb\xc54\xf3\x87\x02\x00r\x8a\x17\xec" +
+	"\xb9#\x87\xfb\xc7\xff\xf5\xd4v A\xc6^\x15:\xfd" +
+	"\xdf\xdf\x964\xee\x06@\xe9?\xdc.\xa9\x93\x13\x01\xa4" +
+	"\x0e\xee(\xa0\xbd\xb0s\xde\xde\xcf'\xea\x9e\x04\x12d" +
+	"\xa7\x04\xee\xe7\xc6\xa5\xc3\xdc\x0a\x00\xe9\x1c\xb7S\xfa;" +
+	"/\x02\xd8\x1d[\xfb\xb6l\xb8y\xff\xd3@j\x10\x80" +
+	"G\x11\xa0\x15\xf9~\x04\x94B|\x0c\xd0~l\xf5\x9c" +
+	"Yg\x82K\xf6\x83\x1cD\x1fo\x0f'\xb2\x00R'" +
+	"\x7fF\xea\xa1@\xd2J\xfe*\xa0\xfd\xcf\x8f/]]" +
+	"\xfa\xf5\x17\x87Jp4\xa9\xd6s|7\x02g\xcb\xef" +
+	"\x9f\xday\xe5\xecwG\x80H\x1e\xd1\x0b|\x0b%:" +
+	"\xee\x10\x0d\x89G\x95\xad\xcf\x1f<\x0ar\x0d\xfa\x8a\xe0" +
+	"\x19\x8a\xfe\x11?!}\xe9\xf0\\\xe6i\x8dC\x91w" +
+	"^z$3vl\x86\x18\x960.\x8d\x0a4pD" +
+	"X\x01h\xffo\xd1\x9e\xd6\xdd\xe7\x8f\xbc6#pT" +
+	"8&\xedp\x02\xb79\x81\x1d\xb3\xb7/\xdd-\xa9'" +
+	"g\xa8\xf6\xb8p@\xda\xe3\x04\x8e\x09\xbd\xd2\x09zg" +
+	"o\x9a=z\xfa\"\xb9\xf4\xa6\xbf\x98\xc3\xc2,Z\xcc" +
+	"s\x02-\xe6\xda\xe6\xb37\x06\xcdg&J\x01\x8e\x0e" +
+	"o\x0bs\xa8\x0e\xef^[\xb0\xee\xad\x07/\x9c\x9f\xc1" +
+	"\xf3\xb2p\xa0\x84.\x1d\x17z\xa5\xcb\x0e\xcf\x8b\xbb\xa4" +
+	"\xce\xaf\x0ej\x17@\x9e\x87L\xb9\x15s9\x11\xa9\xb2" +
+	"B\x1de|O\xa0\x8a\x1czu_\xce\xda\xb1\xfa\xa2" +
+	"#\xdf$\xa5*\xce\xa1\x019\x91\xa64\xff\xa16+" +
+	"\xfe\xfa\xfao&;Mem\x1d\x13\x9d\x9c\xf7\x89\xc3" +
+	"\x80\xf6+O\xdcs\xef\xdf\xfe=\xfecE2\xe9{" +
+	"\xf1\x07@\xe9\xbaH\xb9>\xd9\x9b\xfe\xe0\x8d\x93\xa7\xae" +
+	"\xfb\xaa\x1b\x0bD\x11\xb8_\x1f0\xf7~v\xa5\xff\xa7" +
+	"\xa9-t\xbci\x05nJ\xdb\x02\xf4n4@\xd96" +
+	"?\xba\xbd\xfd\xc4\x8d\xda\x9f+\xb3}\x1a\xb8\x09(]" +
+	"\x0eP\xb6\xda\x0f;\x9e\xfdv\xe1\xba_\xa6\x1b\x03\x1d" +
+	"\xd8\xaa\x09i[\x95\x03[5\x0c\x8dvB1\xb4d" +
+	"SR\xc1b\xbe\x18]\xa9'3\x00qDy>2" +
+	"\x00d \x0a\x80HzZ\x00\x90!\x9d\x83\x00\xc8\x92" +
+	"\x8e\x06\x00\xe4Hs?\x00\xf2\xa4\x91\xfe'\x90\x05\x83" +
+	"\x00\xb1|A\xd1\x93\x99\xc8\xa6\xf6\xb6\xb6\xe5\xb6s\x1d" +
+	"\xb0\x0c\xc0lXkko\xb3\xe9e\xc02\xb2\x00\x10" +
+	"Q\xf4\xdc\xba6\xdb\xb9\x96B\xa6\xe6\xd1miY1" +
+	"\xa5\xear\x10}>'\xa4\xc1\xd5\x8b\x84\xd6\x97\xcb$" +
+	"\xa1\x86\xf0\xdd\x19\xc5\xb4W)E%\xa1e5`\xcd" +
+	"\x91\xf0\x9dE\xd3\x90\x03,\x0f\xe0\x0d\x19\xba\xc3K\x9a" +
+	"\x1f\x06\x86,\x16\xb1\xdcet\xfd@\xfe\xd1\x02\x0c!" +
+	"\xa2\x9dt\xd1\xc2\xa6\xa6\x1a]\x18IXZ6\xd5\x85" +
+	"qD/[\xce\xcd6\xa5\xeaM\xee\x0b4\xbc~P" +
+	"5\xac\xaci\x00\xc8\x1c\xcb\x01p\x08@BQ\x009" +
+	"\xc0\xa2\\\xcf`Lw\x02p6`\x9cE\xacv+" +
+	"\x03\xa4\x8f<\x02\x86\x12\xf4jf\xc6J\xf4lT\xf3" +
+	"\xa6\xd3\x9cj\x0fQ\xa9\x03\x90\xefcQ\xce0\x18B" +
+	"\xdbF\x9fO\x88\x1a\x05&\xc4\xfcA\x1fzsA\x06" +
+	"\x12\xc0\x84\xd8\xdf\xe9C\xcf\xbf\xa4\xa3\x05\x18q8S" +
+	"\xc0 0\x18\x04\x8c%\x0b\xb9\x9cf\xdaE+\x9b\x1d" +
+	"T7X \xaa\x86\x19\xd1\x0c\xc3R\xbd\xcc\x02\xb7," +
+	"=\xae\xe8J\xce\x007\x90\xc6\xf5\xe9\xc9\xee\x82\xd9\x94" +
+	"/\x98jo\xc6)\xa4>\x1eq\xc2\xfc\xf2\xd4N\xca" +
+	"S\xc3 \x9b\xce`u\xd9\xe5\x80X=]\x15\x97\x9b" +
+	"\xb6\xbed\xda\xa0\x07\xd5\xd3\x00 w\xb1(\xafa\x90" +
+	" :\x13N\xfa\xa8X\xffgQ\x8e3\x88LM\xc9" +
+	"\xe14\xf0\x0e\x16\xe5\xb5\x0c\x86\xf3JNu%\x107" +
+	"\xaa\xba{\x1f\xa6\xb6\xc6p\xf9D\x01\xc4\xb0/\x1d\xc7" +
+	"\xb3\xb4\xe1b\xd64h\"\x01\x07\x9b\xd4:\xd3SU" +
+	"\x07\xc0\x16\x86DU\xd7g\xba<\x92Z;RT}" +
+	"\xef4\x94\xdeY\x0f\x10NX\xd9![\xcb\xa7\xb4\x8d" +
+	"Z\xca\x02V\x996$TS\xb6`\xd2w9\xc7\xe6" +
+	"\xee\x89\x81\xee\xba!$\x01\x0c\xa9\x12mWw\x10\xd5" +
+	"\xbc9\xd5\xc1,\x85ZSH\xa7U\xbdI)\x16\xd5" +
+	"|\xca\xed\xdf\x14\xe76\x94[\x13\xce\x16\xd2\x06\x86\x80" +
+	"\xc1\x10\xdc\x16\xa74\x02hLM\x9b\xc6\xb0\xaa^N" +
+	"\xdb=\x1b\xd0=\x03\x08\x89\x02Cx1V\xc2\xa9\x90" +
+	"\xafo \x9a\\\x8fR\x8bR\x07Tc\x0dr\xd4\x02" +
+	"\xd1i\x16\xe0\xa7Y\x800L\x0d\x0a\x93[\xce\xf5@" +
+	",o\xe5\x12\xaa\x8e<0\xc8\x03\x8a9#\xed\x0d\x85" +
+	"\x924\xb5B\xde\xfd95#\xd7\x8c\xce\x8e\xf0*\xbf" +
+	"\x95\x82\xa9B^\xc5p\xf9P\x9e\xe6\xa7\x0a\x88^O" +
+	"\x02\x1e\xe2b\x8aX\xcf\xa2\xbc\xcc\xe7\xf1\xc6n\x00y" +
+	"\x11\x8b\xf2r\x06\xc3\xc3\x19\xc5\xc4\xea\xf2\x02-M\xd1" +
+	"\x96B\x91\xd6a`uy\x85V\x9a/\xbf\xc8\xa5\xd9" +
+	"w\xe5\x15+\xc9\x1b\xa8$o\xd5_$o\x85\xfd1" +
+	"\x18+m\xd8\xcaK\x81\x1e\x051g#\x8d8\xc3U" +
+	"R\x0d\xb1\x82j\x88\xa4\xb1\xc1\xa7Z\xe5a\x0f\x9b#" +
+	"E\xda3\xef\xfb\x08\x90\x0f\xe3\xed4\x9b\\\xa2\xaeh" +
+	"3\xd7\xd2\xe4\x0a\xea\x8b\xfaEck\x90\xa5\xa2\xd5\xf9" +
+	"\xf6RF12\x9eL\x09]\xc9'\xbd\x9f~\x05+" +
+	"+A\xcf\xc1\xd2z\xf4YG/\xd7\xeb:\xa7\x992" +
+	".eQng\xd0\xd6\xd2\xf9\x82\xae\xc6\x87 \x92\xbe" +
+	"\xab\xa8&\x11\x81A\x04\x14\xb3\x854\x92\xf2'\x19]" +
+	"U\x80\x7f\x06\x00\x00\xff\xffc?\x048"
 
 func init() {
 	schemas.Register(schema_902d2bfc3bbf0d43,
+		0x838f23a24aa17915,
+		0x8e22cadf94183d27,
+		0x985efa717f498039,
 		0x992b0cc20a124b84,
+		0x9fe0e82ce7dbd61e,
 		0xa5eec3de87bdd251,
+		0xaf9eac8061af076b,
+		0xb28d687bb0cb1f6b,
+		0xb8a5ce903391283e,
 		0xbb6513902c830e39,
+		0xc4db11d8bf7d0e78,
+		0xcaa77452f9c37eeb,
+		0xced160c65625ebcc,
 		0xd1699ee23d138aae,
+		0xd84b85756d95b69f,
+		0xe95aba507536661c,
 		0xf3a2260b5b588cb3,
 		0xf5bdbbc1d36794d7,
-		0xf71af9b93883827e)
+		0xf64adeda9400745f,
+		0xf71af9b93883827e,
+		0xf85627eda839d41a)
 }

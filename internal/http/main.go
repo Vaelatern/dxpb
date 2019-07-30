@@ -27,6 +27,8 @@ func New(out net.Conn) (*server, error) {
 	rV.routes()
 	if !viper.GetBool("debug") {
 		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
 	}
 	return &rV, nil
 }
