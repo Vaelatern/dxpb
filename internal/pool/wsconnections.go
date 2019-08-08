@@ -1,6 +1,7 @@
 package pool
 
 import (
+	"bytes"
 	"context"
 	"log"
 	"time"
@@ -27,11 +28,31 @@ func connectDrone(ctx context.Context, url string) spec.Builder_capabilities_Res
 			backoff = (backoff + 1) * 3
 		}
 
+		ctx, cancelCtx := context.WithCancel(ctx)
 		rawconn, _, err := websocket.Dial(ctx, url, websocket.DialOptions{
 			Subprotocols: []string{"capnproto-dxpb-v1"},
 		})
 		if err != nil {
-			log.Println("TODO: Don't fatally crash on failed dials: err: ", err)
+			log.Println("Dial failed due to: err: ", err)
+			cancelCtx()
+			continue
+		}
+
+		// I apologize for this. I didn't want to pollute the namespace.
+		if !func() bool {
+			// Don't ask me why. We need to use the connection before the
+			// RPC layer gets a go, or calls to Write() will never be made.
+			// I really have no idea why.
+			in := make([]byte, 6)
+			toMatch := []byte{'H', 'e', 'l', 'l', 'o', 0}
+			websocket.NetConn(rawconn).Read(in)
+			if !bytes.Equal(in, toMatch) {
+				log.Println("Comparison not equal: ", in, " != ", toMatch)
+				return false
+			}
+			return true
+		}() {
+			cancelCtx()
 			continue
 		}
 
@@ -39,17 +60,38 @@ func connectDrone(ctx context.Context, url string) spec.Builder_capabilities_Res
 		log.Println("Connected to drone: " + url)
 		drone := spec.Builder{Client: conn.Bootstrap(ctx)}
 
-		log.Println("Getting capabilities for " + url)
-		capabilities, err := drone.Capabilities(ctx, func(p spec.Builder_capabilities_Params) error {
+		capabilities_promise := drone.Capabilities(ctx, func(p spec.Builder_capabilities_Params) error {
 			return nil
-		}).Struct()
+		})
+
+		capabilities, err := capabilities_promise.Struct()
 		if err != nil {
-			log.Println("TODO: Don't fatally crash when the capabilities can't be got due to err: ", err)
+			log.Println("Capabilities erred: ", err)
+			cancelCtx()
+			continue // Whoops! Inadequate
+		}
+
+		backoff = 0 // No reason to backoff any more
+		if !capabilities.HasResult() {
+			log.Println("Remote didn't return a result, resetting connection")
+			cancelCtx()
+			continue // Whoops! Inadequate
+		}
+
+		capList, err := capabilities.Result()
+		if err != nil {
+			log.Println("Can't get results due to err: ", err)
+			cancelCtx()
 			continue
 		}
 
-		backoff = 0      // No reason to backoff any more
-		_ = capabilities // TODO
+		numCaps := capList.Len()
+		caps := make([]spec.Builder_Capability, numCaps)
+		for i, _ := range caps {
+			caps[i] = capList.At(i)
+			log.Println(caps[i])
+		}
+
 		time.Sleep(3 * time.Minute)
 	}
 }

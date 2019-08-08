@@ -55,6 +55,7 @@ interface IrcBot {
 interface Builder {
 	capabilities @0 () -> (result :List(Capability));
 	build @1 (what :What, options :Opts) -> (done :Results);
+
 	struct What {
 		name @0 :Text;
 		ver @1 :Text;

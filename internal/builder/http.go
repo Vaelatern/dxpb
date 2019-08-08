@@ -35,9 +35,15 @@ func (s *server) handleWebsocketV1() http.HandlerFunc {
 		}
 		defer conn.Close(websocket.StatusInternalError, "the sky is falling")
 
+		// Don't ask me why. We must use the connection before RPC gets
+		// a hold of it. Otherwise something weird breaks.
+		websocket.NetConn(conn).Write([]byte("Hello"))
+
 		transport := rpc.StreamTransport(websocket.NetConn(conn))
 		iface := rpc.MainInterface(spec.Builder_ServerToClient(s.builder).Client)
 		rpcconn := rpc.NewConn(transport, iface)
-		rpcconn.Wait()
+		log.Println("Now listening to the server's instructions.")
+		err = rpcconn.Wait()
+		log.Println("Server connection closed, err: ", err)
 	}
 }
