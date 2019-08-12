@@ -1,0 +1,2 @@
+arch: x8664
+cmd_to_run: ./clean.sh

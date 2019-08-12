@@ -60,11 +60,9 @@ func connectDrone(ctx context.Context, url string) spec.Builder_capabilities_Res
 		log.Println("Connected to drone: " + url)
 		drone := spec.Builder{Client: conn.Bootstrap(ctx)}
 
-		capabilities_promise := drone.Capabilities(ctx, func(p spec.Builder_capabilities_Params) error {
+		capabilities, err := drone.Capabilities(ctx, func(p spec.Builder_capabilities_Params) error {
 			return nil
-		})
-
-		capabilities, err := capabilities_promise.Struct()
+		}).Struct()
 		if err != nil {
 			log.Println("Capabilities erred: ", err)
 			cancelCtx()
@@ -91,6 +89,17 @@ func connectDrone(ctx context.Context, url string) spec.Builder_capabilities_Res
 			caps[i] = capList.At(i)
 			log.Println(caps[i])
 		}
+
+		log.Println("Starting build")
+		_, err = drone.Build(ctx, func(p spec.Builder_build_Params) error {
+			return nil
+		}).Struct()
+		if err != nil {
+			log.Println("Build erred: ", err)
+			cancelCtx()
+			continue // Whoops! Inadequate
+		}
+		log.Println("Build done")
 
 		time.Sleep(3 * time.Minute)
 	}

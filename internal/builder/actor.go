@@ -3,6 +3,7 @@ package builder
 import (
 	"github.com/spf13/viper"
 
+	"github.com/dxpb/dxpb/internal/shell"
 	"github.com/dxpb/dxpb/internal/spec"
 )
 
@@ -13,6 +14,7 @@ type builder struct {
 type builder_actual struct{}
 
 func (b *builder_actual) Build(call spec.Builder_build) error {
+	shell.Exec(viper.GetString("cmd_to_run"))
 	return nil
 }
 
