@@ -17,7 +17,48 @@ type drone struct {
 	Conn *rpc.Conn
 }
 
-func connectDrone(ctx context.Context, url string) spec.Builder_capabilities_Results {
+type BuildStatus uint8
+
+const (
+	BuildStatus_startup BuildStatus = 0
+	BuildStatus_ready   BuildStatus = 1
+	BuildStatus_working BuildStatus = 2
+)
+
+type buildUpdate struct {
+	status BuildStatus
+	res    spec.Results
+}
+
+type builderInfo struct {
+	status   BuildStatus
+	hostarch spec.Arch
+	arch     spec.Arch
+	req      chan spec.Builder_What
+	ret      chan buildUpdate
+}
+
+func runBuilds(ctx context.Context, drone spec.Builder, trigBuild <-chan spec.Builder_What, update chan<- buildUpdate) error {
+	end_builds := false
+	for !end_builds {
+		select {
+		case what := <-trigBuild:
+			log.Println("Starting build")
+			_, err := drone.Build(ctx, func(p spec.Builder_build_Params) error {
+				p.SetWhat(what)
+				return nil
+			}).Struct()
+			if err != nil {
+				log.Println("Build erred: ", err)
+				end_builds = true
+			}
+			log.Println("Build done")
+		}
+	}
+	return nil
+}
+
+func connectDrone(ctx context.Context, url string, info builderInfo) spec.Builder_capabilities_Results {
 	var backoff time.Duration = 0
 
 	for {
@@ -90,26 +131,22 @@ func connectDrone(ctx context.Context, url string) spec.Builder_capabilities_Res
 			log.Println(caps[i])
 		}
 
-		log.Println("Starting build")
-		_, err = drone.Build(ctx, func(p spec.Builder_build_Params) error {
-			return nil
-		}).Struct()
+		// Blocks in an infinite loop
+		err = runBuilds(ctx, drone, info.req, info.ret)
 		if err != nil {
-			log.Println("Build erred: ", err)
+			log.Println("Builds failed due to err: ", err)
 			cancelCtx()
-			continue // Whoops! Inadequate
+			continue
 		}
-		log.Println("Build done")
-
-		time.Sleep(3 * time.Minute)
 	}
 }
 
 func RunPool(foreigners []string) {
 	ctx := context.Background()
 	resChan := make(chan drone, len(foreigners))
-	for _, path := range foreigners {
-		go connectDrone(ctx, "ws://"+path+"/ws")
+	builders := make([]builderInfo, len(foreigners))
+	for i, path := range foreigners {
+		go connectDrone(ctx, "ws://"+path+"/ws", builders[i])
 	}
 
 	for {
