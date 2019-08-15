@@ -25,6 +25,7 @@ func (b *builder_actual) Capabilities(call spec.Builder_capabilities) error {
 	}
 	capability := capabilities.At(0)
 	capability.SetArch(spec.ArchFromString(viper.GetString("arch")))
+	capability.SetHostarch(spec.ArchFromString(viper.GetString("hostarch")))
 	capability.SetType(spec.BuildType_bulk) // This will be _individual later
 	return nil
 }

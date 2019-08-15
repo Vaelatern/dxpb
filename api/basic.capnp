@@ -65,6 +65,7 @@ interface Builder {
 	struct Capability {
 		arch @0 :Arch = noarch;
 		type @1 :BuildType = individual;
+		hostarch @2 :Arch = noarch;
 	}
 	struct Opts {
 		ignorePkgSpec @0 :Bool;
