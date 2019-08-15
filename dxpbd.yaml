@@ -12,4 +12,4 @@ irc:
   channel: '#mychan'
   ssl: true
 drones:
-  - 127.0.0.1:9191/v1
+  test: 127.0.0.1:9191/v1

@@ -58,7 +58,7 @@ func runBuilds(ctx context.Context, drone spec.Builder, trigBuild <-chan spec.Bu
 	return nil
 }
 
-func connectDrone(ctx context.Context, url string, info builderInfo) spec.Builder_capabilities_Results {
+func connectDrone(ctx context.Context, url string, alias string, info builderInfo) spec.Builder_capabilities_Results {
 	var backoff time.Duration = 0
 
 	for {
@@ -141,12 +141,12 @@ func connectDrone(ctx context.Context, url string, info builderInfo) spec.Builde
 	}
 }
 
-func RunPool(foreigners []string) {
+func RunPool(foreigners map[string]string) {
 	ctx := context.Background()
 	resChan := make(chan drone, len(foreigners))
-	builders := make([]builderInfo, len(foreigners))
-	for i, path := range foreigners {
-		go connectDrone(ctx, "ws://"+path+"/ws", builders[i])
+	builders := make(map[string]builderInfo, len(foreigners))
+	for alias, path := range foreigners {
+		go connectDrone(ctx, "ws://"+path+"/ws", alias, builders[alias])
 	}
 
 	for {

@@ -34,7 +34,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	go pool.RunPool(viper.GetStringSlice("drones"))
+	go pool.RunPool(viper.GetStringMapString("drones"))
 
 	var ircpipe net.Conn
 	var ircside net.Conn
