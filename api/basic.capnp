@@ -37,6 +37,7 @@ struct GithubEvent {
 enum Results {
 	ok @0;
 	err @1;
+	reject @2;
 }
 
 enum BuildType {
