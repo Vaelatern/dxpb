@@ -6,10 +6,23 @@ import (
 	"log"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"nhooyr.io/websocket"
 	"zombiezen.com/go/capnproto2/rpc"
 
 	"github.com/dxpb/dxpb/internal/spec"
+)
+
+var (
+	numWorkers = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "dxpb_wrkrs_connected",
+		Help: "Workers connected",
+	}, []string{"alias", "hostarch", "arch"})
+	workersBusy = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "dxpb_wrkrs_busy",
+		Help: "Workers connected",
+	}, []string{"alias", "hostarch", "arch"})
 )
 
 type drone struct {
@@ -38,16 +51,18 @@ type builderInfo struct {
 	ret      chan buildUpdate
 }
 
-func runBuilds(ctx context.Context, drone spec.Builder, trigBuild <-chan spec.Builder_What, update chan<- buildUpdate) error {
+func runBuilds(ctx context.Context, drone spec.Builder, busyGauge prometheus.Gauge, trigBuild <-chan spec.Builder_What, update chan<- buildUpdate) error {
 	end_builds := false
 	for !end_builds {
 		select {
 		case what := <-trigBuild:
 			log.Println("Starting build")
+			busyGauge.Inc()
 			_, err := drone.Build(ctx, func(p spec.Builder_build_Params) error {
 				p.SetWhat(what)
 				return nil
 			}).Struct()
+			busyGauge.Dec()
 			if err != nil {
 				log.Println("Build erred: ", err)
 				end_builds = true
@@ -125,14 +140,28 @@ func connectDrone(ctx context.Context, url string, alias string, info builderInf
 		}
 
 		numCaps := capList.Len()
-		caps := make([]spec.Builder_Capability, numCaps)
-		for i, _ := range caps {
-			caps[i] = capList.At(i)
-			log.Println(caps[i])
+		if numCaps != 1 {
+			log.Println("ERR: Can't currently use multiple capabilities")
+			cancelCtx()
+			continue
 		}
 
+		cap := capList.At(0)
+		workerGauge := numWorkers.With(prometheus.Labels{
+			"alias":    alias,
+			"hostarch": cap.Hostarch().String(),
+			"arch":     cap.Arch().String(),
+		})
+		workerBusyGauge := workersBusy.With(prometheus.Labels{
+			"alias":    alias,
+			"hostarch": cap.Hostarch().String(),
+			"arch":     cap.Arch().String(),
+		})
+
 		// Blocks in an infinite loop
-		err = runBuilds(ctx, drone, info.req, info.ret)
+		workerGauge.Inc()
+		err = runBuilds(ctx, drone, workerBusyGauge, info.req, info.ret)
+		workerGauge.Dec()
 		if err != nil {
 			log.Println("Builds failed due to err: ", err)
 			cancelCtx()
