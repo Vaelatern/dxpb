@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"log"
 	"net"
+	"os"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -25,6 +28,16 @@ func startConfig() {
 	}
 }
 
+func pokeOnRead(out chan<- pool.BuildJob) {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Press enter to trigger build")
+	for {
+		_, _ = reader.ReadString('\n')
+		fmt.Println("Build Triggered")
+		out <- *new(pool.BuildJob)
+	}
+}
+
 func main() {
 	log.Println("hello!")
 	startConfig()
@@ -34,7 +47,10 @@ func main() {
 		log.Panic(err)
 	}
 
-	go pool.RunPool(viper.GetStringMapString("drones"))
+	var queueJobs chan pool.BuildJob
+	queueJobs = make(chan pool.BuildJob, 10)
+
+	go pool.RunPool(queueJobs, viper.GetStringMapString("drones"))
 
 	var ircpipe net.Conn
 	var ircside net.Conn
@@ -43,6 +59,7 @@ func main() {
 		go ircClient.Connect(ircside)
 	}
 
+	go pokeOnRead(queueJobs)
 	httpd, err := http.New(ircpipe)
 	if err != nil {
 		log.Fatal(err)
