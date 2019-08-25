@@ -5,9 +5,9 @@ import (
 	"os/exec"
 )
 
-func Exec(cmd string) (io.ReadCloser, error) {
+func Exec(cmd string) (*exec.Cmd, io.ReadCloser, error) {
 	command := exec.Command(cmd)
 	stdPipe, err := command.StdoutPipe()
 	err = command.Start()
-	return stdPipe, err
+	return command, stdPipe, err
 }

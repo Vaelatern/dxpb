@@ -1,2 +1,2 @@
 arch: x8664
-cmd_to_run: ./clean.sh
+cmd_to_run: ./say_stuff.sh

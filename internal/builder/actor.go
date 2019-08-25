@@ -1,6 +1,9 @@
 package builder
 
 import (
+	"io"
+	"time"
+
 	"github.com/spf13/viper"
 
 	"github.com/dxpb/dxpb/internal/shell"
@@ -13,8 +16,44 @@ type builder struct {
 
 type builder_actual struct{}
 
+func reportLog(in io.Reader, supercall spec.Builder_build) (bool, error) {
+	eof := false
+	log := make([]byte, 64*1024)
+	n, err := in.Read(log)
+	if err != nil {
+		if err == io.EOF {
+			eof = true
+		} else {
+			return false, err
+		}
+	}
+	opts, err := supercall.Params.Options()
+	if err != nil {
+		return false, err
+	}
+	opts.Log().Append(supercall.Ctx,
+		func(call spec.Logger_append_Params) error {
+			return call.SetLogs(log[:n])
+		})
+	return eof, nil
+}
+
 func (b *builder_actual) Build(call spec.Builder_build) error {
-	shell.Exec(viper.GetString("cmd_to_run"))
+	cmd, pipeOut, err := shell.Exec(viper.GetString("cmd_to_run"))
+	if err != nil {
+		return err
+	}
+	eof := false
+	for !eof {
+		select {
+		case <-time.After(2 * time.Second):
+			eof, err = reportLog(pipeOut, call)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	cmd.Wait()
 	return nil
 }
 
