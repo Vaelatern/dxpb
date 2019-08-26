@@ -15,3 +15,4 @@ drones:
   choose: ws://127.0.0.1:9090/ws
   aliases: ws://127.0.0.1:9191/ws
   like_these: ws://127.0.0.1:9292/ws
+logroot: ./buildlogs/

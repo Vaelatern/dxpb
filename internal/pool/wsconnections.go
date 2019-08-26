@@ -112,7 +112,7 @@ func connectDrone(ctx context.Context, url string, alias string, info builderInf
 
 		// Blocks in an infinite loop
 		workerGauge.Inc()
-		err = runBuilds(ctx, drone, workerBusyGauge, info.req, info.ret)
+		err = runBuilds(ctx, alias, drone, workerBusyGauge, info.req, info.ret)
 		workerGauge.Dec()
 		if err != nil {
 			log.Println("Builds failed due to err: ", err)

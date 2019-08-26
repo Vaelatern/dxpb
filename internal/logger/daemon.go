@@ -2,12 +2,14 @@ package logger
 
 import (
 	"io"
+	"time"
 
 	"github.com/dxpb/dxpb/internal/spec"
 )
 
 type Logger struct {
-	To io.Writer
+	To     io.WriteCloser
+	Closer *time.Timer
 }
 
 func (l *Logger) Append(call spec.Logger_append) error {
@@ -19,5 +21,11 @@ func (l *Logger) Append(call spec.Logger_append) error {
 	if err != nil {
 		return err
 	}
+
+	if !l.Closer.Stop() {
+		<-l.Closer.C
+	}
+	l.Closer.Reset(10 * time.Second) // This is what closes the file on inactivity
+
 	return nil
 }

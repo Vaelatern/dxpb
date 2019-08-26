@@ -26,6 +26,7 @@ func startConfig() {
 	if err != nil {
 		log.Panicf("Could not read in configuration file: %s\n", err)
 	}
+	viper.SetDefault("logroot", "./")
 }
 
 func pokeOnRead(out chan<- pool.BuildJob) {
