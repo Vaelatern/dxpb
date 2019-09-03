@@ -39,7 +39,7 @@ func reportLog(in io.Reader, supercall spec.Builder_build) (bool, error) {
 }
 
 func (b *builder_actual) Build(call spec.Builder_build) error {
-	cmd, pipeOut, err := shell.Exec(viper.GetString("cmd_to_run"))
+	cmd, pipeOut, err := shell.Exec(viper.GetString("cmd_to_run"), viper.GetStringSlice("cmd_args"))
 	if err != nil {
 		return err
 	}
