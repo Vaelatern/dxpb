@@ -2,3 +2,4 @@
 /dxpbuilder
 vendor/
 *.toml
+buildlogs
