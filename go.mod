@@ -1,6 +1,6 @@
 module github.com/dxpb/dxpb
 
-go 1.12
+go 1.13
 
 require (
 	github.com/gin-contrib/sse v0.0.0-20190125020943-a7658810eb74 // indirect
@@ -20,6 +20,7 @@ require (
 	github.com/thoj/go-ircevent v0.0.0-20180409130147-5063e5f26097
 	github.com/ugorji/go v1.1.2 // indirect
 	golang.org/x/net v0.0.0-20190424112056-4829fb13d2c6
+	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7 // indirect
 	gopkg.in/go-playground/validator.v8 v8.18.2 // indirect
 	gopkg.in/go-playground/webhooks.v5 v5.5.0
 	nhooyr.io/websocket v1.3.3
