@@ -1,7 +1,5 @@
 package pool
 
-import ()
-
 type mergedChan struct {
 	alias string
 	val   buildUpdate
