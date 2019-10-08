@@ -1,3 +1,4 @@
+listen: 127.0.0.1:9191
 arch: x8664
 cmd_to_run: ./say_stuff.sh
 cmd_args:
