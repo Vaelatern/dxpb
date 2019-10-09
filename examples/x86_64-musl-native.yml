@@ -1,0 +1,11 @@
+arch: x8664Musl
+hostarch: x8664
+listen: 127.0.0.1:9193
+cmd_to_run: ./poke_xbulk.sh
+cmd_args:
+  - -C
+  - /home/robert/builders/x86_64-musl-native
+  - -h
+  - /repo/hostdir/x86_64-musl-native
+  - x86_64-musl
+  - native

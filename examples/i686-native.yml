@@ -1,0 +1,7 @@
+arch: i686
+hostarch: i686
+listen: 127.0.0.1:9192
+cmd_to_run: ./poke_xbulk.sh
+cmd_args:
+  - i686
+  - native

@@ -1,0 +1,11 @@
+arch: armV6
+hostarch: x8664
+listen: 127.0.0.1:9194
+cmd_to_run: ./poke_xbulk.sh
+cmd_args:
+  - -C
+  - /home/robert/builders/armv6l-cross
+  - -h
+  - /repo/hostdir/armv6l-cross
+  - x86_64-musl
+  - armv6l
