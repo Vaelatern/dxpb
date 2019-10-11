@@ -14,27 +14,58 @@ type builder struct {
 	*builder_actual
 }
 
+type read_result struct {
+	text []byte
+	err  error
+}
+
+func watchReader(in io.Reader, out chan read_result) {
+	var err error = nil
+	log := make([]byte, 64*1024)
+	for err == nil {
+		n, err := in.Read(log)
+		out <- read_result{text: log[:n], err: err}
+		time.Sleep(1 * time.Second)
+	}
+}
+
 type builder_actual struct{}
 
-func reportLog(in io.Reader, supercall spec.Builder_build) (bool, error) {
+func reportLog(in chan read_result, supercall spec.Builder_build) (bool, error) {
 	eof := false
-	log := make([]byte, 64*1024)
-	n, err := in.Read(log)
-	if err != nil {
-		if err == io.EOF {
-			eof = true
-		} else {
+	var log []byte
+	var err error
+
+	loopAgain := true
+
+	for loopAgain {
+		select {
+		case res := <-in:
+			log = res.text
+			err = res.err
+		default:
+			log = nil
+			err = nil
+			loopAgain = false
+		}
+
+		if err != nil {
+			if err == io.EOF {
+				eof = true
+			} else {
+				return false, err
+			}
+		}
+
+		opts, err := supercall.Params.Options()
+		if err != nil {
 			return false, err
 		}
+		opts.Log().Append(supercall.Ctx,
+			func(call spec.Logger_append_Params) error {
+				return call.SetLogs(log)
+			})
 	}
-	opts, err := supercall.Params.Options()
-	if err != nil {
-		return false, err
-	}
-	opts.Log().Append(supercall.Ctx,
-		func(call spec.Logger_append_Params) error {
-			return call.SetLogs(log[:n])
-		})
 	return eof, nil
 }
 
@@ -44,10 +75,14 @@ func (b *builder_actual) Build(call spec.Builder_build) error {
 		return err
 	}
 	eof := false
+
+	logs := make(chan read_result, 100)
+	go watchReader(pipeOut, logs)
+
 	for !eof {
 		select {
 		case <-time.After(2 * time.Second):
-			eof, err = reportLog(pipeOut, call)
+			eof, err = reportLog(logs, call)
 			if err != nil {
 				return err
 			}
