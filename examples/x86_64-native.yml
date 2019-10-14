@@ -1,11 +1,11 @@
 arch: x8664
 hostarch: x8664
 listen: 127.0.0.1:9191
-cmd_to_run: ./poke_xbulk.sh
+cmd_to_run: /usr/libexec/dxpb/poke-xbulk.sh
 cmd_args:
   - -C
-  - /home/robert/builders/x86_64-native
+  - /home/void-buildslave/void-builder-x86_64
   - -h
-  - /repo/hostdir/x86_64-native
+  - /hostdir
   - x86_64
   - native

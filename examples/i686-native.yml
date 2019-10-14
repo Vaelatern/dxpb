@@ -1,7 +1,11 @@
 arch: i686
 hostarch: i686
 listen: 127.0.0.1:9192
-cmd_to_run: ./poke_xbulk.sh
+cmd_to_run: /usr/libexec/dxpb/poke-xbulk.sh
 cmd_args:
+  - -C
+  - /home/void-buildslave/void-builder-i686
+  - -h
+  - /hostdir
   - i686
   - native

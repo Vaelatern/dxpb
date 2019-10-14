@@ -9,9 +9,6 @@ USAGE="Usage: $0 [-C workdir] [-h hostdir] bootstrap-arch [target-arch]"
 
 WORKDIR=$(pwd)
 
-# FIXME: hack for testing
-START=$(pwd)
-
 while getopts C:c:h: OPT; do
 	case "$OPT" in
 	C)
@@ -58,5 +55,5 @@ fi
 mkdir -p $WORKDIR
 cd $WORKDIR
 
-$START/assets/builder/xbps-bulk-builder.sh -a $TARGET -B $BOOTSTRAP \
+/usr/libexec/dxpb/xbps-bulk-builder.sh -a $TARGET -B $BOOTSTRAP \
     $XCONF -N -h $HOSTDIR -R $HOSTDIR/binpkgs
