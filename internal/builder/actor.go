@@ -21,13 +21,17 @@ type read_result struct {
 
 func watchReader(in io.Reader, out chan read_result) {
 	var err error = nil
-	log := make([]byte, 32*1024)
+	log := make([]byte, 31*1024)
 	for err == nil {
-		limited_in := io.LimitedReader{R: in, N: 31 * 1024}
-		n, err := limited_in.Read(log)
-		if err == nil || err == io.EOF {
-			out <- read_result{text: log[:n], err: err}
+		n, err := in.Read(log)
+		if err != nil {
+			n = 0
 		}
+		to_out := new(read_result)
+		to_out.text = make([]byte, len(log[:n]))
+		copy(to_out.text, log[:n])
+		to_out.err = err
+		out <- *to_out
 		time.Sleep(1 * time.Second)
 	}
 }
