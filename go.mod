@@ -23,6 +23,6 @@ require (
 	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7 // indirect
 	gopkg.in/go-playground/validator.v8 v8.18.2 // indirect
 	gopkg.in/go-playground/webhooks.v5 v5.5.0
-	nhooyr.io/websocket v1.3.3
+	nhooyr.io/websocket v1.7.3
 	zombiezen.com/go/capnproto2 v0.0.0-20181004142158-659aba4018b6
 )

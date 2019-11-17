@@ -1,0 +1,19 @@
+debug: false
+http:
+  bind: :8080
+  github: /webhook
+  prometheus: /metrics
+github:
+  secret: abc
+irc:
+  disabled: true
+  nick: nickhere
+  server: irc.example.com:6697
+  channel: '#mychan'
+  ssl: true
+drones:
+  x86_64: 127.0.0.1:9191/v1
+#  i686: 127.0.0.1:9192/v1
+#  x86_64-musl: 127.0.0.1:9193/v1
+#  cross-armv6l: 127.0.0.1:9194/v1
+logroot: ./buildlogs/

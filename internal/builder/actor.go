@@ -36,7 +36,8 @@ func watchReader(in io.Reader, out chan read_result) {
 	}
 }
 
-type builder_actual struct{}
+type builder_actual struct {
+}
 
 func reportLog(in chan read_result, supercall spec.Builder_build) (bool, error) {
 	eof := false
@@ -108,5 +109,11 @@ func (b *builder_actual) Capabilities(call spec.Builder_capabilities) error {
 	capability.SetArch(spec.ArchFromString(viper.GetString("arch")))
 	capability.SetHostarch(spec.ArchFromString(viper.GetString("hostarch")))
 	capability.SetType(spec.BuildType_bulk) // This will be _individual later
+	return nil
+}
+
+func (b *builder_actual) Keepalive(call spec.Builder_keepalive) error {
+	time.Sleep(3 * time.Second)
+	call.Results.SetI(2 * call.Params.I())
 	return nil
 }

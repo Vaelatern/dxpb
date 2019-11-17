@@ -36,10 +36,11 @@ func connectDrone(ctx context.Context, url string, alias string, info builderInf
 			backoff = (backoff + 1) * 3
 		}
 
-		ctx, cancelCtx := context.WithCancel(ctx)
-		rawconn, _, err := websocket.Dial(ctx, url, websocket.DialOptions{
+		subctx, cancelCtx := context.WithCancel(ctx)
+		rawconn, _, err := websocket.Dial(subctx, url, &websocket.DialOptions{
 			Subprotocols: []string{"capnproto-dxpb-v1"},
 		})
+		defer rawconn.Close(websocket.StatusGoingAway, "Server decided to quit")
 		if err != nil {
 			log.Println("Dial failed due to: err: ", err)
 			cancelCtx()
@@ -53,7 +54,7 @@ func connectDrone(ctx context.Context, url string, alias string, info builderInf
 			// I really have no idea why.
 			in := make([]byte, 6)
 			toMatch := []byte{'H', 'e', 'l', 'l', 'o', 0}
-			websocket.NetConn(rawconn).Read(in)
+			websocket.NetConn(subctx, rawconn, websocket.MessageText).Read(in)
 			if !bytes.Equal(in, toMatch) {
 				log.Println("Comparison not equal: ", in, " != ", toMatch)
 				return false
@@ -64,11 +65,13 @@ func connectDrone(ctx context.Context, url string, alias string, info builderInf
 			continue
 		}
 
-		conn := rpc.NewConn(rpc.StreamTransport(websocket.NetConn(rawconn)))
+		conn := rpc.NewConn(rpc.StreamTransport(websocket.NetConn(subctx, rawconn, websocket.MessageBinary)))
+		defer conn.Close()
 		log.Println("Connected to drone: " + url)
-		drone := spec.Builder{Client: conn.Bootstrap(ctx)}
+		drone := spec.Builder{Client: conn.Bootstrap(subctx)}
 
-		capabilities, err := drone.Capabilities(ctx, func(p spec.Builder_capabilities_Params) error {
+		subberctx := context.WithValue(subctx, "is_bottom", true)
+		capabilities, err := drone.Capabilities(subberctx, func(p spec.Builder_capabilities_Params) error {
 			return nil
 		}).Struct()
 		if err != nil {
@@ -112,7 +115,7 @@ func connectDrone(ctx context.Context, url string, alias string, info builderInf
 
 		// Blocks in an infinite loop
 		workerGauge.Inc()
-		err = runBuilds(ctx, alias, drone, workerBusyGauge, info.req, info.ret)
+		err = runBuilds(subberctx, alias, drone, workerBusyGauge, info.req, info.ret)
 		workerGauge.Dec()
 		if err != nil {
 			log.Println("Builds failed due to err: ", err)

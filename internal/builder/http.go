@@ -1,11 +1,12 @@
 package builder
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"os"
+	"sync"
 
-	// "github.com/gorilla/websocket" //Can't because it won't be a io.ReaderWriter
-	//	"golang.org/x/net/websocket" // Insufficient?
 	"nhooyr.io/websocket"
 	"zombiezen.com/go/capnproto2/rpc"
 
@@ -14,6 +15,7 @@ import (
 
 type server struct {
 	builder builder
+	lock    sync.Mutex
 }
 
 func ListenAndWork(listen string) {
@@ -26,7 +28,7 @@ func ListenAndWork(listen string) {
 
 func (s *server) handleWebsocketV1() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		conn, err := websocket.Accept(w, r, websocket.AcceptOptions{
+		conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 			Subprotocols: []string{"capnproto-dxpb-v1"},
 		})
 		if err != nil {
@@ -34,16 +36,20 @@ func (s *server) handleWebsocketV1() http.HandlerFunc {
 			return
 		}
 		defer conn.Close(websocket.StatusInternalError, "the sky is falling")
+		s.lock.Lock()
 
 		// Don't ask me why. We must use the connection before RPC gets
 		// a hold of it. Otherwise something weird breaks.
-		websocket.NetConn(conn).Write([]byte("Hello"))
+		websocket.NetConn(context.Background(), conn, websocket.MessageText).Write([]byte("Hello"))
 
-		transport := rpc.StreamTransport(websocket.NetConn(conn))
+		transport := rpc.StreamTransport(websocket.NetConn(context.Background(), conn, websocket.MessageBinary))
 		iface := rpc.MainInterface(spec.Builder_ServerToClient(s.builder).Client)
 		rpcconn := rpc.NewConn(transport, iface)
+		defer rpcconn.Close()
 		log.Println("Now listening to the server's instructions.")
 		err = rpcconn.Wait()
 		log.Println("Server connection closed, err: ", err)
+
+		os.Exit(0)
 	}
 }

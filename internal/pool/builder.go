@@ -84,6 +84,16 @@ func runBuilds(ctx context.Context, alias string, drone spec.Builder, busyGauge 
 				end_builds = true
 			}
 			log.Println("Build done")
+		default:
+			x, err := drone.Keepalive(ctx, func(p spec.Builder_keepalive_Params) error {
+				p.SetI(3)
+				return nil
+			}).Struct()
+			if err != nil {
+				end_builds = true
+			} else if x.I() != 6 {
+				log.Fatal("Drone misbehaving! ", alias)
+			}
 		}
 	}
 	return nil

@@ -56,6 +56,7 @@ interface IrcBot {
 interface Builder {
 	capabilities @0 () -> (result :List(Capability));
 	build @1 (what :What, options :Opts) -> (done :Results);
+	keepalive @2 (i :UInt8) -> (i :UInt8);
 
 	struct What {
 		name @0 :Text;
