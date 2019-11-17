@@ -7,6 +7,8 @@ import (
 )
 
 func (s *server) routes() {
+	s.router.LoadHTMLGlob("web/templates/*")
+	s.router.GET("/", statusPage)
 	s.router.POST(viper.GetString("http.github"), gin.WrapF(s.handleGithubWebhook()))
 	s.router.GET(viper.GetString("http.prometheus"), gin.WrapH(promhttp.Handler()))
 }
