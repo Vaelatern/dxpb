@@ -11,3 +11,9 @@ dxpbuilder: internal/dxpbspec.capnp.go
 
 clean:
 	rm -f dxpbd dxpbuilder
+
+bench:
+	go test -bench Sub github.com/dxpb/dxpb/internal/bus
+
+test:
+	go test github.com/dxpb/dxpb/internal/bus
