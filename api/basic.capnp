@@ -13,27 +13,6 @@ enum Arch {
 	armV6Musl @6;
 }
 
-struct GithubEvent {
-	who @0 :Text;
-	union {
-		commit :group {
-			hash @1 :Text;
-			branch @2 :Text;
-			msg @3 :Text;
-		}
-		pullRequest :group {
-			number @4 :Int64;
-			msg @5 :Text;
-			action @6 :Text;
-		}
-		issue :group {
-			number @7 :Int64;
-			msg @8 :Text;
-			action @9 :Text;
-		}
-	}
-}
-
 enum Results {
 	ok @0;
 	err @1;
@@ -47,10 +26,6 @@ enum BuildType {
 
 interface Logger {
 	append @0 (logs :Data);
-}
-
-interface IrcBot {
-	noteGhEvent @0 (gh :GithubEvent);
 }
 
 interface Builder {

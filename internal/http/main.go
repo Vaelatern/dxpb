@@ -1,29 +1,32 @@
 package http
 
 import (
-	"net"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+
+	"github.com/dxpb/dxpb/internal/bus"
+	"github.com/dxpb/dxpb/internal/watcher"
 )
 
-// New takes a net.Conn to the IRC server, and returns a ready-to-serve httpd
+// New returns a ready-to-serve httpd
 // By default, the routes are as follows:
 // For the github webhook: /webhook
 // For the prometheus endpoint: /metrics
-func New(out net.Conn) (*server, error) {
+func New() (*server, error) {
 	viper.SetDefault("http.bind", ":8080")
 	viper.SetDefault("http.github", "/webhook")
 	viper.SetDefault("http.prometheus", "/metrics")
 
 	rV := server{}
 	rV.router = gin.Default()
+	rV.Msgbus = bus.New()
+	watcher.Start(rV.Msgbus)
 	err := rV.githubListener()
 	if err != nil {
 		return nil, err
 	}
-	rV.toIRC = out
 	rV.routes()
 	if !viper.GetBool("debug") {
 		gin.SetMode(gin.ReleaseMode)

@@ -14,5 +14,5 @@ type server struct {
 	router *gin.Engine
 	github *github.Webhook
 	toIRC  net.Conn
-	msgbus *bus.Bus
+	Msgbus *bus.Bus
 }

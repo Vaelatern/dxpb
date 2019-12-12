@@ -6,26 +6,14 @@ import (
 	"log"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"nhooyr.io/websocket"
 	"zombiezen.com/go/capnproto2/rpc"
 
+	"github.com/dxpb/dxpb/internal/bus"
 	"github.com/dxpb/dxpb/internal/spec"
 )
 
-var (
-	numWorkers = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "dxpb_wrkrs_connected",
-		Help: "Workers connected",
-	}, []string{"alias", "hostarch", "arch"})
-	workersBusy = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "dxpb_wrkrs_busy",
-		Help: "Workers connected",
-	}, []string{"alias", "hostarch", "arch"})
-)
-
-func connectDrone(ctx context.Context, url string, alias string, info builderInfo) spec.Builder_capabilities_Results {
+func connectDrone(ctx context.Context, msgbus *bus.Bus, url string, alias string, info builderInfo) spec.Builder_capabilities_Results {
 	var backoff time.Duration = 0
 
 	for {
@@ -102,21 +90,11 @@ func connectDrone(ctx context.Context, url string, alias string, info builderInf
 		}
 
 		cap := capList.At(0)
-		workerGauge := numWorkers.With(prometheus.Labels{
-			"alias":    alias,
-			"hostarch": cap.Hostarch().String(),
-			"arch":     cap.Arch().String(),
-		})
-		workerBusyGauge := workersBusy.With(prometheus.Labels{
-			"alias":    alias,
-			"hostarch": cap.Hostarch().String(),
-			"arch":     cap.Arch().String(),
-		})
 
 		// Blocks in an infinite loop
-		workerGauge.Inc()
-		err = runBuilds(subberctx, alias, drone, workerBusyGauge, info.req, info.ret)
-		workerGauge.Dec()
+		msgbus.Pub("worker-ready", bus.WorkerSpec{Alias: alias, Hostarch: cap.Hostarch().String(), Arch: cap.Arch().String()})
+		err = runBuilds(subberctx, alias, drone, msgbus, info.req, info.ret, cap.Hostarch().String(), cap.Arch().String())
+		msgbus.Pub("worker-gone", bus.WorkerSpec{Alias: alias, Hostarch: cap.Hostarch().String(), Arch: cap.Arch().String()})
 		if err != nil {
 			log.Println("Builds failed due to err: ", err)
 			cancelCtx()
@@ -125,7 +103,7 @@ func connectDrone(ctx context.Context, url string, alias string, info builderInf
 	}
 }
 
-func RunPool(jobqueue <-chan BuildJob, foreigners map[string]string) {
+func RunPool(msgbus *bus.Bus, foreigners map[string]string) {
 	ctx := context.Background()
 	builders := make(map[string]builderInfo)
 	for alias := range foreigners {
@@ -135,8 +113,8 @@ func RunPool(jobqueue <-chan BuildJob, foreigners map[string]string) {
 		builders[alias] = b
 	}
 	for alias, path := range foreigners {
-		go connectDrone(ctx, "ws://"+path+"/ws", alias, builders[alias])
+		go connectDrone(ctx, msgbus, "ws://"+path+"/ws", alias, builders[alias])
 	}
 
-	managePool(jobqueue, builders)
+	managePool(msgbus, builders)
 }

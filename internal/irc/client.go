@@ -2,26 +2,11 @@ package irc
 
 import (
 	"log"
-	"net"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/spf13/viper"
 	irc "github.com/thoj/go-ircevent"
-	"zombiezen.com/go/capnproto2/rpc"
 
-	"github.com/dxpb/dxpb/internal/spec"
-)
-
-var (
-	msgsToSend = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "dxpb_irc_msg_to_send",
-		Help: "Total number of messages to send",
-	})
-	msgsSent = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "dxpb_irc_msg_sent",
-		Help: "Total number of messages sent",
-	})
+	"github.com/dxpb/dxpb/internal/bus"
 )
 
 // New returns a new IRC client that is initailized and ready for use.
@@ -48,77 +33,42 @@ func New() (Client, error) {
 	return x, nil
 }
 
+// NoteGhEvent returns functions that send a formatted message to the
+// connected channel that includes a summary of the github event.
+func (c *Client) NoteGhEvent(msgbus *bus.Bus, msgtype string) func(interface{}) {
+	switch msgtype {
+	case "commit":
+		return func(val interface{}) {
+			v := val.(bus.GhEvent)
+			msgbus.Pub("sent-irc-msg", 1)
+			c.Noticef(c.channel, "%s committed %s: %s", v.Who, v.Hash[:8], v.Msg)
+		}
+	case "pullRequest":
+		return func(val interface{}) {
+			v := val.(bus.GhEvent)
+			msgbus.Pub("sent-irc-msg", 1)
+			c.Noticef(c.channel, "%s %s PR %d: %s", v.Who, v.Action, v.Number, v.Msg)
+		}
+	case "issue":
+		return func(val interface{}) {
+			v := val.(bus.GhEvent)
+			msgbus.Pub("sent-irc-msg", 1)
+			c.Noticef(c.channel, "%s %s Issue #%d: %s", v.Who, v.Action, v.Number, v.Msg)
+		}
+	}
+	return nil
+}
+
 // Connect connects to the IRC server, and only returns on fatal
 // errors.
-func (c *Client) Connect(in net.Conn) error {
+func (c *Client) Connect(bus *bus.Bus) error {
 	server := viper.GetString("irc.server")
 	log.Println("Attempting to connect to", server)
 	if err := c.Connection.Connect(server); err != nil {
 		return err
 	}
-	conn := rpc.NewConn(rpc.StreamTransport(in), rpc.MainInterface(spec.IrcBot_ServerToClient(c).Client))
-	c.Loop()
-	return conn.Wait() // Should not ever get here, but if it does we should see this error.
-}
-
-// NoteGhEvent sends a formatted message to the connected channel
-// that includes a summary of the github event.
-func (c *Client) NoteGhEvent(call spec.IrcBot_noteGhEvent) error {
-	msgsToSend.Inc()
-	event, err := call.Params.Gh()
-	if err != nil {
-		return err
-	}
-
-	switch event.Which() {
-	case spec.GithubEvent_Which_commit:
-		thing := event.Commit()
-		committer, err := event.Who()
-		if err != nil {
-			return err
-		}
-		hash, err := thing.Hash()
-		if err != nil {
-			return err
-		}
-		msg, err := thing.Msg()
-		if err != nil {
-			return err
-		}
-		msgsSent.Inc()
-		c.Noticef(c.channel, "%s committed %s: %s", committer, hash[:8], msg)
-	case spec.GithubEvent_Which_pullRequest:
-		thing := event.PullRequest()
-		committer, err := event.Who()
-		if err != nil {
-			return err
-		}
-		action, err := thing.Action()
-		if err != nil {
-			return err
-		}
-		msg, err := thing.Msg()
-		if err != nil {
-			return err
-		}
-		msgsSent.Inc()
-		c.Noticef(c.channel, "%s %s PR %d: %s", committer, action, thing.Number(), msg)
-	case spec.GithubEvent_Which_issue:
-		thing := event.Issue()
-		committer, err := event.Who()
-		if err != nil {
-			return err
-		}
-		action, err := thing.Action()
-		if err != nil {
-			return err
-		}
-		msg, err := thing.Msg()
-		if err != nil {
-			return err
-		}
-		msgsSent.Inc()
-		c.Noticef(c.channel, "%s %s Issue #%d: %s", committer, action, thing.Number(), msg)
-	}
+	bus.Sub("note-gh-event-commit", c.NoteGhEvent(bus, "commit"))
+	bus.Sub("note-gh-event-pullRequest", c.NoteGhEvent(bus, "pullRequest"))
+	bus.Sub("note-gh-event-issue", c.NoteGhEvent(bus, "issue"))
 	return nil
 }

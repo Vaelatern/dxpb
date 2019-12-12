@@ -1,23 +1,20 @@
 package http
 
 import (
-	"context"
 	"errors"
 	"io"
 	"log"
 	"net/http"
-	"sync"
 
 	"github.com/spf13/viper"
 	"gopkg.in/go-playground/webhooks.v5/github"
-	"zombiezen.com/go/capnproto2/rpc"
 
-	"github.com/dxpb/dxpb/internal/spec"
+	"github.com/dxpb/dxpb/internal/bus"
 )
 
 // GithubListener creates an http listener, configured by viper, which
 // acts as a webhook target for github events, sending events to the
-// out RPC connection
+// messagebus
 func (s *server) githubListener() error {
 	if viper.GetString("github.secret") == "" {
 		return errors.New("Can't add a github webhook without a github secret")
@@ -33,11 +30,6 @@ func (s *server) githubListener() error {
 }
 
 func (s server) handleGithubWebhook() http.HandlerFunc {
-	var (
-		init sync.Once
-		out  spec.IrcBot
-		ctx  context.Context
-	)
 	if s.github == nil {
 		log.Println("Github Hook nil! Can't serve github requests!")
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -47,66 +39,39 @@ func (s server) handleGithubWebhook() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		init.Do(func() {
-			ctx = context.Background()
-			conn := rpc.NewConn(rpc.StreamTransport(s.toIRC))
-			out = spec.IrcBot{Client: conn.Bootstrap(ctx)}
-		})
 		payload, err := s.github.Parse(r, github.PushEvent, github.IssuesEvent, github.PullRequestEvent)
 		if err != nil {
 			if err == github.ErrEventNotFound {
 				// ok event wasn;t one of the ones asked to be parsed
+			} else {
+				s.Msgbus.Pub("gh-event-parse-fail", 1)
 			}
 		}
 		switch payload.(type) {
 		case github.PushPayload:
 			push := payload.(github.PushPayload)
 			for _, commit := range push.Commits {
-				out.NoteGhEvent(ctx, func(p spec.IrcBot_noteGhEvent_Params) error {
-					gh, err := p.NewGh()
-					if err != nil {
-						return err
-					}
-					gh.SetWho(commit.Committer.Username)
-					gh.SetCommit()
-					asCommit := gh.Commit()
-					asCommit.SetHash(commit.ID)
-					asCommit.SetMsg(commit.Message)
-					return nil
-				})
+				s.Msgbus.Pub("note-gh-event-commit", bus.GhEvent{
+					Who:  commit.Committer.Username,
+					Hash: commit.ID,
+					Msg:  commit.Message})
 			}
 		case github.PullRequestPayload:
 			prPayload := payload.(github.PullRequestPayload)
 			pr := prPayload.PullRequest
-			out.NoteGhEvent(ctx, func(p spec.IrcBot_noteGhEvent_Params) error {
-				gh, err := p.NewGh()
-				if err != nil {
-					return err
-				}
-				gh.SetWho(prPayload.Sender.Login)
-				gh.SetPullRequest()
-				asPr := gh.PullRequest()
-				asPr.SetNumber(pr.Number)
-				asPr.SetMsg(pr.Title)
-				asPr.SetAction(prPayload.Action)
-				return nil
-			})
+			s.Msgbus.Pub("note-gh-event-pullRequest", bus.GhEvent{
+				Who:    prPayload.Sender.Login,
+				Number: pr.Number,
+				Msg:    pr.Title,
+				Action: prPayload.Action})
 		case github.IssuesPayload:
 			iPayload := payload.(github.IssuesPayload)
 			issue := iPayload.Issue
-			out.NoteGhEvent(ctx, func(p spec.IrcBot_noteGhEvent_Params) error {
-				gh, err := p.NewGh()
-				if err != nil {
-					return err
-				}
-				gh.SetWho(iPayload.Sender.Login)
-				gh.SetIssue()
-				asIssue := gh.Issue()
-				asIssue.SetNumber(issue.Number)
-				asIssue.SetMsg(issue.Title)
-				asIssue.SetAction(iPayload.Action)
-				return nil
-			})
+			s.Msgbus.Pub("note-gh-event-issue", bus.GhEvent{
+				Who:    iPayload.Sender.Login,
+				Number: issue.Number,
+				Msg:    issue.Title,
+				Action: iPayload.Action})
 		}
 	}
 }

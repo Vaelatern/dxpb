@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"fmt"
 	"log"
-	"net"
 	"os"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
+	"github.com/dxpb/dxpb/internal/bus"
 	"github.com/dxpb/dxpb/internal/http"
 	"github.com/dxpb/dxpb/internal/irc"
 	"github.com/dxpb/dxpb/internal/pool"
@@ -29,13 +29,13 @@ func startConfig() {
 	viper.SetDefault("logroot", "./")
 }
 
-func pokeOnRead(out chan<- pool.BuildJob) {
+func pokeOnRead(bus *bus.Bus) {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Press enter to trigger build")
 	for {
 		_, _ = reader.ReadString('\n')
 		fmt.Println("Build Triggered")
-		out <- *new(pool.BuildJob)
+		bus.Pub("line-at-console", 1)
 	}
 }
 
@@ -43,27 +43,22 @@ func main() {
 	log.Println("hello!")
 	startConfig()
 
+	httpd, err := http.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	ircClient, err := irc.New()
 	if err != nil {
 		log.Panic(err)
 	}
 
-	var queueJobs chan pool.BuildJob
-	queueJobs = make(chan pool.BuildJob, 10)
-
-	go pool.RunPool(queueJobs, viper.GetStringMapString("drones"))
-
-	var ircpipe net.Conn
-	var ircside net.Conn
 	if !viper.GetBool("irc.disabled") {
-		ircside, ircpipe = net.Pipe()
-		go ircClient.Connect(ircside)
+		go ircClient.Connect(httpd.Msgbus)
 	}
 
-	go pokeOnRead(queueJobs)
-	httpd, err := http.New(ircpipe)
-	if err != nil {
-		log.Fatal(err)
-	}
+	go pool.RunPool(httpd.Msgbus, viper.GetStringMapString("drones"))
+
+	go pokeOnRead(httpd.Msgbus)
 	log.Fatal(httpd.Start())
 }

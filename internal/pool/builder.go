@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/viper"
 
+	"github.com/dxpb/dxpb/internal/bus"
 	"github.com/dxpb/dxpb/internal/logger"
 	"github.com/dxpb/dxpb/internal/spec"
 )
@@ -57,13 +57,14 @@ func translateJob(p spec.Builder_build_Params, in BuildJob) (spec.Builder_What, 
 	return what, nil
 }
 
-func runBuilds(ctx context.Context, alias string, drone spec.Builder, busyGauge prometheus.Gauge, trigBuild <-chan BuildJob, update chan<- buildUpdate) error {
+func runBuilds(ctx context.Context, alias string, drone spec.Builder, msgbus *bus.Bus, trigBuild <-chan BuildJob, update chan<- buildUpdate, hostarch string, arch string) error {
 	end_builds := false
+	wrkrSpec := bus.WorkerSpec{Alias: alias, Hostarch: hostarch, Arch: arch}
 	for !end_builds {
 		select {
 		case what := <-trigBuild:
 			log.Println("Starting build")
-			busyGauge.Inc()
+			msgbus.Pub("worker-busy", wrkrSpec)
 			_, err := drone.Build(ctx, func(p spec.Builder_build_Params) error {
 				setThis, err := translateJob(p, what)
 				if err != nil {
@@ -78,7 +79,7 @@ func runBuilds(ctx context.Context, alias string, drone spec.Builder, busyGauge 
 				p.SetOptions(opts)
 				return nil
 			}).Struct()
-			busyGauge.Dec()
+			msgbus.Pub("worker-idle", wrkrSpec)
 			if err != nil {
 				log.Println("Build erred: ", err)
 				end_builds = true

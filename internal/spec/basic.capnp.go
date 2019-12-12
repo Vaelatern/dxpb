@@ -4,7 +4,6 @@ package spec
 
 import (
 	context "golang.org/x/net/context"
-	strconv "strconv"
 	capnp "zombiezen.com/go/capnproto2"
 	text "zombiezen.com/go/capnproto2/encoding/text"
 	schemas "zombiezen.com/go/capnproto2/schemas"
@@ -89,306 +88,6 @@ func (l Arch_List) At(i int) Arch {
 func (l Arch_List) Set(i int, v Arch) {
 	ul := capnp.UInt16List{List: l.List}
 	ul.Set(i, uint16(v))
-}
-
-type GithubEvent struct{ capnp.Struct }
-type GithubEvent_commit GithubEvent
-type GithubEvent_pullRequest GithubEvent
-type GithubEvent_issue GithubEvent
-type GithubEvent_Which uint16
-
-const (
-	GithubEvent_Which_commit      GithubEvent_Which = 0
-	GithubEvent_Which_pullRequest GithubEvent_Which = 1
-	GithubEvent_Which_issue       GithubEvent_Which = 2
-)
-
-func (w GithubEvent_Which) String() string {
-	const s = "commitpullRequestissue"
-	switch w {
-	case GithubEvent_Which_commit:
-		return s[0:6]
-	case GithubEvent_Which_pullRequest:
-		return s[6:17]
-	case GithubEvent_Which_issue:
-		return s[17:22]
-
-	}
-	return "GithubEvent_Which(" + strconv.FormatUint(uint64(w), 10) + ")"
-}
-
-// GithubEvent_TypeID is the unique identifier for the type GithubEvent.
-const GithubEvent_TypeID = 0x992b0cc20a124b84
-
-func NewGithubEvent(s *capnp.Segment) (GithubEvent, error) {
-	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 16, PointerCount: 4})
-	return GithubEvent{st}, err
-}
-
-func NewRootGithubEvent(s *capnp.Segment) (GithubEvent, error) {
-	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 16, PointerCount: 4})
-	return GithubEvent{st}, err
-}
-
-func ReadRootGithubEvent(msg *capnp.Message) (GithubEvent, error) {
-	root, err := msg.RootPtr()
-	return GithubEvent{root.Struct()}, err
-}
-
-func (s GithubEvent) String() string {
-	str, _ := text.Marshal(0x992b0cc20a124b84, s.Struct)
-	return str
-}
-
-func (s GithubEvent) Which() GithubEvent_Which {
-	return GithubEvent_Which(s.Struct.Uint16(0))
-}
-func (s GithubEvent) Who() (string, error) {
-	p, err := s.Struct.Ptr(0)
-	return p.Text(), err
-}
-
-func (s GithubEvent) HasWho() bool {
-	p, err := s.Struct.Ptr(0)
-	return p.IsValid() || err != nil
-}
-
-func (s GithubEvent) WhoBytes() ([]byte, error) {
-	p, err := s.Struct.Ptr(0)
-	return p.TextBytes(), err
-}
-
-func (s GithubEvent) SetWho(v string) error {
-	return s.Struct.SetText(0, v)
-}
-
-func (s GithubEvent) Commit() GithubEvent_commit { return GithubEvent_commit(s) }
-
-func (s GithubEvent) SetCommit() {
-	s.Struct.SetUint16(0, 0)
-}
-
-func (s GithubEvent_commit) Hash() (string, error) {
-	p, err := s.Struct.Ptr(1)
-	return p.Text(), err
-}
-
-func (s GithubEvent_commit) HasHash() bool {
-	p, err := s.Struct.Ptr(1)
-	return p.IsValid() || err != nil
-}
-
-func (s GithubEvent_commit) HashBytes() ([]byte, error) {
-	p, err := s.Struct.Ptr(1)
-	return p.TextBytes(), err
-}
-
-func (s GithubEvent_commit) SetHash(v string) error {
-	return s.Struct.SetText(1, v)
-}
-
-func (s GithubEvent_commit) Branch() (string, error) {
-	p, err := s.Struct.Ptr(2)
-	return p.Text(), err
-}
-
-func (s GithubEvent_commit) HasBranch() bool {
-	p, err := s.Struct.Ptr(2)
-	return p.IsValid() || err != nil
-}
-
-func (s GithubEvent_commit) BranchBytes() ([]byte, error) {
-	p, err := s.Struct.Ptr(2)
-	return p.TextBytes(), err
-}
-
-func (s GithubEvent_commit) SetBranch(v string) error {
-	return s.Struct.SetText(2, v)
-}
-
-func (s GithubEvent_commit) Msg() (string, error) {
-	p, err := s.Struct.Ptr(3)
-	return p.Text(), err
-}
-
-func (s GithubEvent_commit) HasMsg() bool {
-	p, err := s.Struct.Ptr(3)
-	return p.IsValid() || err != nil
-}
-
-func (s GithubEvent_commit) MsgBytes() ([]byte, error) {
-	p, err := s.Struct.Ptr(3)
-	return p.TextBytes(), err
-}
-
-func (s GithubEvent_commit) SetMsg(v string) error {
-	return s.Struct.SetText(3, v)
-}
-
-func (s GithubEvent) PullRequest() GithubEvent_pullRequest { return GithubEvent_pullRequest(s) }
-
-func (s GithubEvent) SetPullRequest() {
-	s.Struct.SetUint16(0, 1)
-}
-
-func (s GithubEvent_pullRequest) Number() int64 {
-	return int64(s.Struct.Uint64(8))
-}
-
-func (s GithubEvent_pullRequest) SetNumber(v int64) {
-	s.Struct.SetUint64(8, uint64(v))
-}
-
-func (s GithubEvent_pullRequest) Msg() (string, error) {
-	p, err := s.Struct.Ptr(1)
-	return p.Text(), err
-}
-
-func (s GithubEvent_pullRequest) HasMsg() bool {
-	p, err := s.Struct.Ptr(1)
-	return p.IsValid() || err != nil
-}
-
-func (s GithubEvent_pullRequest) MsgBytes() ([]byte, error) {
-	p, err := s.Struct.Ptr(1)
-	return p.TextBytes(), err
-}
-
-func (s GithubEvent_pullRequest) SetMsg(v string) error {
-	return s.Struct.SetText(1, v)
-}
-
-func (s GithubEvent_pullRequest) Action() (string, error) {
-	p, err := s.Struct.Ptr(2)
-	return p.Text(), err
-}
-
-func (s GithubEvent_pullRequest) HasAction() bool {
-	p, err := s.Struct.Ptr(2)
-	return p.IsValid() || err != nil
-}
-
-func (s GithubEvent_pullRequest) ActionBytes() ([]byte, error) {
-	p, err := s.Struct.Ptr(2)
-	return p.TextBytes(), err
-}
-
-func (s GithubEvent_pullRequest) SetAction(v string) error {
-	return s.Struct.SetText(2, v)
-}
-
-func (s GithubEvent) Issue() GithubEvent_issue { return GithubEvent_issue(s) }
-
-func (s GithubEvent) SetIssue() {
-	s.Struct.SetUint16(0, 2)
-}
-
-func (s GithubEvent_issue) Number() int64 {
-	return int64(s.Struct.Uint64(8))
-}
-
-func (s GithubEvent_issue) SetNumber(v int64) {
-	s.Struct.SetUint64(8, uint64(v))
-}
-
-func (s GithubEvent_issue) Msg() (string, error) {
-	p, err := s.Struct.Ptr(1)
-	return p.Text(), err
-}
-
-func (s GithubEvent_issue) HasMsg() bool {
-	p, err := s.Struct.Ptr(1)
-	return p.IsValid() || err != nil
-}
-
-func (s GithubEvent_issue) MsgBytes() ([]byte, error) {
-	p, err := s.Struct.Ptr(1)
-	return p.TextBytes(), err
-}
-
-func (s GithubEvent_issue) SetMsg(v string) error {
-	return s.Struct.SetText(1, v)
-}
-
-func (s GithubEvent_issue) Action() (string, error) {
-	p, err := s.Struct.Ptr(2)
-	return p.Text(), err
-}
-
-func (s GithubEvent_issue) HasAction() bool {
-	p, err := s.Struct.Ptr(2)
-	return p.IsValid() || err != nil
-}
-
-func (s GithubEvent_issue) ActionBytes() ([]byte, error) {
-	p, err := s.Struct.Ptr(2)
-	return p.TextBytes(), err
-}
-
-func (s GithubEvent_issue) SetAction(v string) error {
-	return s.Struct.SetText(2, v)
-}
-
-// GithubEvent_List is a list of GithubEvent.
-type GithubEvent_List struct{ capnp.List }
-
-// NewGithubEvent creates a new list of GithubEvent.
-func NewGithubEvent_List(s *capnp.Segment, sz int32) (GithubEvent_List, error) {
-	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 16, PointerCount: 4}, sz)
-	return GithubEvent_List{l}, err
-}
-
-func (s GithubEvent_List) At(i int) GithubEvent { return GithubEvent{s.List.Struct(i)} }
-
-func (s GithubEvent_List) Set(i int, v GithubEvent) error { return s.List.SetStruct(i, v.Struct) }
-
-func (s GithubEvent_List) String() string {
-	str, _ := text.MarshalList(0x992b0cc20a124b84, s.List)
-	return str
-}
-
-// GithubEvent_Promise is a wrapper for a GithubEvent promised by a client call.
-type GithubEvent_Promise struct{ *capnp.Pipeline }
-
-func (p GithubEvent_Promise) Struct() (GithubEvent, error) {
-	s, err := p.Pipeline.Struct()
-	return GithubEvent{s}, err
-}
-
-func (p GithubEvent_Promise) Commit() GithubEvent_commit_Promise {
-	return GithubEvent_commit_Promise{p.Pipeline}
-}
-
-// GithubEvent_commit_Promise is a wrapper for a GithubEvent_commit promised by a client call.
-type GithubEvent_commit_Promise struct{ *capnp.Pipeline }
-
-func (p GithubEvent_commit_Promise) Struct() (GithubEvent_commit, error) {
-	s, err := p.Pipeline.Struct()
-	return GithubEvent_commit{s}, err
-}
-
-func (p GithubEvent_Promise) PullRequest() GithubEvent_pullRequest_Promise {
-	return GithubEvent_pullRequest_Promise{p.Pipeline}
-}
-
-// GithubEvent_pullRequest_Promise is a wrapper for a GithubEvent_pullRequest promised by a client call.
-type GithubEvent_pullRequest_Promise struct{ *capnp.Pipeline }
-
-func (p GithubEvent_pullRequest_Promise) Struct() (GithubEvent_pullRequest, error) {
-	s, err := p.Pipeline.Struct()
-	return GithubEvent_pullRequest{s}, err
-}
-
-func (p GithubEvent_Promise) Issue() GithubEvent_issue_Promise {
-	return GithubEvent_issue_Promise{p.Pipeline}
-}
-
-// GithubEvent_issue_Promise is a wrapper for a GithubEvent_issue promised by a client call.
-type GithubEvent_issue_Promise struct{ *capnp.Pipeline }
-
-func (p GithubEvent_issue_Promise) Struct() (GithubEvent_issue, error) {
-	s, err := p.Pipeline.Struct()
-	return GithubEvent_issue{s}, err
 }
 
 type Results uint16
@@ -693,210 +392,6 @@ type Logger_append_Results_Promise struct{ *capnp.Pipeline }
 func (p Logger_append_Results_Promise) Struct() (Logger_append_Results, error) {
 	s, err := p.Pipeline.Struct()
 	return Logger_append_Results{s}, err
-}
-
-type IrcBot struct{ Client capnp.Client }
-
-// IrcBot_TypeID is the unique identifier for the type IrcBot.
-const IrcBot_TypeID = 0xbb6513902c830e39
-
-func (c IrcBot) NoteGhEvent(ctx context.Context, params func(IrcBot_noteGhEvent_Params) error, opts ...capnp.CallOption) IrcBot_noteGhEvent_Results_Promise {
-	if c.Client == nil {
-		return IrcBot_noteGhEvent_Results_Promise{Pipeline: capnp.NewPipeline(capnp.ErrorAnswer(capnp.ErrNullClient))}
-	}
-	call := &capnp.Call{
-		Ctx: ctx,
-		Method: capnp.Method{
-			InterfaceID:   0xbb6513902c830e39,
-			MethodID:      0,
-			InterfaceName: "basic.capnp:IrcBot",
-			MethodName:    "noteGhEvent",
-		},
-		Options: capnp.NewCallOptions(opts),
-	}
-	if params != nil {
-		call.ParamsSize = capnp.ObjectSize{DataSize: 0, PointerCount: 1}
-		call.ParamsFunc = func(s capnp.Struct) error { return params(IrcBot_noteGhEvent_Params{Struct: s}) }
-	}
-	return IrcBot_noteGhEvent_Results_Promise{Pipeline: capnp.NewPipeline(c.Client.Call(call))}
-}
-
-type IrcBot_Server interface {
-	NoteGhEvent(IrcBot_noteGhEvent) error
-}
-
-func IrcBot_ServerToClient(s IrcBot_Server) IrcBot {
-	c, _ := s.(server.Closer)
-	return IrcBot{Client: server.New(IrcBot_Methods(nil, s), c)}
-}
-
-func IrcBot_Methods(methods []server.Method, s IrcBot_Server) []server.Method {
-	if cap(methods) == 0 {
-		methods = make([]server.Method, 0, 1)
-	}
-
-	methods = append(methods, server.Method{
-		Method: capnp.Method{
-			InterfaceID:   0xbb6513902c830e39,
-			MethodID:      0,
-			InterfaceName: "basic.capnp:IrcBot",
-			MethodName:    "noteGhEvent",
-		},
-		Impl: func(c context.Context, opts capnp.CallOptions, p, r capnp.Struct) error {
-			call := IrcBot_noteGhEvent{c, opts, IrcBot_noteGhEvent_Params{Struct: p}, IrcBot_noteGhEvent_Results{Struct: r}}
-			return s.NoteGhEvent(call)
-		},
-		ResultsSize: capnp.ObjectSize{DataSize: 0, PointerCount: 0},
-	})
-
-	return methods
-}
-
-// IrcBot_noteGhEvent holds the arguments for a server call to IrcBot.noteGhEvent.
-type IrcBot_noteGhEvent struct {
-	Ctx     context.Context
-	Options capnp.CallOptions
-	Params  IrcBot_noteGhEvent_Params
-	Results IrcBot_noteGhEvent_Results
-}
-
-type IrcBot_noteGhEvent_Params struct{ capnp.Struct }
-
-// IrcBot_noteGhEvent_Params_TypeID is the unique identifier for the type IrcBot_noteGhEvent_Params.
-const IrcBot_noteGhEvent_Params_TypeID = 0xa5eec3de87bdd251
-
-func NewIrcBot_noteGhEvent_Params(s *capnp.Segment) (IrcBot_noteGhEvent_Params, error) {
-	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 1})
-	return IrcBot_noteGhEvent_Params{st}, err
-}
-
-func NewRootIrcBot_noteGhEvent_Params(s *capnp.Segment) (IrcBot_noteGhEvent_Params, error) {
-	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 1})
-	return IrcBot_noteGhEvent_Params{st}, err
-}
-
-func ReadRootIrcBot_noteGhEvent_Params(msg *capnp.Message) (IrcBot_noteGhEvent_Params, error) {
-	root, err := msg.RootPtr()
-	return IrcBot_noteGhEvent_Params{root.Struct()}, err
-}
-
-func (s IrcBot_noteGhEvent_Params) String() string {
-	str, _ := text.Marshal(0xa5eec3de87bdd251, s.Struct)
-	return str
-}
-
-func (s IrcBot_noteGhEvent_Params) Gh() (GithubEvent, error) {
-	p, err := s.Struct.Ptr(0)
-	return GithubEvent{Struct: p.Struct()}, err
-}
-
-func (s IrcBot_noteGhEvent_Params) HasGh() bool {
-	p, err := s.Struct.Ptr(0)
-	return p.IsValid() || err != nil
-}
-
-func (s IrcBot_noteGhEvent_Params) SetGh(v GithubEvent) error {
-	return s.Struct.SetPtr(0, v.Struct.ToPtr())
-}
-
-// NewGh sets the gh field to a newly
-// allocated GithubEvent struct, preferring placement in s's segment.
-func (s IrcBot_noteGhEvent_Params) NewGh() (GithubEvent, error) {
-	ss, err := NewGithubEvent(s.Struct.Segment())
-	if err != nil {
-		return GithubEvent{}, err
-	}
-	err = s.Struct.SetPtr(0, ss.Struct.ToPtr())
-	return ss, err
-}
-
-// IrcBot_noteGhEvent_Params_List is a list of IrcBot_noteGhEvent_Params.
-type IrcBot_noteGhEvent_Params_List struct{ capnp.List }
-
-// NewIrcBot_noteGhEvent_Params creates a new list of IrcBot_noteGhEvent_Params.
-func NewIrcBot_noteGhEvent_Params_List(s *capnp.Segment, sz int32) (IrcBot_noteGhEvent_Params_List, error) {
-	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 1}, sz)
-	return IrcBot_noteGhEvent_Params_List{l}, err
-}
-
-func (s IrcBot_noteGhEvent_Params_List) At(i int) IrcBot_noteGhEvent_Params {
-	return IrcBot_noteGhEvent_Params{s.List.Struct(i)}
-}
-
-func (s IrcBot_noteGhEvent_Params_List) Set(i int, v IrcBot_noteGhEvent_Params) error {
-	return s.List.SetStruct(i, v.Struct)
-}
-
-func (s IrcBot_noteGhEvent_Params_List) String() string {
-	str, _ := text.MarshalList(0xa5eec3de87bdd251, s.List)
-	return str
-}
-
-// IrcBot_noteGhEvent_Params_Promise is a wrapper for a IrcBot_noteGhEvent_Params promised by a client call.
-type IrcBot_noteGhEvent_Params_Promise struct{ *capnp.Pipeline }
-
-func (p IrcBot_noteGhEvent_Params_Promise) Struct() (IrcBot_noteGhEvent_Params, error) {
-	s, err := p.Pipeline.Struct()
-	return IrcBot_noteGhEvent_Params{s}, err
-}
-
-func (p IrcBot_noteGhEvent_Params_Promise) Gh() GithubEvent_Promise {
-	return GithubEvent_Promise{Pipeline: p.Pipeline.GetPipeline(0)}
-}
-
-type IrcBot_noteGhEvent_Results struct{ capnp.Struct }
-
-// IrcBot_noteGhEvent_Results_TypeID is the unique identifier for the type IrcBot_noteGhEvent_Results.
-const IrcBot_noteGhEvent_Results_TypeID = 0xf5bdbbc1d36794d7
-
-func NewIrcBot_noteGhEvent_Results(s *capnp.Segment) (IrcBot_noteGhEvent_Results, error) {
-	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 0})
-	return IrcBot_noteGhEvent_Results{st}, err
-}
-
-func NewRootIrcBot_noteGhEvent_Results(s *capnp.Segment) (IrcBot_noteGhEvent_Results, error) {
-	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 0})
-	return IrcBot_noteGhEvent_Results{st}, err
-}
-
-func ReadRootIrcBot_noteGhEvent_Results(msg *capnp.Message) (IrcBot_noteGhEvent_Results, error) {
-	root, err := msg.RootPtr()
-	return IrcBot_noteGhEvent_Results{root.Struct()}, err
-}
-
-func (s IrcBot_noteGhEvent_Results) String() string {
-	str, _ := text.Marshal(0xf5bdbbc1d36794d7, s.Struct)
-	return str
-}
-
-// IrcBot_noteGhEvent_Results_List is a list of IrcBot_noteGhEvent_Results.
-type IrcBot_noteGhEvent_Results_List struct{ capnp.List }
-
-// NewIrcBot_noteGhEvent_Results creates a new list of IrcBot_noteGhEvent_Results.
-func NewIrcBot_noteGhEvent_Results_List(s *capnp.Segment, sz int32) (IrcBot_noteGhEvent_Results_List, error) {
-	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 0}, sz)
-	return IrcBot_noteGhEvent_Results_List{l}, err
-}
-
-func (s IrcBot_noteGhEvent_Results_List) At(i int) IrcBot_noteGhEvent_Results {
-	return IrcBot_noteGhEvent_Results{s.List.Struct(i)}
-}
-
-func (s IrcBot_noteGhEvent_Results_List) Set(i int, v IrcBot_noteGhEvent_Results) error {
-	return s.List.SetStruct(i, v.Struct)
-}
-
-func (s IrcBot_noteGhEvent_Results_List) String() string {
-	str, _ := text.MarshalList(0xf5bdbbc1d36794d7, s.List)
-	return str
-}
-
-// IrcBot_noteGhEvent_Results_Promise is a wrapper for a IrcBot_noteGhEvent_Results promised by a client call.
-type IrcBot_noteGhEvent_Results_Promise struct{ *capnp.Pipeline }
-
-func (p IrcBot_noteGhEvent_Results_Promise) Struct() (IrcBot_noteGhEvent_Results, error) {
-	s, err := p.Pipeline.Struct()
-	return IrcBot_noteGhEvent_Results{s}, err
 }
 
 type Builder struct{ Client capnp.Client }
@@ -1747,107 +1242,80 @@ func (p Builder_keepalive_Results_Promise) Struct() (Builder_keepalive_Results, 
 	return Builder_keepalive_Results{s}, err
 }
 
-const schema_902d2bfc3bbf0d43 = "x\xda\xacVml#W\x15\xbd\xf7\xcd\x8c\x9f\x1d\xec" +
-	"u\xdeNV\xaa\xa2.\x86\x90\xd2\xd6\xddDM\xb6J" +
-	"\x13\xa3\xd4!%\x04\xa7\x1b\xad'\xac\x96vA\xc0\xd8" +
-	"~\xd8\xd3\xf8+3\xe3d#D[XV\x88\xaa\x0b" +
-	"[)+\xd1Jm\xd5H\xab\x82DYZ$D\xa9" +
-	"VU[D\xa5\x80\x8a\xcag\xa1RA\xfc)UU" +
-	"\xa4\x80\xf8\xd8\x852\xe8=g\xc6\x93\xd8\xbb\xf0\xa3\x7f" +
-	"\xac\xb1ss\xee\xbd\xe7\x9ds\xde\xdc\xfc\x922C\xc6" +
-	"\xb4\xa31\x00\xa3\xaaE\xbc\x03\xeb\x8f/l~\xe0\xeb" +
-	"\xa7\x80\xc5\x89w{\xe2\xb9\x0f\xfd\xfb\xa6\x91\xb3\x00\xa8" +
-	"\x9fQ\xef\xd7\xcf\xa9\x14@\x7fP\xbd\x00\xe8]?}" +
-	"\xcd\xc6\xef\xb7\x86\xbe\x06,\xae\xec*\xdcV7\xf5K" +
-	"\xea\xad\x00\xfaA\xed%\xfd\x11\x8d\x02x\xb7\x9d|\x80" +
-	"\x1e\xfb\xe8\xf6\x06\x18\x03\x88\x00\x02\xe6\xf0i-\x8d\x02" +
-	"W\xcb\x02zS\xf7\xe5\xee]\xb9\xfc\xe9o\x00\x1b@" +
-	"\x00\x0dE\xc1\x93\xda\x82(xF\x16|\xf9\x8e\xfd}" +
-	"/\xc4oz\x08\x8c8\x86\x06\x9bS\xa9\x02\xa0\xbf\xa9" +
-	"\xbd\xa0o\x8bN\xfa\xdb\xda\x1b\x80\xde{\x7f\xfd\xda\x1b" +
-	"\x87\xfe\xf4\x87\xc7\xdap\xb2\xddJd\x16A\xf5\x8c\x9f" +
-	"_\xfc\xca\xeb/\xfe\xf9<0=htWd\\4" +
-	"2#\xa2\xd12\xbd`\xde\xf7\xedG/\xc8Q;[" +
-	"jD\xa0\x7f1\xb2\xa5\x9f\x89\x88\xa7\xafF\x04\x09\xef" +
-	"\xdb\xbe\xf8\xb3'&\xdd\xa7\xc2{\xbd\x9fJ\xb4\x1b\xa9" +
-	"DK\xfd\xe4\xbb\x9f\xaf\x9cy\xba\x8b\xce\x1c\xdd\xd4\x0d" +
-	"*\x90\x16\xe9Q@\xef\xb6\x1b\x1e<|\xf6\xe5\xf3?" +
-	"\xe8*4\xe9\xd3\xba%\x0b9\xbdU0\xb5\xef\xd4\xa1" +
-	"\xb3:\x7f\xb6\x8b\xf7\x1a}Xo\xc9\xc2\x15:\xaf?" +
-	"\"\x9e\xbc\x93\xfb\xbe\xf0\xdc\xab\xec\xb5\x1f\x85\xb7=M" +
-	"\xfb$\xefr\xbe\xb7\xeey\xf1\xd2\x92\xfb\xc4V\xbb@" +
-	"\xce\xff$\xdd/\x88\xfa\xe9[\xd7\x1d\xff\xf1g_y" +
-	"\xb9\xab\xcf9\xfap\x1b]\x7f\x88\xce\xeb\xcf\xcb>\xdf" +
-	"\xb9_\x9f\xfe\xe3\xa3\xd6+`\\\x83\xa4sV\x07T" +
-	"\x8a\x00\x87\xbfE\x87D\xc7\xa7\xa8\xa0\xec\xb1\xef\x9f\xab" +
-	"\xb5N\xdf\xf1j\x98\xb2\\t\xbf(0\xa2b\xa4k" +
-	"?7\xd1\xca\xff\xf0\xc4\x9b;R \xf2\xf0\xa2r\xe6" +
-	"\xf5\xe8\x1a\xa0\xf7\xbd\x07\xee\xfc\xe4{>\xb8\xf9\xd7\x9e" +
-	"\xcd\xf4_E\xff\x02\xa8\xff6*z\xfdf\xa3\xfc\x8b" +
-	"\xe7\x9f\xbd\xf8\xb7\xd0v+\xb1\x0c\x82\xfa\xaf\xcf\xb8\x1b" +
-	"\xbf{}\xe1\xef\xbb\xcfX\xaa\xfb\xae\xd8e\x9d\xc7\xc4" +
-	"\x93\x19\x13\x18\xf7|\xe9\xd4\xe43\x97\x06\xff\xd1\xbb\xdb" +
-	";\xb1\xcb\x80:\xf6\x89\xca\xc1_N}\xf3\xed\xeb\x8f" +
-	"\xffs\xafrPr\xd5\xb7\xa5\x9f\xef\x13O\x8f\xf7\xad" +
-	"\xc1\x88W0\x1d\xab8Z4\xb1Yof>l\x17" +
-	"+\x00yD\xe3Z$\x00l1\x03\x80\xc8\xe6\xc6\x01" +
-	"\x90\xb0\xe9%\x00T\xd8T\x1a\x00U6\xb6\x00\x80\x1a" +
-	"\x1b\x11\x7f\x8b\xb0\xeb\x96\x00\xb2\xf5\x86i\x17+\xa9\x93" +
-	"\x93\x13\x13\xb7x\xf2s\xb1\xe5\x00V\x93\xd6\xc4\xe4\x84" +
-	"'>\x16[N\x15\x00R\xa6];>\xe1\xc9\xcfv" +
-	"\xc9\xee9f[V\x95\x96\xb8m\xc41d\x04\xc6\xd2" +
-	">_,q\xa2\xb3&K\xa4\x93\x9f\xa8\x98\xaew\xbb" +
-	"\xd94\x0bV\xd5\x02\xc5]O\x1em\xba\x8e\x11W4" +
-	"\x80\xc0\x85\xe8\xbb\x9b\x19w\x03a9\x8a\x9dSF_" +
-	"\x0flz\x1c\x08\x1b\xa3H\x82\xb4@\xdf^bM\xc2" +
-	"\x0eR\xaf\xe8wJ\xba\x16wf0UhY\xd5\xd2" +
-	"\x0cz\xcb\x9c7\xcd\xaa\xb5\x0a\xc8g0\x8f\x18\xec\xa5" +
-	"\xf8{\x95\xb8=\xeaW\xf1\xe1\xbc\x99\xb4\xcd\x9ac\xa8" +
-	"\x8a\x0a\xa0\"\x00K\xec\x070\xa2\x0a\x1a\x03\x04\xd1\xc2" +
-	"\x08\x10\x8c@\x07G\x0d\xe3\xf8c\x88!\x86\x97\xb8\xd3" +
-	"\xaa\xba\x0e@\x18,\xb3\x036L0k\xcb\x02\xdc\x07" +
-	"\x98W\x10\xfb}.\x01\xc5OA\x03\"\x1a\xcc[n" +
-	"\xa5U\x98[\xe5uW\xca\xa1?@4\x87\x00\x8cO" +
-	")hT\x08&\xd0\xf30\xa4L\xc63@\x12\xe4?" +
-	"\xe2\xc7\xc0\x89l\xb1\x00$\xa1\xbc#~\x0c\x1c\xc3\xa6" +
-	"\xc6\x81\xd0\xb5J\x03\xe3@0\x0e\x98-6j5\xcb" +
-	"\xf5\x9a\xadju\x89\xaf\xb4\x80r\xc7MY\x8e\xd3\xe2" +
-	"\xc1d\xd1+\xae\x9e7\x05\x89\xe0\x17\x8a\xba\x9c]\x9c" +
-	"m\xb8\xa3\xf5\x86\xcb\xe7+r\x91\xe1|\xca\xdc\xcb\xf5" +
-	"`\x87k\xa5\\\xc1\xfe\x8e\xaf\x00\xb1\x7f/+~o" +
-	"!\xb6\xb6M\xe2\x01\xd4\\\x1a\xc0\x98Q\xd08B\x90" +
-	"!\xcaLa9A\xd6G\x144\xf2\x04\x91\x0c\xb4=" +
-	"%\x0a?\xa6\xa0q\x8c`\xb2n\xd6\xb8O\x01]\xe5" +
-	"\xb6\xff\x9c\x14F\xc2d\xe7\x16\x04\xc4$\xfcO5-" +
-	"\xf1\x94\xd4\xc0\xff/'i7\xa1\x1cZu\x1d\xb9\x91" +
-	"\x1c\xf2\xe0\xa04\xfe\x81!i|\xa1\"\xa5\xb1L\xb9" +
-	"mgm~7/\xba\xddvM\x95\x8e\xad7\xb9@" +
-	"\x88J\x04\x96\x96\x08\xb1\x13\x00\xc9B\xab\xba\xecY\xf5" +
-	"\x92\xb5j\x95Z\xa0\x98{\xdc.\x8eJi\xb8\xe2\x7f" +
-	"U\xe9W\xffnD?7\x19+\x00a1\xea\xf9\xc7" +
-	"\x09\x94\xd7\xdd\x1e\x06;\xd2(\x97\xb9=j6\x9b\xbc" +
-	"^\xf2e\xb1\xcb\x10\xe9\x0e\x1d\xc9j\xa3\xec`\x02\x08" +
-	"&\xe0\xaa8mg\xa1\xb3{lQ\xa3p\xbb3\xb6" +
-	"\x7f\xc9\xa1\x7f\x991\x96\x01\xc24\x9am\xe3\xf4\x987" +
-	"\xe4\xb3Q_\xfaB\xf9BX\xfd8\x80\xaaPVf" +
-	"\x8f\xb2\xb4=\xcab\x84\x0c`d'\xae}ie\xeb" +
-	"\xadZ\x81\xdb\xa8\x01A\x0d\x90\xd6\x9cr\xe05\xb3\xe8" +
-	"Z\x8d\xba\xff\xb5\xb7\xa8d\xa0\x05\x9b_\x89\xc1R\xa3" +
-	"\xce1\xd9y\xbb\xb8\x9aL\xdb\x88\xc1\x99D\x03\xc4\x1b" +
-	"\x05\xe2\xb0\x82\xc6\xcd!\xeb\x8c\xcc\x02\x187(h\xdc" +
-	"B0\xb9V1]\xec\xef\xdc\x04ms\xde\xdbh\x8a" +
-	"=\x1c\xec\xef\xdc\x05\xbdl\x1b&\xb9\x1d)>\xbd\xb4" +
-	"\x17\xbd\xd1^\xf4\xc6\xde%z{\xc4\xd2R\xb6\x1d\xdc" +
-	"\xbd\xb3F\xdciY\x19t\xeb\xa1\xc0\x11\x97rW\xe0" +
-	" \xb2\\z\xcf\xdc\x04\x91-.\x00\x18G\x144\xee" +
-	"$W\x0a\x96\xa4\xbb\xde\x14\x07\x19\xbc\xfd\x01jI\x04" +
-	"\xf4*\x0d\xc75\xe5[\x01\\%\x8e\xbah\xde\x89s" +
-	"\x9f\xe7\xee\x80\xdc\x09\xc3\\&<\xaf2\x80\x8a\xe0y" +
-	"(\x94\x90\x15\xd3\xa9\x04\xcc\x16l\xb3^\x0c\xbe\x86I" +
-	"\xefM\x9ex\x07h\x07uHmvGX\xbe\xd8\xc6" +
-	"D\xc7C\x0a\x1a\x93\x04=\xab\\o\xd8<\xbf\x0c\xa9" +
-	"\xf2\xc7\x9b\xbc\x88\x08\x04\x11\x90V\x1bed\x9d\xd7Q" +
-	"\x91n\x80\xff\x0d\x00\x00\xff\xff\xf9hQ\xf9"
+const schema_902d2bfc3bbf0d43 = "x\xda\x8cU]h\x1cU\x14>\xe7\xde\x99\x9d*\xbb" +
+	"\x9d\xdcN\x0aRZWjJ\xeb\xda\x94\xa6-\xdb$" +
+	"\x92n\xda\x1a5\xb1\xa1;1D\x0d\xf83\xd9\x1dw" +
+	"\xa7;\xd9]gf\x93,R[\x91<\xf8\xdfB\x04" +
+	"\x15ji\xa0TA\x89-TD(}\xd0*D\xa9" +
+	"\x08*\xc5R\xf5Ej(>\xf4E\xb4\x0a#\xf7n" +
+	"gg\xb7!\xd1\x97\xe12\xf3\xf1\x9d\xef|\xf7;g" +
+	"\xb6\xbeBzI\x87|5\x02\xa0\xa7\xe5\x88\xbf\xbaz" +
+	"b`\xf6\xee7^\x04\x16%\xfe\xde\xd8\xf9\xfb\xfe\xb9" +
+	"\xb7\xfd\x08\x00j\x8f\xd3\x975\x83*\x00\xda\x13t\x0e" +
+	"\xd0\xdf\xd8s\xc7\xcc\xcf\xf3\xeb_\x07\x16\xa5M\xc0s" +
+	"tV\xbb@w\x02h\x0b\xf4K\xcd\x92\x14\x00\x7f\xd7" +
+	"\xd4\xab\xca\xf0\x03\xd7g@oE\x04\xe0\xef\xb6\xebR" +
+	"\x029\xaf\x94\x02\xf4\xbb\x0e\xf7\x1fz\xf6\xc6\x93o\x01" +
+	"kE\x00\x199\xa0*\x0dp\xc0\xb4\x00\xdc\xf9\xc3\xe5" +
+	"\xab\x9b\x7f\xfb\xe5x\x0d \x08\xceJ{\x10$\xbf\xa0" +
+	"\xcc\x19\x87?xwNp\x87\xb2d\xc2\xb5\x1e\x93\xe6" +
+	"\xb5\xf79Z;)q\xd5w]?\xf7\xcd\xa9N\xef" +
+	"t\xa3\x90\x1ey\x1b\xaf\xd3'\xf3:\x85\xf8W\x1f=" +
+	"\x97\x7f\xed\xcc\xa2\xfeMyV\x1b\x979\x93%\xef\x07" +
+	"\xf4wm:\xba\xfd\xc8\xc5\x93\x9f,\x02\x1e\x94\xcfh" +
+	"\xd3\x02\xf8\x82\xbc\x13\xd0\x9fZy\xf0\xfc%v\xf9s" +
+	"`Z\xbd\xb5\x97\xe4\xdby\xc9\xa3\xa2\xe4\xb5\xe7?\xfb" +
+	"k\xc8;5_\x03\x08I\xa7\xe5U\xbc\xb5\xaf\xafm" +
+	"\x18\xf9\xe2\xe9o/.\xf2\xf8m\xf9\x1d\xed\x84\xa8q" +
+	"L~P\xbb\xc0O\xfe\xf1\x8f\xdf\x1c\xafL?|\xa9" +
+	"\xb1\xb5\x0f9\x0fjgE\x9d\xb5\xcf$+\xe9OG" +
+	"\x17nz\xcc\xfd\xd9\xfe}M\xc8\x15y\x12\xf0\xef\xa7" +
+	"\xbc\x99\x1f\x7f\x1a\xf8\xa3\xd9Ga^W\xe4\x86\xd6\x17" +
+	"\xe1\xa7\xdd\x11n\xe3\x9a\xef\xba\xde\xfb}\xe3\xc8\x9f\xb7" +
+	"z\xce\x9b\xd3\xaeD\xe6\xb5\x05\x01\xfe52\x09\xed\xfe" +
+	"\x98\xe1Z\x99-\x19\x03\xcb\xc5r\xf7n'\x93\x07H" +
+	"#\xeak\x91\x00\xb0\xc1n\x00D\xd6\xb7\x0d\x00\x09\xeb" +
+	"\x19\x02@\xca\xba\x12\x00(\xb1\x8e\x01\x00\x94Y;\xff" +
+	"\x16a\x1b\x86\x00R\xc5\x92\xe1d\xf2\xf1\xa9\xcedr" +
+	"\x87/\x9e\x83\x15\x17\xd0V\xaddg\xd2\xe7\x8f\xc1\x8a" +
+	"k\x03@\xdcp\xc6G\x92\xbex\xd6 \xcd:\xf6T" +
+	",[\xc9\x9a\x8e\x1eE\x0c#\xc4X\"p\x81\xc5F" +
+	"\xc36Y,\xa1>\x9a7<\x7f\xafQ6\xc6,\xdb" +
+	"\x02\xeaU\xd5\xfde\xcf\xd5\xa3T\x06\xa8\xc7\x13\x83 " +
+	"3\xfd\x00\x10\xd6\xaf`\xe8;\x067\xc4z\xb6\x01a" +
+	"\x1d\x0a\x92\xfa``\x10L\xde&a\xeb\x14?\x13T" +
+	"R=\xcbt{1>V\xb1\xecl/\xfa\x05\xd3," +
+	"\x1b\xb65\x01h\xf6b\x1a\xb1\xde\x17\x0d\xfa\xca\x9a\xce" +
+	"\x96\x00e\xb6\xa5\x0d\xd51\xc6]]\xa2\x12\x80\x84\x00" +
+	",\xb6\x0a@_AQo%\x88\x16F\x80`\x04B" +
+	"\x1e\xa9\x91'\x90\xc1E\xb4\x0d\x99n\xc5\xf6\\\x80F" +
+	"\xb2\xee\x9bdm\x04S\x8e\x00\xe0J\xc04El\x09" +
+	"\xbc\x04\xe4\xaf\xea\x05\x94%\x0b\xa4\x0d.\x15\x02`#" +
+	"\x8e\xdb_\x0bN\xb4^\xbb/\x01\xa0\xf7R\xd4\xf7\x11" +
+	"d\x88\"\xf7\xac\x7f=\x80~?E=M\x10Ik" +
+	"-e\x1c\xf8\x10E}\x98\xa0Z4\xc6M\x8c\x02\xc1" +
+	"(\xa02a:\xc1Y\xe5\xd1B5\\\x81\x80\xa8\xc2" +
+	"\x7f\xfa;d\xc6\x85+\xff\xdf`\x11@\xee\xa5b{" +
+	"\xae\xe8H\x88\\\xb7F\x8c\xc2\xea\xf5b\x14\xb8\xaf\xb4" +
+	"TPL\xc7I9\xe6\x013\xe3-\x0ep<;\\" +
+	"-\x9b\x9ca\x85``\x09\xc1p\xdb(\x80:V\xb1" +
+	"\x0b\xbeU\xccZ\x13V\xb6\x02\xd4\xb0\x9b\xfb\xd8W\xca" +
+	"\xe5Lg\x8bQ.\x9b\xc5l\xe0{\xd3\xbd&\xc2\x1e" +
+	"T\xbb\x94s1\x06\x04c\xb7\xfa\xd1\xccS\x0b\x08\xba" +
+	"\xcdR9\x86\x9a\x0e\xd7)\x89i\x09V\"\x06\xab\x8f" +
+	"\xb1n LVR5\x9eer-\xa6\xa0^g)" +
+	"\xbd\xd9R\xd1D5\\\xe6\xcb\xddd\x8d\xb1\xee\xc0\x8a" +
+	":\xe3=\x9c\xb1\x8d\xa2\xbe\xb5!]\xed{\x00\xf4M" +
+	"\x14\xf5\x1d\x04\xd5\xc9\xbc\xe1aK\xb8>\x00\xb1\x05\xf0" +
+	"P\xa9\xecY\xa5\xa2\x8b-\xe1\x02\xa9}\xa9\x0b \x8d" +
+	"\x02\xf8NI\x89\x11\xa86\xc4\x9b/\xc5E\xf1Fd" +
+	"\xfd\x890\xde\x8c\xf0|#\xb2\xc1\x01\x00}\x1fE\xfd" +
+	"1\xb2T\x8cU\xafZ\xe6\x9e\xd4\xff[\x80\xb2\x8a\x80" +
+	"~\xbe\xe4z\x86\xd8\xca\xb0L\xf8\x9b\x14\xf3\xc5W\x9b" +
+	"\xc5\x06\xb7\x9c\xd0\x98\xc0\xac\x0e>\x8a\x9b)\xea\x9d\x04" +
+	"}+W,9f\xba\x00\xf1\xdc#e3\x83\x08\x04" +
+	"\x11P\xb1K9d\xe1\xaf\x8e\x07\x18\xf0\xdf\x00\x00\x00" +
+	"\xff\xfff\x94G\xbb"
 
 func init() {
 	schemas.Register(schema_902d2bfc3bbf0d43,
@@ -1855,23 +1323,16 @@ func init() {
 		0x8e22cadf94183d27,
 		0x94f14654078c783e,
 		0x985efa717f498039,
-		0x992b0cc20a124b84,
 		0x9fe0e82ce7dbd61e,
-		0xa5eec3de87bdd251,
 		0xaf9eac8061af076b,
 		0xb17438a7cfbdf120,
 		0xb28d687bb0cb1f6b,
 		0xb8a5ce903391283e,
-		0xbb6513902c830e39,
 		0xc4db11d8bf7d0e78,
 		0xcaa77452f9c37eeb,
 		0xced160c65625ebcc,
-		0xd1699ee23d138aae,
 		0xd84b85756d95b69f,
 		0xe95aba507536661c,
-		0xf3a2260b5b588cb3,
-		0xf5bdbbc1d36794d7,
 		0xf64adeda9400745f,
-		0xf71af9b93883827e,
 		0xf85627eda839d41a)
 }
