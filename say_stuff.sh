@@ -1,5 +1,7 @@
 #!/bin/sh
 
+exec 2>&1
+
 i=2
 
 #echo "I'm a successful build!"
