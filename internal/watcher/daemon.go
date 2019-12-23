@@ -36,8 +36,11 @@ type state struct {
 	workers map[string]int
 }
 
-func Start(msgbus *bus.Bus) {
+func Start(msgbus *bus.Bus, builders map[string]string) {
 	state := state{workers: make(map[string]int)}
+	for alias, _ := range builders {
+		state.workers[alias] = worker_GONE
+	}
 
 	msgbus.Sub("worker-busy", func(val interface{}) {
 		v := val.(bus.WorkerSpec)
@@ -47,6 +50,7 @@ func Start(msgbus *bus.Bus) {
 			"hostarch": v.Hostarch,
 			"arch":     v.Arch,
 		}).Inc()
+		msgbus.Pub("state-of-workers", state.workers)
 	})
 	msgbus.Sub("worker-idle", func(val interface{}) {
 		v := val.(bus.WorkerSpec)
@@ -56,6 +60,7 @@ func Start(msgbus *bus.Bus) {
 			"hostarch": v.Hostarch,
 			"arch":     v.Arch,
 		}).Dec()
+		msgbus.Pub("state-of-workers", state.workers)
 	})
 	msgbus.Sub("worker-ready", func(val interface{}) {
 		v := val.(bus.WorkerSpec)
@@ -65,6 +70,7 @@ func Start(msgbus *bus.Bus) {
 			"hostarch": v.Hostarch,
 			"arch":     v.Arch,
 		}).Inc()
+		msgbus.Pub("state-of-workers", state.workers)
 	})
 	msgbus.Sub("worker-gone", func(val interface{}) {
 		v := val.(bus.WorkerSpec)
@@ -74,6 +80,7 @@ func Start(msgbus *bus.Bus) {
 			"hostarch": v.Hostarch,
 			"arch":     v.Arch,
 		}).Dec()
+		msgbus.Pub("state-of-workers", state.workers)
 	})
 	msgbus.Sub("irc-poke", func(val interface{}) {
 	})
@@ -92,4 +99,8 @@ func Start(msgbus *bus.Bus) {
 	msgbus.Sub("sent-irc-msg", func(val interface{}) {
 		msgsSent.Inc()
 	})
+	msgbus.Sub("state-of-workers?", func(val interface{}) {
+		msgbus.Pub("state-of-workers", state.workers)
+	})
+
 }

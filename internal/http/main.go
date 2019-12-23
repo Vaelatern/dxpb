@@ -22,7 +22,7 @@ func New() (*server, error) {
 	rV := server{}
 	rV.router = gin.Default()
 	rV.Msgbus = bus.New()
-	watcher.Start(rV.Msgbus)
+	watcher.Start(rV.Msgbus, viper.GetStringMapString("drones"))
 	err := rV.githubListener()
 	if err != nil {
 		return nil, err

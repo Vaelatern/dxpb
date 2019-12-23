@@ -3,8 +3,44 @@
 <head>
 	<meta charset="UTF-8">
 	<title>DXPB Master Status</title>
+	<style>
+	.workerstatuses {
+		display: flex;
+	}
+	.worker {
+		width: 70px;
+		border-radius: 10px;
+		padding: 10px;
+		text-align: center;
+		background: #ddd;
+	}
+	.workeralias { }
+	.workerstatus { text-transform: capitalize }
+	.status-absent { background: lightgrey }
+	.status-idle { background: lightgreen }
+	.status-working { background: lightblue }
+
+	</style>
 </head>
-<body>
-	A Status Page Here: {{ .n }}
-</body>
+	<body>
+		<div class="workerstatuses">
+			{{ range $alias, $status := .workers }}
+				{{ $statusstr := "" }}
+				{{ if eq $status 0 }}
+					{{ $statusstr = "absent" }}
+				{{ else if eq $status 1 }}
+					{{ $statusstr = "idle" }}
+				{{ else if eq $status 2 }}
+					{{ $statusstr = "working" }}
+				{{end}}
+				<div class="worker status-{{ $statusstr }}">
+					<div class="workeralias">{{ $alias }}</div>
+					<hr />
+					<div class="workerstatus">{{ $statusstr }}</div>
+				</div>
+			{{ else }}
+				A Status Page Here, just as soon as I'm fully started.
+			{{ end }}
+		</div>
+	</body>
 </html>
